@@ -1,0 +1,342 @@
+// FacTech Kaizen brand tokens — scoped to Work Permit views only (.wp-page)
+// so the rest of the app keeps its current theme until it's rebranded separately.
+$wp-primary:        #17A2B8; // Brand Blue
+$wp-navy:            #0B4A54; // Dark shade of brand primary ($wp-primary darkened)
+$wp-green:           #10B981; // Efficiency Green
+$wp-orange:          #F59E0B; // Alert Orange
+$wp-red:             #DC2626; // Critical Red
+$wp-purple:          #7C3AED; // Insight Purple
+$wp-gray-bg:         #F3F4F6;
+$wp-border:          #D1D5DB;
+$wp-text-secondary:  #6B7280;
+$wp-text-body:       #374151;
+$wp-font: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+.wp-page {
+  font-family: $wp-font;
+  color: $wp-text-body;
+
+  h1, h2, h3, h4, h5, h6 { font-family: $wp-font; }
+
+  .text-primary-dark { color: $wp-navy !important; }
+  .border-bottom-primary { border-bottom: 1px solid $wp-border !important; }
+  .bg-primary-dark { background: $wp-primary !important; }
+
+  .btn {
+    border-radius: 4px;
+    font-weight: 500;
+  }
+
+  .btn-primary-dark {
+    background: $wp-primary !important;
+    border-color: $wp-primary !important;
+    color: #fff !important;
+
+    &:hover  { background: darken($wp-primary, 8%) !important; border-color: darken($wp-primary, 8%) !important; }
+    &:focus  { box-shadow: 0 0 0 3px rgba($wp-primary, 0.25) !important; }
+    &:disabled { opacity: 0.55; }
+  }
+
+  .btn-outline-primary {
+    color: $wp-primary;
+    border-color: $wp-primary;
+    &:hover { background: $wp-primary; border-color: $wp-primary; color: #fff; }
+  }
+
+  .btn-success {
+    background: $wp-green !important;
+    border-color: $wp-green !important;
+    &:hover { background: darken($wp-green, 8%) !important; border-color: darken($wp-green, 8%) !important; }
+  }
+
+  .btn-outline-danger {
+    color: $wp-red;
+    border-color: $wp-red;
+    &:hover { background: $wp-red; border-color: $wp-red; }
+  }
+
+  .btn-outline-warning {
+    color: $wp-orange;
+    border-color: $wp-orange;
+    &:hover { background: $wp-orange; border-color: $wp-orange; color: #fff; }
+  }
+
+  .btn-outline-secondary {
+    color: $wp-text-secondary;
+    border-color: $wp-border;
+    &:hover { background: $wp-text-secondary; border-color: $wp-text-secondary; color: #fff !important; }
+  }
+
+  .container-rounded-white {
+    border-radius: 8px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 4px 6px -1px rgba(0, 0, 0, 0.06);
+  }
+
+  .form-control, .form-select {
+    border-radius: 4px;
+    border-color: $wp-border;
+
+    &:focus { border-color: $wp-primary; box-shadow: 0 0 0 3px rgba($wp-primary, 0.12); }
+    &::placeholder { color: #9CA3AF; }
+  }
+
+  .form-label { color: $wp-text-body; }
+
+  .status-badge { font-weight: 600; letter-spacing: 0.02em; }
+
+  table th {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: $wp-text-secondary;
+    border-bottom-width: 1px;
+  }
+
+  // ─── Empty / error state ────────────────────────────────
+  .wp-empty-state, .wp-error-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
+    text-align: center;
+
+    i { font-size: 30px; margin-bottom: 12px; }
+    .wp-state-title { font-size: 14px; font-weight: 600; color: $wp-text-body; margin-bottom: 4px; }
+    .wp-state-sub { font-size: 12px; color: $wp-text-secondary; max-width: 320px; }
+  }
+
+  .wp-empty-state i { color: $wp-border; }
+  .wp-error-state i { color: $wp-red; }
+
+  // ─── Detail identity header ─────────────────────────────
+  .wp-header {
+    background: $wp-navy;
+    border-radius: 8px;
+    padding: 20px 24px;
+    color: #fff;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 12px;
+  }
+  .wp-header-left { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; min-width: 0; }
+  .wp-header-icon {
+    width: 44px; height: 44px; border-radius: 8px;
+    background: rgba(255, 255, 255, 0.12);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    i { font-size: 18px; color: #fff; }
+  }
+  .wp-header-eyebrow {
+    font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.6); margin-bottom: 2px; font-weight: 600;
+  }
+  .wp-header-title { font-size: 19px; font-weight: 700; margin: 0; color: #fff; letter-spacing: -0.01em; }
+  .wp-header-sub { font-size: 12.5px; color: rgba(255, 255, 255, 0.72); margin-top: 3px; }
+  .wp-header-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; flex-shrink: 0; }
+
+  .wp-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 12px; border-radius: 999px;
+    font-size: 11.5px; font-weight: 600; white-space: nowrap;
+  }
+  .wp-chip-priority { background: rgba(255, 255, 255, 0.14); color: #fff; }
+  .wp-chip-priority .dot { width: 6px; height: 6px; border-radius: 50%; background: $wp-orange; flex-shrink: 0; }
+
+  .wp-actions-bar { display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+
+  // ─── Lifecycle stepper ───────────────────────────────────
+  .wp-stepper-card { padding: 18px 24px; }
+  .wp-stepper { display: flex; align-items: center; }
+  .wp-step { display: flex; align-items: center; flex: 1; }
+  .wp-step:last-child { flex: 0; }
+  .wp-step-node {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    flex-shrink: 0; width: 100px; text-align: center;
+  }
+  .wp-step-circle {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
+    border: 2px solid $wp-border; background: #fff; color: $wp-text-secondary;
+  }
+  .wp-step.done .wp-step-circle { background: $wp-green; border-color: $wp-green; color: #fff; }
+  .wp-step.current .wp-step-circle { background: #fff; border-color: $wp-primary; color: $wp-primary; box-shadow: 0 0 0 4px rgba($wp-primary, 0.12); }
+  .wp-step-label { font-size: 11.5px; font-weight: 600; color: $wp-text-secondary; }
+  .wp-step.done .wp-step-label, .wp-step.current .wp-step-label { color: $wp-text-body; }
+  .wp-step-sub { font-size: 10px; color: $wp-text-secondary; }
+  .wp-step-line { height: 2px; background: $wp-border; flex: 1; margin: 0 -4px 20px -4px; }
+  .wp-step-line.done { background: $wp-green; }
+
+  // ─── Vertical lifecycle rail ─────────────────────────────
+  .wp-vstepper { display: flex; flex-direction: column; }
+  .wp-vstep { display: flex; gap: 14px; }
+  .wp-vstep-track { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
+  .wp-vstep-line { width: 2px; flex: 1; min-height: 30px; background: $wp-border; }
+  .wp-vstep-line.done { background: $wp-green; }
+  .wp-vstep-body { padding-bottom: 32px; min-width: 0; padding-top: 2px; }
+  .wp-vstep:last-child .wp-vstep-body { padding-bottom: 0; }
+  .wp-vstep-label { font-size: 13px; font-weight: 600; color: $wp-border; }
+  .wp-vstep.done .wp-vstep-label, .wp-vstep.current .wp-vstep-label { color: $wp-text-body; font-weight: 700; }
+  .wp-vstep-sub { font-size: 11px; color: $wp-text-secondary; margin-top: 3px; }
+  .wp-vstep-hint { font-size: 11px; color: $wp-text-secondary; margin-top: 3px; font-style: italic; }
+
+  .wp-vstep .wp-step-circle { width: 28px; height: 28px; background: $wp-gray-bg; border-color: $wp-border; color: $wp-border; }
+  .wp-vstep.done .wp-step-circle { background: $wp-green; border-color: $wp-green; color: #fff; }
+  .wp-vstep.current .wp-step-circle { background: #fff; border-color: $wp-green; border-width: 2px; color: $wp-green; }
+
+  .wp-current-pill {
+    display: inline-block; font-size: 9.5px; font-weight: 700; letter-spacing: 0.03em;
+    text-transform: uppercase; color: $wp-green; background: rgba($wp-green, 0.12);
+    padding: 2px 8px; border-radius: 999px; vertical-align: middle; margin-left: 6px;
+  }
+
+  // ─── Card head ───────────────────────────────────────────
+  .wp-card-head {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; font-weight: 700; color: $wp-navy;
+    padding-bottom: 10px; margin-bottom: 12px;
+    border-bottom: 1px solid $wp-border;
+    i { color: $wp-navy; font-size: 13px; }
+  }
+
+  // ─── Field grid ──────────────────────────────────────────
+  // Compact single-line rows (label left, value right) for scalar fields.
+  .wp-field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 32px; }
+  .wp-field-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(72px, 42%);
+    align-items: baseline;
+    gap: 12px;
+    min-width: 0;
+    padding: 6px 0; border-bottom: 1px solid #F3F4F6;
+  }
+  .wp-field-grid .wp-field-row:last-child { border-bottom: none; }
+  .wp-field-row-label {
+    font-size: 10.5px; font-weight: 600; letter-spacing: 0.04em;
+    color: $wp-text-secondary; text-transform: uppercase;
+    min-width: 0; line-height: 1.4; overflow-wrap: anywhere;
+  }
+  .wp-field-row-value {
+    font-size: 13px; font-weight: 600; color: $wp-text-body;
+    min-width: 0; line-height: 1.4; text-align: right; overflow-wrap: anywhere;
+  }
+  .wp-field-row-value.muted { color: $wp-text-secondary; font-weight: 400; font-style: italic; }
+
+  // Stacked variant — used for long-form values (span-2)
+  .wp-field.span-2 { grid-column: 1 / -1; padding: 8px 0; }
+  .wp-field-label {
+    font-size: 10.5px; font-weight: 600; letter-spacing: 0.05em;
+    color: $wp-text-secondary; text-transform: uppercase; margin-bottom: 4px;
+  }
+  .wp-field-value { font-size: 13.5px; font-weight: 600; color: $wp-text-body; }
+  .wp-field-value.muted { color: $wp-text-secondary; font-weight: 400; font-style: italic; }
+
+  // Mini section divider — used to fold a small related section into a bigger card
+  .wp-mini-head {
+    font-size: 10.5px; font-weight: 700; letter-spacing: 0.05em;
+    color: $wp-text-secondary; text-transform: uppercase;
+    margin: 14px 0 6px; padding-top: 12px; border-top: 1px solid $wp-border;
+  }
+
+  // ─── Prose / note boxes ──────────────────────────────────
+  .wp-info-box {
+    background: $wp-gray-bg;
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: $wp-text-body;
+  }
+  .wp-info-box + .wp-info-box { margin-top: 10px; }
+  .wp-info-box .wp-field-label { margin-bottom: 5px; }
+
+  .wp-note-box {
+    background: rgba($wp-orange, 0.1);
+    border: 1px solid rgba($wp-orange, 0.35);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: #6E4A0E;
+  }
+  .wp-note-box + .wp-note-box { margin-top: 10px; }
+  .wp-note-box strong {
+    display: block; font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase;
+    color: $wp-orange; margin-bottom: 4px; font-weight: 700;
+  }
+
+  // ─── Approval flow ───────────────────────────────────────
+  .wp-approval-row {
+    display: flex; gap: 12px; padding: 12px; border-radius: 8px; margin-bottom: 10px;
+    background: $wp-gray-bg; border: 1px solid $wp-border;
+  }
+  .wp-approval-row.is-approved { background: rgba($wp-green, 0.08); border-color: rgba($wp-green, 0.28); }
+  .wp-approval-row.is-current  { background: rgba($wp-primary, 0.06); border-color: rgba($wp-primary, 0.28); }
+  .wp-approval-row.is-declined { background: rgba($wp-red, 0.06); border-color: rgba($wp-red, 0.28); }
+  .wp-approval-dot {
+    width: 22px; height: 22px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 1px; color: #fff;
+    i { font-size: 11px; }
+  }
+  .wp-badge-approved {
+    color: #fff; font-size: 10.5px; font-weight: 700;
+    padding: 3px 9px; border-radius: 999px; letter-spacing: 0.03em; white-space: nowrap;
+  }
+  .wp-all-done { display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; color: $wp-green; margin-top: 4px; }
+
+  // ─── PDF actions ─────────────────────────────────────────
+  .wp-action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .wp-action-grid .btn-primary-dark { grid-column: 1 / -1; }
+
+  // ─── Site access badge card ──────────────────────────────
+  .wp-qr-row { display: flex; gap: 16px; align-items: center; }
+  .wp-qr-box {
+    width: 140px; height: 140px; border-radius: 8px; border: 1px solid $wp-border;
+    padding: 8px; background: #fff; flex-shrink: 0;
+    img { width: 100%; height: 100%; object-fit: contain; }
+  }
+  .wp-access-stats { display: flex; gap: 18px; margin-bottom: 10px; }
+  .wp-stat-num { font-size: 20px; font-weight: 700; color: $wp-text-body; line-height: 1; }
+  .wp-stat-label { font-size: 10px; color: $wp-text-secondary; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; margin-top: 3px; }
+  .wp-perforation { border-top: 1.5px dashed $wp-border; margin: 14px 0; }
+
+  // ─── Linked gate pass card ────────────────────────────────
+  .wp-linked-gp-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border: 1.5px dashed rgba($wp-primary, 0.5);
+    background: rgba($wp-primary, 0.05);
+    border-radius: 10px;
+    padding: 14px;
+  }
+  .wp-linked-gp-copy {
+    display: flex;
+    min-width: 0;
+    flex: 1;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    strong { color: $wp-navy; }
+    span { color: $wp-text-secondary; font-size: 12px; line-height: 1.45; }
+  }
+
+  // ─── Material gate pass row ───────────────────────────────
+  .wp-gp-row {
+    display: flex; gap: 10px; align-items: flex-start;
+    border-left: 3px solid $wp-border; padding-left: 10px;
+  }
+  .wp-gp-qr { cursor: pointer; }
+
+  @media (max-width: 575px) {
+    .wp-field-grid { grid-template-columns: 1fr; gap: 0; }
+    .wp-linked-gp-card { align-items: flex-start; }
+    .wp-linked-gp-qr { width: 120px; height: 120px; }
+  }
+}

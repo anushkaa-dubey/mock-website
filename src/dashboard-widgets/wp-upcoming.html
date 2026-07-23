@@ -1,0 +1,98 @@
+function App({ fetchData, isEdit }) {
+  var useState = React.useState;
+  var useEffect = React.useEffect;
+
+  var _d = useState([]);   var data = _d[0];    var setData = _d[1];
+  var _l = useState(true); var loading = _l[0]; var setLoading = _l[1];
+  var _s = useState(null); var wipStatuses = _s[0]; var setWipStatuses = _s[1];
+
+  var siteId = (function() {
+    try {
+      var ng = localStorage.getItem('ngStorage-loggedinUser');
+      if (ng) { var u = JSON.parse(ng); if (u && u.societyId) return u.societyId; }
+      var idx = localStorage.getItem('loggedinUserIndex');
+      if (idx) { var u2 = JSON.parse(idx); if (u2 && u2.societyId) return u2.societyId; }
+    } catch(e) {}
+    return null;
+  })();
+
+  function typeLabel(t) {
+    return String(t || '').replace(/^WORK_PERMIT_/, '').replace(/_/g, ' ')
+      .toLowerCase().replace(/\b\w/g, function(c) { return c.toUpperCase(); });
+  }
+
+  var STATUS_COLOR = {
+    DRAFT: '#adb5bd', PENDING: '#ffc107', APPROVED: '#28a745',
+    ACTIVE: '#007bff', COMPLETED: '#28a745', DECLINED: '#a3153b',
+    REQUEST_CHANGE: '#fd7e14', SUSPENDED: '#6f42c1', EXPIRED: '#212529',
+    CANCELLED: '#dc3545',
+  };
+
+  var FALLBACK_WIP_STATUSES = ['PENDING', 'APPROVED', 'ACTIVE'];
+
+  function fmt(d) {
+    if (!d) return '—';
+    var p = d.split('-');
+    return p[2] + '/' + p[1] + '/' + p[0];
+  }
+
+  function pad(n) { return String(n).padStart(2, '0'); }
+
+  useEffect(function() {
+    fetchData('v3/wp/status?site_id=' + siteId, 'ppm-request')
+      .then(function(res) {
+        var list = (res && res.data) || [];
+        var wip  = list.filter(function(s) { return s.Type === 'WIP'; }).map(function(s) { return s.Name; });
+        setWipStatuses(wip.length ? wip : FALLBACK_WIP_STATUSES);
+      })
+      .catch(function() { setWipStatuses(FALLBACK_WIP_STATUSES); });
+  }, []);
+
+  useEffect(function() {
+    if (!wipStatuses) return;
+    var now = new Date();
+    var today = now.getFullYear() + '-' + pad(now.getMonth()+1) + '-' + pad(now.getDate());
+    var plus3d = new Date(now.getTime() + 3*86400000);
+    var plus3  = plus3d.getFullYear() + '-' + pad(plus3d.getMonth()+1) + '-' + pad(plus3d.getDate());
+    var uri = 'v1/site/' + siteId + '/workpermit?date_from=' + today + '&date_to=' + plus3 + '&status=' + wipStatuses.join(',') + '&per_page=10&page_no=1';
+    fetchData(uri, 'ppm-request')
+      .then(function(res) { setData((res && res.data) || []); setLoading(false); })
+      .catch(function()   { setLoading(false); });
+  }, [wipStatuses]);
+
+  return React.createElement('div', { style:{ fontFamily:'Roboto,sans-serif', padding:16 } },
+    React.createElement('div', { style:{ display:'flex', alignItems:'center', gap:6, marginBottom:12 } },
+      React.createElement('i', { className:'fa fa-calendar-check-o', style:{ color:'#f0ad4e' } }),
+      React.createElement('div', { style:{ fontSize:13, fontWeight:700, color:'#212529' } }, 'Upcoming — Next 3 Days')
+    ),
+    loading
+      ? React.createElement('div', { style:{ textAlign:'center', color:'#adb5bd', padding:'24px 0', fontSize:13 } }, 'Loading…')
+      : data.length === 0
+        ? React.createElement('div', { style:{ textAlign:'center', color:'#adb5bd', padding:'24px 0', fontSize:13 } },
+            React.createElement('i', { className:'fa fa-calendar-o', style:{ display:'block', fontSize:24, marginBottom:6 } }),
+            'No work permits in the next 3 days'
+          )
+        : React.createElement('div', { style:{ display:'flex', flexDirection:'column', gap:6, maxHeight:280, overflowY:'auto' } },
+            data.map(function(p) {
+              var st = (p.status || '').toUpperCase();
+              var color = STATUS_COLOR[st] || '#6c757d';
+              return React.createElement('div', {
+                key: p.uuid || p['Sequence No'],
+                style:{
+                  padding:'8px 10px', borderRadius:8,
+                  border:'1.5px solid #e9ecef', background:'#fff',
+                }
+              },
+                React.createElement('div', { style:{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:3 } },
+                  React.createElement('span', { style:{ fontSize:12, fontWeight:700, color:'#17a2b8' } }, p['Sequence No'] || '—'),
+                  React.createElement('span', { style:{ fontSize:10, background:color+'22', color:color, padding:'1px 7px', borderRadius:8, fontWeight:600, border:'1px solid '+color+'55' } }, p.status || '—')
+                ),
+                React.createElement('div', { style:{ fontSize:11, color:'#495057', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' } },
+                  typeLabel(p.type) || '—'
+                ),
+                React.createElement('div', { style:{ fontSize:11, color:'#adb5bd', marginTop:2 } }, fmt(p['Scheduled Date']))
+              );
+            })
+          )
+  );
+}

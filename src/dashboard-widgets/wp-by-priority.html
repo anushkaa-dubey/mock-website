@@ -1,0 +1,126 @@
+function App({ fetchData, isEdit }) {
+  var useState = React.useState;
+  var useEffect = React.useEffect;
+  var useRef = React.useRef;
+  var useCallback = React.useCallback;
+
+  function monthStart() {
+    var n = new Date(); return n.getFullYear() + '-' + String(n.getMonth()+1).padStart(2,'0') + '-01';
+  }
+  function monthEnd() {
+    var n = new Date(); return new Date(n.getFullYear(), n.getMonth()+1, 0).toISOString().slice(0,10);
+  }
+
+  var _d = useState([]);           var data = _d[0];     var setData = _d[1];
+  var _l = useState(true);         var loading = _l[0];  var setLoading = _l[1];
+  var _f = useState(monthStart()); var fromDate = _f[0]; var setFromDate = _f[1];
+  var _t = useState(monthEnd());   var toDate = _t[0];   var setToDate = _t[1];
+  var canvasRef = useRef(null);
+  var chartRef  = useRef(null);
+
+  var siteId = (function() {
+    try {
+      var ng = localStorage.getItem('ngStorage-loggedinUser');
+      if (ng) { var u = JSON.parse(ng); if (u && u.societyId) return u.societyId; }
+      var idx = localStorage.getItem('loggedinUserIndex');
+      if (idx) { var u2 = JSON.parse(idx); if (u2 && u2.societyId) return u2.societyId; }
+    } catch(e) {}
+    return null;
+  })();
+
+  var PRIORITY_COLORS = {
+    CRITICAL: '#dc3545', URGENT: '#dc3545',
+    HIGH:     '#fd7e14', MEDIUM: '#f0ad4e',
+    NORMAL:   '#17a2b8', LOW:    '#adb5bd',
+  };
+
+  var load = useCallback(function(from, to) {
+    setLoading(true);
+    var uri = 'v1/site/' + siteId + '/workpermit/stats/priority';
+    var p = [];
+    if (from) p.push('date_from=' + from);
+    if (to)   p.push('date_to='   + to);
+    if (p.length) uri += '?' + p.join('&');
+    fetchData(uri, 'ppm-request')
+      .then(function(res) { setData((res && res.data) || []); setLoading(false); })
+      .catch(function()   { setLoading(false); });
+  }, [siteId]);
+
+  useEffect(function() { load(monthStart(), monthEnd()); }, []);
+
+  useEffect(function() {
+    if (loading || !data.length || !canvasRef.current || typeof Chart === 'undefined') return;
+    if (chartRef.current) { chartRef.current.destroy(); chartRef.current = null; }
+    var ctx = canvasRef.current.getContext('2d');
+    var doughnutLabelPlugin = {
+      id: 'wpPriorityDoughnutLabels',
+      afterDatasetsDraw: function(chart) {
+        var ctx2 = chart.ctx;
+        ctx2.save();
+        ctx2.textAlign = 'center';
+        ctx2.textBaseline = 'middle';
+        var meta = chart.getDatasetMeta(0);
+        meta.data.forEach(function(arc, idx) {
+          var val = chart.data.datasets[0].data[idx];
+          if (!val || val <= 0) return;
+          var props = arc.getProps(['startAngle','endAngle','innerRadius','outerRadius','x','y'], true);
+          var arcSpan = props.endAngle - props.startAngle;
+          var r = (props.innerRadius + props.outerRadius) / 2;
+          var angle = (props.startAngle + props.endAngle) / 2;
+          var arcLen = r * arcSpan;
+          // Only draw label if arc is big enough to fit text
+          if (arcLen < 20) return;
+          ctx2.font = arcLen < 30 ? 'bold 9px Roboto,sans-serif' : 'bold 11px Roboto,sans-serif';
+          ctx2.fillStyle = '#fff';
+          ctx2.fillText(val, props.x + Math.cos(angle) * r, props.y + Math.sin(angle) * r);
+        });
+        ctx2.restore();
+      }
+    };
+    chartRef.current = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: data.map(function(d){ return d.priority; }),
+        datasets: [{
+          data: data.map(function(d){ return d.count || 0; }),
+          backgroundColor: data.map(function(d){ return PRIORITY_COLORS[(d.priority||'').toUpperCase()]||'#adb5bd'; }),
+          borderWidth: 2, borderColor: '#fff',
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false, cutout: '60%',
+        plugins: { legend: { position:'right', labels:{ boxWidth:10, font:{ size:11 }, padding:10 } } }
+      },
+      plugins: [doughnutLabelPlugin]
+    });
+  }, [data, loading]);
+
+  return React.createElement('div', { style:{ fontFamily:'Roboto,sans-serif', padding:16 } },
+    React.createElement('div', { style:{ display:'flex', flexWrap:'wrap', gap:8, alignItems:'center', justifyContent:'space-between', marginBottom:8 } },
+      React.createElement('div', null,
+        React.createElement('div', { style:{ fontSize:13, fontWeight:700, color:'#212529' } }, 'By Priority'),
+        React.createElement('div', { style:{ fontSize:11, color:'#adb5bd' } }, 'Distribution across priority levels')
+      ),
+      React.createElement('div', { style:{ display:'flex', gap:6, alignItems:'center' } },
+        React.createElement('input', { type:'date', value:fromDate, onChange:function(e){ setFromDate(e.target.value); },
+          style:{ fontSize:11, padding:'3px 6px', border:'1px solid #dee2e6', borderRadius:4 } }),
+        React.createElement('input', { type:'date', value:toDate, onChange:function(e){ setToDate(e.target.value); },
+          style:{ fontSize:11, padding:'3px 6px', border:'1px solid #dee2e6', borderRadius:4 } }),
+        React.createElement('button', { onClick:function(){ load(fromDate, toDate); },
+          style:{ background:'#17a2b8', color:'#fff', border:'none', borderRadius:4, padding:'3px 8px', fontSize:11, cursor:'pointer' } }, 'Go'),
+        React.createElement('button', { onClick:function(){ var s=monthStart(),e=monthEnd(); setFromDate(s); setToDate(e); load(s,e); },
+          style:{ background:'#f8f9fa', color:'#6c757d', border:'1px solid #dee2e6', borderRadius:4, padding:'3px 8px', fontSize:11, cursor:'pointer' } }, '↺')
+      )
+    ),
+    loading
+      ? React.createElement('div', { style:{ height:220, display:'flex', alignItems:'center', justifyContent:'center', color:'#adb5bd', fontSize:13 } }, 'Loading…')
+      : data.length === 0
+        ? React.createElement('div', { style:{ height:220, display:'flex', alignItems:'center', justifyContent:'center', color:'#adb5bd', fontSize:13 } },
+            React.createElement('div', { style:{ textAlign:'center' } },
+              React.createElement('i', { className:'fa fa-pie-chart', style:{ fontSize:28, display:'block', marginBottom:8 } }),
+              'No data yet'
+            )
+          )
+        : React.createElement('div', { style:{ height:220 } }, React.createElement('canvas', { ref:canvasRef }))
+  );
+}

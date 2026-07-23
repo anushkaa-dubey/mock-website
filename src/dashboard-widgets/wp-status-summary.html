@@ -1,0 +1,108 @@
+function App({ fetchData, isEdit }) {
+  var useState = React.useState;
+  var useEffect = React.useEffect;
+  var useCallback = React.useCallback;
+
+  function monthStart() {
+    var n = new Date(); return n.getFullYear() + '-' + String(n.getMonth()+1).padStart(2,'0') + '-01';
+  }
+  function monthEnd() {
+    var n = new Date(); return new Date(n.getFullYear(), n.getMonth()+1, 0).toISOString().slice(0,10);
+  }
+
+  var _s = useState(null);           var stats = _s[0];    var setStats = _s[1];
+  var _l = useState(true);           var loading = _l[0];  var setLoading = _l[1];
+  var _f = useState(monthStart());   var fromDate = _f[0]; var setFromDate = _f[1];
+  var _t = useState(monthEnd());     var toDate = _t[0];   var setToDate = _t[1];
+
+  var siteId = (function() {
+    try {
+      var ng = localStorage.getItem('ngStorage-loggedinUser');
+      if (ng) { var u = JSON.parse(ng); if (u && u.societyId) return u.societyId; }
+      var idx = localStorage.getItem('loggedinUserIndex');
+      if (idx) { var u2 = JSON.parse(idx); if (u2 && u2.societyId) return u2.societyId; }
+    } catch(e) {}
+    return null;
+  })();
+
+  var load = useCallback(function(from, to) {
+    setLoading(true);
+    var uri = 'v1/site/' + siteId + '/workpermit/stats';
+    var p = [];
+    if (from) p.push('date_from=' + from);
+    if (to)   p.push('date_to='   + to);
+    if (p.length) uri += '?' + p.join('&');
+    fetchData(uri, 'ppm-request')
+      .then(function(res) { setStats((res && res.data) || res || {}); setLoading(false); })
+      .catch(function()   { setLoading(false); });
+  }, [siteId]);
+
+  useEffect(function() { load(monthStart(), monthEnd()); }, []);
+
+  var CARDS = [
+    { key: 'total',           label: 'Total',          color: '#17a2b8', bg: 'rgba(23,162,184,0.1)' },
+    { key: 'draft',           label: 'Draft',          color: '#adb5bd', bg: 'rgba(173,181,189,0.1)' },
+    { key: 'pending',         label: 'Pending',        color: '#ffc107', bg: 'rgba(255,193,7,0.1)'  },
+    { key: 'request_change',  label: 'Request Change', color: '#fd7e14', bg: 'rgba(253,126,20,0.1)' },
+    { key: 'approved',        label: 'Approved',       color: '#28a745', bg: 'rgba(40,167,69,0.1)'  },
+    { key: 'active',          label: 'Active',         color: '#007bff', bg: 'rgba(0,123,255,0.1)'  },
+    { key: 'completed',       label: 'Completed',      color: '#28a745', bg: 'rgba(40,167,69,0.1)'  },
+    { key: 'declined',        label: 'Declined',       color: '#a3153b', bg: 'rgba(163,21,59,0.1)'  },
+    { key: 'suspended',       label: 'Suspended',      color: '#6f42c1', bg: 'rgba(111,66,193,0.1)' },
+    { key: 'expired',         label: 'Expired',        color: '#212529', bg: 'rgba(33,37,41,0.1)'   },
+    { key: 'cancelled',       label: 'Cancelled',      color: '#dc3545', bg: 'rgba(220,53,69,0.1)'  },
+  ];
+
+  function openList(card) {
+    var query = [];
+    if (card.key !== 'total') query.push('status=' + encodeURIComponent(card.key.toUpperCase()));
+    if (fromDate) query.push('date_from=' + encodeURIComponent(fromDate));
+    if (toDate) query.push('date_to=' + encodeURIComponent(toDate));
+    window.location.href = '../workpermit/#/site/' + siteId + '/work-permit' + (query.length ? '?' + query.join('&') : '');
+  }
+
+  return React.createElement('div', { style: { fontFamily: 'Roboto,sans-serif', padding: 16 } },
+    React.createElement('div', { style: { display:'flex', flexWrap:'wrap', gap:8, alignItems:'center', justifyContent:'space-between', marginBottom: 12 } },
+      React.createElement('div', { style: { fontSize: 13, fontWeight: 700, color: '#212529' } }, 'Work Permit Summary'),
+      React.createElement('div', { style: { display: 'flex', gap: 6, alignItems: 'center' } },
+        React.createElement('input', { type:'date', value: fromDate, onChange: function(e){ setFromDate(e.target.value); },
+          style: { fontSize:11, padding:'3px 6px', border:'1px solid #dee2e6', borderRadius:4 } }),
+        React.createElement('input', { type:'date', value: toDate, onChange: function(e){ setToDate(e.target.value); },
+          style: { fontSize:11, padding:'3px 6px', border:'1px solid #dee2e6', borderRadius:4 } }),
+        React.createElement('button', { onClick: function(){ load(fromDate, toDate); },
+          style: { background:'#17a2b8', color:'#fff', border:'none', borderRadius:4, padding:'3px 8px', fontSize:11, cursor:'pointer' } }, 'Go'),
+        React.createElement('button', { onClick: function(){ var s=monthStart(),e=monthEnd(); setFromDate(s); setToDate(e); load(s,e); },
+          style: { background:'#f8f9fa', color:'#6c757d', border:'1px solid #dee2e6', borderRadius:4, padding:'3px 8px', fontSize:11, cursor:'pointer' } }, '↺')
+      )
+    ),
+    loading
+      ? React.createElement('div', { style: { textAlign:'center', color:'#adb5bd', padding:'32px 0', fontSize:13 } }, 'Loading…')
+      : React.createElement('div', { style: { display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(80px, 1fr))', gap:8 } },
+          CARDS.slice().sort(function(a, b) {
+            var valA = (stats && stats[a.key] != null) ? stats[a.key] : 0;
+            var valB = (stats && stats[b.key] != null) ? stats[b.key] : 0;
+            if (valA > 0 && valB === 0) return -1;
+            if (valA === 0 && valB > 0) return 1;
+            return 0;
+          }).map(function(c) {
+            var val = (stats && stats[c.key] != null) ? stats[c.key] : 0;
+            var isZero = val === 0;
+            var cardColor = isZero ? '#9CA3AF' : c.color;
+            var cardBg = isZero ? '#F3F4F6' : c.bg;
+            var cardBorder = isZero ? '3px solid #E5E7EB' : ('3px solid ' + c.color);
+            return React.createElement('div', {
+              key: c.key,
+              role: 'button',
+              tabIndex: 0,
+              'aria-label': 'Open ' + c.label + ' work permits',
+              onClick: function(){ openList(c); },
+              onKeyDown: function(e){ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openList(c); } },
+              style: { background: cardBg, borderLeft: cardBorder, borderRadius:6, padding:'10px 12px', cursor:'pointer' }
+            },
+              React.createElement('div', { style: { fontSize:22, fontWeight:700, color: cardColor, lineHeight:'1.2' } }, val),
+              React.createElement('div', { style: { fontSize:10, color: isZero ? '#9CA3AF' : '#6c757d', textTransform:'uppercase', letterSpacing:'0.5px', marginTop:2 } }, c.label)
+            );
+          })
+        )
+  );
+}

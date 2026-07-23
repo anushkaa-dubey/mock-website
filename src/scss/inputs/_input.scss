@@ -1,0 +1,32 @@
+input {
+  background: transparent;
+  border: 1px solid #000;
+  border-radius: 3px;
+}
+
+.form-control {
+  background: transparent;
+  border: 1px solid #000;
+  border-radius: 3px;
+
+  &:focus {
+    background: transparent;
+    border-color: $color-primary;
+    box-shadow: 0 0 0 0.15rem rgba($color-primary, 0.25);
+  }
+}
+
+select.form-control {
+  background: transparent;
+}
+
+.form-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #444;
+}
+
+.disabled-input {
+  border: none;
+  background: $color-white;
+}

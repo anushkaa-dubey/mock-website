@@ -1,0 +1,110 @@
+function App({ fetchData, isEdit }) {
+  var useState = React.useState;
+  var useEffect = React.useEffect;
+  var useRef = React.useRef;
+  var useCallback = React.useCallback;
+
+  var _d = useState([]);   var data = _d[0];    var setData = _d[1];
+  var _l = useState(true); var loading = _l[0]; var setLoading = _l[1];
+  var _m = useState(6);    var months = _m[0];  var setMonths = _m[1];
+  var canvasRef = useRef(null);
+  var chartRef  = useRef(null);
+
+  var siteId = (function() {
+    try {
+      var ng = localStorage.getItem('ngStorage-loggedinUser');
+      if (ng) { var u = JSON.parse(ng); if (u && u.societyId) return u.societyId; }
+      var idx = localStorage.getItem('loggedinUserIndex');
+      if (idx) { var u2 = JSON.parse(idx); if (u2 && u2.societyId) return u2.societyId; }
+    } catch(e) {}
+    return null;
+  })();
+
+  function fmtMonth(ym) {
+    if (!ym) return '';
+    var parts = ym.split('-');
+    var y = parts[0]; var m = parseInt(parts[1], 10);
+    var mon = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return mon[m-1] + " '" + y.slice(2);
+  }
+
+  var load = useCallback(function(m) {
+    setLoading(true);
+    var uri = 'v1/site/' + siteId + '/workpermit/stats/trend?months=' + m;
+    fetchData(uri, 'ppm-request')
+      .then(function(res) { setData((res && res.data) || []); setLoading(false); })
+      .catch(function()   { setLoading(false); });
+  }, [siteId]);
+
+  useEffect(function() { load(6); }, []);
+
+  useEffect(function() {
+    if (loading || !data.length || !canvasRef.current || typeof Chart === 'undefined') return;
+    if (chartRef.current) { chartRef.current.destroy(); chartRef.current = null; }
+    var ctx = canvasRef.current.getContext('2d');
+    chartRef.current = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: data.map(function(d){ return fmtMonth(d.month); }),
+        datasets: [
+          {
+            label: 'Raised', data: data.map(function(d){ return d.raised || 0; }),
+            borderColor:'#17a2b8', backgroundColor:'rgba(23,162,184,0.08)',
+            borderWidth:2, pointRadius:3, tension:0.3, fill:true
+          },
+          {
+            label: 'Completed', data: data.map(function(d){ return d.completed || 0; }),
+            borderColor:'#28a745', backgroundColor:'rgba(40,167,69,0.06)',
+            borderWidth:2, pointRadius:3, tension:0.3, borderDash:[4,2], fill:true
+          }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position:'top', labels:{ boxWidth:8, font:{ size:11 } } } },
+        scales: {
+          x: { ticks:{ font:{ size:11 } } },
+          y: { beginAtZero:true, ticks:{ font:{ size:11 } } }
+        }
+      }
+    });
+  }, [data, loading]);
+
+  function handleMonths(m) {
+    setMonths(m);
+    load(m);
+  }
+
+  var BTN = { border:'none', borderRadius:4, padding:'2px 8px', fontSize:11, cursor:'pointer' };
+
+  return React.createElement('div', { style:{ fontFamily:'Roboto,sans-serif', padding:16 } },
+    React.createElement('div', { style:{ display:'flex', flexWrap:'wrap', gap:8, alignItems:'center', justifyContent:'space-between', marginBottom:8 } },
+      React.createElement('div', null,
+        React.createElement('div', { style:{ fontSize:13, fontWeight:700, color:'#212529' } }, 'Monthly Trend'),
+        React.createElement('div', { style:{ fontSize:11, color:'#adb5bd' } }, 'Raised vs. Completed')
+      ),
+      React.createElement('div', { style:{ display:'flex', gap:4, alignItems:'center' } },
+        [3,6,12].map(function(m) {
+          return React.createElement('button', {
+            key: m, onClick: function(){ handleMonths(m); },
+            style: Object.assign({}, BTN, { background: months===m ? '#17a2b8' : '#f8f9fa', color: months===m ? '#fff' : '#6c757d' })
+          }, m + 'M');
+        }),
+        React.createElement('button', { onClick:function(){ load(months); },
+          style: Object.assign({}, BTN, { background:'#f8f9fa', color:'#6c757d', border:'1px solid #dee2e6' }) }, '↺')
+      )
+    ),
+    loading
+      ? React.createElement('div', { style:{ height:240, display:'flex', alignItems:'center', justifyContent:'center', color:'#adb5bd', fontSize:13 } }, 'Loading…')
+      : data.length === 0
+        ? React.createElement('div', { style:{ height:240, display:'flex', alignItems:'center', justifyContent:'center', color:'#adb5bd', fontSize:13 } },
+            React.createElement('div', null,
+              React.createElement('i', { className:'fa fa-line-chart', style:{ fontSize:28, display:'block', textAlign:'center', marginBottom:8 } }),
+              'No data yet'
+            )
+          )
+        : React.createElement('div', { style:{ height:240 } },
+            React.createElement('canvas', { ref:canvasRef })
+          )
+  );
+}
