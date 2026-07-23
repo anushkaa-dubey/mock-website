@@ -188,7 +188,6 @@ export default function LocationTreeSelect({
           userSelect: 'none',
           background: disabled ? '#e9ecef' : '#fff',
           color: selectedNode ? '#333' : '#999',
-          minHeight: '38px',
         }}
         onClick={() => !disabled && setOpen(o => !o)}
       >

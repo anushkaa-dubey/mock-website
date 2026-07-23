@@ -581,7 +581,7 @@ export default function NewWorkPermit() {
             <div className="col-md-3">
               <Field label="Vendor" required={!form.vendor_contact_name.trim()} error={err(!form.vendor_uuid && !form.vendor_contact_name.trim())}>
                 {form.vendor_uuid ? (
-                  <div className="d-flex align-items-center gap-2 form-control form-control-sm" style={{ height: 'auto', minHeight: 31 }}>
+                  <div className="d-flex align-items-center gap-2 form-control form-control-sm">
                     <i className="fa fa-building-o text-info" style={{ fontSize: 12 }} />
                     <span style={{ flex: 1, fontSize: 13 }}>{selectedVendorLabel}</span>
                     <i className="fa fa-times text-muted" style={{ fontSize: 11, cursor: 'pointer' }} onClick={() => handleVendorChange('')} />

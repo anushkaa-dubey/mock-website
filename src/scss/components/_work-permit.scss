@@ -80,6 +80,16 @@ $wp-font: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Rob
     &::placeholder { color: #9CA3AF; }
   }
 
+  .form-control-sm:not(textarea), .form-select-sm {
+    height: 36px !important;
+    min-height: 36px !important;
+    max-height: 36px !important;
+    font-size: 13px !important;
+    padding-top: 6px !important;
+    padding-bottom: 6px !important;
+    box-sizing: border-box !important;
+  }
+
   .form-label { color: $wp-text-body; }
 
   .status-badge { font-weight: 600; letter-spacing: 0.02em; }
