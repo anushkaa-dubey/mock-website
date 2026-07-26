@@ -372,7 +372,7 @@ export default function NewWorkPermit() {
               </Field>
             </div>
             <div className="col-md-3">
-              <Field label="Location">
+              <Field label="Location" required>
                 <LocationTreeSelect
                   locationTree={locationOptions}
                   value={form.location_uuid}
@@ -382,7 +382,7 @@ export default function NewWorkPermit() {
               </Field>
             </div>
             <div className="col-md-3">
-              <Field label="Asset">
+              <Field label="Asset" required>
                 <SearchableSelect
                   options={assetOptions}
                   value={form.asset_id}
@@ -466,49 +466,49 @@ export default function NewWorkPermit() {
           <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, color: '#17A2B8', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
             <i className="fa fa-file-text" style={{ fontSize: 13 }} /> Permit Type & Work Description
           </div>
-          <div className="row g-4">
-            {/* Left side: Permit Type Selection */}
-            <div className="col-md-5">
-              <Field label="Permit Type" required error={err(!form.type)}>
-                <SearchableSelect
-                  options={permitTypeOptions}
-                  value={form.type}
-                  onChange={handlePermitTypeChange}
-                  placeholder="Select permit type"
-                />
-              </Field>
-             
-            </div>
+<div className="row g-4">
 
-            <div className="col-md-8">
-              <div className="row g-3">
-                <div className="col-12">
-                  <Field label="Description">
-                    <textarea
-                      name="description"
-                      className="form-control form-control-sm"
-                      rows={2}
-                      value={form.description}
-                      onChange={handleChange}
-                      placeholder="Briefly describe the nature of work"
-                    />
-                  </Field>
-                </div>
-                <div className="col-12">
-                  <Field label="Work to be Carried Out">
-                    <textarea
-                      name="work_to_be_carried"
-                      className="form-control form-control-sm"
-                      rows={2}
-                      value={form.work_to_be_carried}
-                      onChange={handleChange}
-                      placeholder="Describe specific work tasks, procedures, or equipment"
-                    />
-                  </Field>
-                </div>
-              </div>
-            </div>
-          </div>
+  {/* Permit Type */}
+  <div className="col-md-5">
+    <Field label="Permit Type" required error={err(!form.type)}>
+      <SearchableSelect
+        options={permitTypeOptions}
+        value={form.type}
+        onChange={handlePermitTypeChange}
+        placeholder="Select permit type"
+      />
+    </Field>
+  </div>
+
+  {/* Description */}
+  <div className="col-md-7">
+    <Field label="Description">
+      <textarea
+        name="description"
+        className="form-control form-control-sm"
+        rows={2}
+        value={form.description}
+        onChange={handleChange}
+        placeholder="Briefly describe the nature of work"
+      />
+    </Field>
+  </div>
+
+  {/* Work to be Carried Out */}
+  <div className="col-md-5">
+    <Field label="Work to be Carried Out">
+      <textarea
+        name="work_to_be_carried"
+        className="form-control form-control-sm"
+        rows={2}
+        value={form.work_to_be_carried}
+        onChange={handleChange}
+        placeholder="Describe specific work tasks, procedures, or equipment"
+      />
+    </Field>
+  </div>
+
+</div>
         </div>
 
         {/* Section 3: Permit Specific Requirements (Dynamic Fields) */}
