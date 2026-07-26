@@ -477,7 +477,7 @@ export default function NewWorkPermit() {
                   placeholder="Select permit type"
                 />
               </Field>
-              {form.type ? (
+              /* {form.type ? (
                 <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: 6, padding: '12px', marginTop: 12 }}>
                   <div style={{ fontSize: 12, fontWeight: 600, color: '#166534', display: 'flex', alignItems: 'center', gap: 6 }}>
                     <i className="fa fa-check-circle" style={{ color: '#16A34A' }} /> Selected: {selectedTypeLabel}
@@ -495,10 +495,9 @@ export default function NewWorkPermit() {
                     Selecting a permit type will dynamically load specific safety checklists in the section below.
                   </div>
                 </div>
-              )}
+              )} */
             </div>
 
-            {/* Right side (Baju mei): Description & Work to be Carried Out */}
             <div className="col-md-7">
               <div className="row g-3">
                 <div className="col-12">
