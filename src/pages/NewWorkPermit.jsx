@@ -275,6 +275,8 @@ export default function NewWorkPermit() {
     if (!form.vendor_uuid && !form.vendor_contact_name.trim()) missing.push('Vendor or Name of Person');
     if (!(form.alt_mobile || form.vendor_mobile)) missing.push('Mobile No.');
     if (!dynamicFieldsValid) missing.push('Required Safety Fields');
+    if (!form.location_uuid) missing.push("Location");
+    if (!form.asset_id) missing.push("Asset");
 
     if (missing.length > 0) {
       setSubmitError(`Please complete all required fields: ${missing.join(', ')}`);
@@ -461,56 +463,70 @@ export default function NewWorkPermit() {
           </div>
         </div>
 
-        {/* Section 2: Permit Type & Work Description (Side-by-side / Baju mei layout) */}
-        <div className="container-rounded-white p-4 mb-4" style={{ background: '#fff' }}>
-          <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, color: '#17A2B8', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <i className="fa fa-file-text" style={{ fontSize: 13 }} /> Permit Type & Work Description
-          </div>
-<div className="row g-4">
-
-  {/* Permit Type */}
-  <div className="col-md-5">
-    <Field label="Permit Type" required error={err(!form.type)}>
-      <SearchableSelect
-        options={permitTypeOptions}
-        value={form.type}
-        onChange={handlePermitTypeChange}
-        placeholder="Select permit type"
-      />
-    </Field>
+        {/* Section 2: Permit Type & Work Description */}
+<div className="container-rounded-white p-4 mb-4" style={{ background: "#fff" }}>
+  <div
+    style={{
+      fontSize: 11,
+      fontWeight: 700,
+      textTransform: "uppercase",
+      letterSpacing: 1,
+      color: "#17A2B8",
+      marginBottom: 16,
+      display: "flex",
+      alignItems: "center",
+      gap: 8,
+    }}
+  >
+    <i className="fa fa-file-text" style={{ fontSize: 13 }} />
+    Permit Type & Work Description
   </div>
 
-  {/* Description */}
-  <div className="col-md-7">
-    <Field label="Description">
-      <textarea
-        name="description"
-        className="form-control form-control-sm"
-        rows={2}
-        value={form.description}
-        onChange={handleChange}
-        placeholder="Briefly describe the nature of work"
-      />
-    </Field>
-  </div>
+  <div className="row gx-2">
 
-  {/* Work to be Carried Out */}
-  <div className="col-md-5">
-    <Field label="Work to be Carried Out">
-      <textarea
-        name="work_to_be_carried"
-        className="form-control form-control-sm"
-        rows={2}
-        value={form.work_to_be_carried}
-        onChange={handleChange}
-        placeholder="Describe specific work tasks, procedures, or equipment"
-      />
-    </Field>
-  </div>
+    {/* Left Column */}
+    <div className="col-md-5">
 
+      <Field label="Permit Type" required error={err(!form.type)}>
+        <SearchableSelect
+          options={permitTypeOptions}
+          value={form.type}
+          onChange={handlePermitTypeChange}
+          placeholder="Select permit type"
+        />
+      </Field>
+
+      <Field label="Work to be Carried Out">
+        <textarea
+          name="work_to_be_carried"
+          className="form-control form-control-sm"
+          rows={3}
+          value={form.work_to_be_carried}
+          onChange={handleChange}
+          placeholder="Describe specific work tasks, procedures, or equipment"
+        />
+      </Field>
+
+    </div>
+
+    {/* Right Column */}
+    <div className="col-md-7">
+
+      <Field label="Description">
+        <textarea
+          name="description"
+          className="form-control form-control-sm"
+          rows={7}
+          value={form.description}
+          onChange={handleChange}
+          placeholder="Briefly describe the nature of work"
+        />
+      </Field>
+
+    </div>
+
+  </div>
 </div>
-        </div>
-
         {/* Section 3: Permit Specific Requirements (Dynamic Fields) */}
         <div className="container-rounded-white p-4 mb-4" style={{ background: '#fff' }}>
           <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, color: '#17A2B8', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
