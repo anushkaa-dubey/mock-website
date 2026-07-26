@@ -477,25 +477,7 @@ export default function NewWorkPermit() {
                   placeholder="Select permit type"
                 />
               </Field>
-              /* {form.type ? (
-                <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: 6, padding: '12px', marginTop: 12 }}>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: '#166534', display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <i className="fa fa-check-circle" style={{ color: '#16A34A' }} /> Selected: {selectedTypeLabel}
-                  </div>
-                  <div style={{ fontSize: 11, color: '#15803D', marginTop: 4, lineHeight: 1.4 }}>
-                    Safety checklist & dynamic requirements for this permit type are ready below.
-                  </div>
-                </div>
-              ) : (
-                <div style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: 6, padding: '12px', marginTop: 12 }}>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: '#1E40AF', display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <i className="fa fa-info-circle" style={{ color: '#3B82F6' }} /> Permit Type Selection
-                  </div>
-                  <div style={{ fontSize: 11, color: '#1D4ED8', marginTop: 4, lineHeight: 1.4 }}>
-                    Selecting a permit type will dynamically load specific safety checklists in the section below.
-                  </div>
-                </div>
-              )} */
+             
             </div>
 
             <div className="col-md-7">
