@@ -480,7 +480,7 @@ export default function NewWorkPermit() {
              
             </div>
 
-            <div className="col-md-7">
+            <div className="col-md-8">
               <div className="row g-3">
                 <div className="col-12">
                   <Field label="Description">
