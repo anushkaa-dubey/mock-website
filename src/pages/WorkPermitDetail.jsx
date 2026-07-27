@@ -1102,7 +1102,7 @@ export default function WorkPermitDetail() {
         }}
       />
 
-      <div className="wp-sticky-header">
+      <div className="wp-header-wrapper">
         <div className="wp-header">
           <div className="wp-header-left">
             <div className="wp-header-icon"><i className="fa fa-file-text-o" /></div>
@@ -1203,20 +1203,22 @@ export default function WorkPermitDetail() {
           </div>
         </div>
 
-        <div className="wp-header-toolbar">
-          <div className="wp-actions-bar">
-            {canEdit && (
-              <button className="btn btn-outline-secondary btn-sm" onClick={() => navigate(`/site/${siteId}/work-permit/${sequence}/edit`)}>
-                <i className="fa fa-pencil me-1" />Edit
-              </button>
-            )}
-            {canSendForApproval && (
-              <button className="btn btn-primary-dark btn-sm" onClick={handleSendForApproval} disabled={statusLoad}>
-                <i className="fa fa-paper-plane me-1" />Send for Approval
-              </button>
-            )}
+        {(canEdit || canSendForApproval) && (
+          <div className="wp-header-toolbar">
+            <div className="wp-actions-bar">
+              {canEdit && (
+                <button className="btn btn-outline-secondary btn-sm" onClick={() => navigate(`/site/${siteId}/work-permit/${sequence}/edit`)}>
+                  <i className="fa fa-pencil me-1" />Edit
+                </button>
+              )}
+              {canSendForApproval && (
+                <button className="btn btn-primary-dark btn-sm" onClick={handleSendForApproval} disabled={statusLoad}>
+                  <i className="fa fa-paper-plane me-1" />Send for Approval
+                </button>
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       <div className="wp-detail-container">

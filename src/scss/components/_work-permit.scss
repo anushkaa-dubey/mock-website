@@ -12,9 +12,52 @@ $wp-text-secondary:  #6B7280;
 $wp-text-body:       #374151;
 $wp-font: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
+// Root-level layout constraints when Work Permit page is rendered
+html:has(.wp-page),
+body:has(.wp-page) {
+  overflow: hidden !important;
+  height: 100vh !important;
+}
+
+.main-content:has(.wp-page) {
+  height: calc(100vh - 56px) !important;
+  max-height: calc(100vh - 56px) !important;
+  margin-top: 56px !important;
+  padding: 16px 20px 16px 20px !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  flex-direction: column !important;
+
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+  &::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+}
+
 .wp-page {
   font-family: $wp-font;
   color: $wp-text-body;
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  margin: 0 !important;
+
+  @media (max-width: 1024px) {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
 
   h1, h2, h3, h4, h5, h6 { font-family: $wp-font; }
 
@@ -147,55 +190,82 @@ $wp-font: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Rob
   .wp-empty-state i { color: $wp-border; }
   .wp-error-state i { color: $wp-red; }
 
-  // ─── Sticky Header & Section Navigation ──────────────────
-  .wp-sticky-header {
-    position: sticky;
-    top: 56px;
-    z-index: 100;
-    background: #fff;
-    padding: 8px 16px 8px;
-    margin: -4px -16px 12px -16px;
-    border-bottom: 1px solid #E5E7EB;
-    box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.06);
+  // ─── Work Permit Page Fixed Layout & Independent Center Scrolling ─────
+  .wp-header-wrapper {
+    flex-shrink: 0 !important;
+    margin-bottom: 12px !important;
   }
 
   // ─── 3-Column Detail Page Layout ────────────────────────
   .wp-detail-container {
-    display: flex;
-    gap: 16px;
-    align-items: flex-start;
+    flex: 1 !important;
+    min-height: 0 !important;
+    display: flex !important;
+    gap: 16px !important;
+    align-items: stretch !important;
+    overflow: hidden !important;
 
     @media (max-width: 1024px) {
-      flex-direction: column;
-      .wp-left-col, .wp-right-col {
+      flex-direction: column !important;
+      height: auto !important;
+      overflow: visible !important;
+      .wp-left-col, .wp-right-col, .wp-mid-col {
         width: 100% !important;
-        position: static !important;
+        overflow-y: visible !important;
+        max-height: none !important;
       }
     }
   }
 
   .wp-left-col {
-    width: 190px;
-    flex-shrink: 0;
-    position: sticky;
-    top: 115px;
-    z-index: 10;
+    width: 190px !important;
+    flex-shrink: 0 !important;
+    overflow-y: auto !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+    &::-webkit-scrollbar {
+      display: none !important;
+      width: 0 !important;
+      height: 0 !important;
+    }
   }
 
   .wp-mid-col {
-    flex: 1;
-    min-width: 0;
+    flex: 1 !important;
+    min-width: 0 !important;
+    overflow-y: auto !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    padding-right: 4px !important;
+
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+    &::-webkit-scrollbar {
+      display: none !important;
+      width: 0 !important;
+      height: 0 !important;
+    }
   }
 
   .wp-right-col {
-    width: 360px;
-    flex-shrink: 0;
-    position: sticky;
-    top: 115px;
-    z-index: 10;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+    width: 360px !important;
+    flex-shrink: 0 !important;
+    overflow-y: auto !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+    &::-webkit-scrollbar {
+      display: none !important;
+      width: 0 !important;
+      height: 0 !important;
+    }
   }
 
   // ─── Detail identity header ─────────────────────────────
@@ -209,7 +279,8 @@ $wp-font: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Rob
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    margin-bottom: 8px;
+    margin-bottom: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   }
   .wp-header-left { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; min-width: 0; }
   .wp-header-icon {
@@ -352,6 +423,14 @@ $wp-font: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Rob
       margin: 0 2px;
       flex-shrink: 0;
     }
+  }
+
+  .wp-header-toolbar {
+    &:empty { display: none; }
+    background: #fff;
+    padding: 6px 20px;
+    border-bottom: 1px solid #E5E7EB;
+    border-radius: 0 0 6px 6px;
   }
 
   .wp-actions-bar { display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap; margin-bottom: 0; }
