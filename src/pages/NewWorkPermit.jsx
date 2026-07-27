@@ -23,14 +23,14 @@ function getNowHHMM() {
 
 function Field({ label, required, children, error }) {
   return (
-    <div className="mb-2">
-      <label className="form-label mb-1" style={{ fontSize: 12, color: '#495057', fontWeight: 500 }}>
+    <div className="mb-3">
+      <label className="form-label mb-1" style={{ fontSize: 12, color: '#374151', fontWeight: 600 }}>
         {label}{required && <span className="text-danger ms-1">*</span>}
       </label>
       {children}
       {error && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 3 }}>
-          <i className="fa fa-exclamation-circle" style={{ fontSize: 10, color: '#DC2626' }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 4 }}>
+          <i className="fa fa-exclamation-circle" style={{ fontSize: 11, color: '#DC2626' }} />
           <span style={{ fontSize: 11, color: '#DC2626', fontWeight: 500 }}>{error}</span>
         </div>
       )}
@@ -47,6 +47,14 @@ function DynamicField({ field, value, onChange }) {
   const placeholder = fieldData.placeholder || '';
   const options = typeof field.option === 'string' ? JSON.parse(field.option) : (field.option || []);
 
+  const inputStyle = {
+    height: fieldType === 'textarea' ? 'auto' : 38,
+    borderRadius: 8,
+    border: '1px solid #D1D5DB',
+    fontSize: 13,
+    padding: '6px 12px',
+  };
+
   const common = {
     id: fieldName,
     name: fieldName,
@@ -54,16 +62,17 @@ function DynamicField({ field, value, onChange }) {
     onChange: (e) => onChange(fieldName, e.target.value),
     placeholder,
     required: isRequired,
-    className: 'form-control form-control-sm',
+    className: 'form-control',
+    style: inputStyle,
   };
 
   if (fieldType === 'textarea') {
-    return <Field label={fieldLabel} required={isRequired}><textarea {...common} rows={2} /></Field>;
+    return <Field label={fieldLabel} required={isRequired}><textarea {...common} rows={3} /></Field>;
   }
   if (fieldType === 'select') {
     return (
       <Field label={fieldLabel} required={isRequired}>
-        <select {...common} className="form-select form-select-sm">
+        <select {...common} className="form-select" style={inputStyle}>
           <option value="">-- Select --</option>
           {options.map(opt => (
             <option key={opt.value || opt} value={opt.value || opt}>{opt.label || opt}</option>
@@ -74,18 +83,18 @@ function DynamicField({ field, value, onChange }) {
   }
   if (fieldType === 'checkbox') {
     return (
-      <div className="mb-2">
+      <div className="mb-3">
         <label className="form-label mb-1" style={{ fontSize: 12, color: 'transparent', userSelect: 'none' }}>&nbsp;</label>
-        <div className="d-flex align-items-center gap-2">
+        <div className="d-flex align-items-center gap-2" style={{ height: 38 }}>
           <input
             type="checkbox"
             id={fieldName}
             checked={!!value}
             onChange={(e) => onChange(fieldName, e.target.checked)}
             className="form-check-input mt-0"
-            style={{ width: 15, height: 15 }}
+            style={{ width: 16, height: 16 }}
           />
-          <label htmlFor={fieldName} style={{ fontSize: 12, color: '#495057', cursor: 'pointer', marginBottom: 0 }}>
+          <label htmlFor={fieldName} style={{ fontSize: 13, color: '#374151', cursor: 'pointer', marginBottom: 0, fontWeight: 500 }}>
             {fieldLabel}{isRequired && <span className="text-danger ms-1">*</span>}
           </label>
         </div>
@@ -289,7 +298,6 @@ export default function NewWorkPermit() {
     if (status === 'PENDING') {
       if (!validateForm()) return;
     } else {
-      // Draft mode minimal checks
       if (!form.vendor_uuid && !form.vendor_contact_name.trim()) {
         setSubmitError('Select a Vendor or enter the Name of Person.');
         return;
@@ -327,7 +335,7 @@ export default function NewWorkPermit() {
 
   if (loadingExisting) {
     return (
-      <div className="wp-page container-rounded-white">
+      <div className="wp-page p-4">
         <div className="wp-empty-state">
           <i className="fa fa-circle-o-notch fa-spin" />
           <div className="wp-state-title">Loading work permit…</div>
@@ -336,8 +344,16 @@ export default function NewWorkPermit() {
     );
   }
 
+  const commonInputStyle = {
+    height: 38,
+    borderRadius: 8,
+    border: '1px solid #D1D5DB',
+    fontSize: 13,
+    padding: '6px 12px',
+  };
+
   return (
-    <div className="wp-page">
+    <div className="wp-page" style={{ padding: '4px 16px 0 16px' }}>
       <ConfirmDialog
         show={!!submitError}
         title="Form Incomplete"
@@ -347,23 +363,102 @@ export default function NewWorkPermit() {
         onConfirm={() => setSubmitError(null)}
       />
 
-      {/* Header */}
-      <div className="d-flex justify-content-between align-items-center mb-3">
+      {/* Header Matching Screenshot */}
+      <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
-          <h5 className="fw-bold text-primary-dark mb-0">{isEditMode ? 'Edit Work Permit' : 'Raise Work Permit'}</h5>
-          <div style={{ fontSize: 12, color: '#6B7280' }}>Fill out the details below to submit a work permit request</div>
+          <h2 className="fw-bold text-dark mb-1" style={{ fontSize: 22, color: '#111827' }}>
+            {isEditMode ? 'Edit Work Permit' : 'Raise Work Permit'}
+          </h2>
+          <div style={{ fontSize: 13, color: '#6B7280' }}>
+            Fill out the required operational and safety details to request a work permit.
+          </div>
         </div>
+        <button
+          type="button"
+          onClick={() => navigate(`/site/${siteId}/work-permit`)}
+          style={{
+            background: '#FFFFFF',
+            border: '1px solid #D1D5DB',
+            borderRadius: 8,
+            padding: '7px 14px',
+            fontSize: 13,
+            fontWeight: 600,
+            color: '#374151',
+            cursor: 'pointer',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+          }}
+        >
+          <i className="fa fa-arrow-left" style={{ fontSize: 11 }} />
+          Back to List
+        </button>
       </div>
 
       <form onSubmit={(e) => { e.preventDefault(); handleSubmit('PENDING'); }}>
-        {/* Section 1: Basic Info & Schedule */}
-        <div className="container-rounded-white p-4 mb-4" style={{ background: '#fff' }}>
-          <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, color: '#17A2B8', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <i className="fa fa-info-circle" style={{ fontSize: 13 }} /> Basic & Schedule Information
+        {/* Card 1: Location, Schedule & Priority */}
+        <div
+          style={{
+            background: '#FFFFFF',
+            border: '1px solid #E5E7EB',
+            borderRadius: 12,
+            padding: '20px 24px',
+            marginBottom: 20,
+            boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
+          }}
+        >
+          <div
+            style={{
+              fontSize: 14,
+              fontWeight: 700,
+              color: '#111827',
+              marginBottom: 18,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+            }}
+          >
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 28,
+                height: 28,
+                borderRadius: '50%',
+                background: '#E6F4F1',
+                color: '#0D9488',
+              }}
+            >
+              <i className="fa fa-clock-o" style={{ fontSize: 13 }} />
+            </span>
+            Location, Schedule & Priority
           </div>
-          
-          <div className="row g-3 mb-3">
-            <div className="col-md-3">
+
+          {/* Row 1: Location, Asset, Priority */}
+          <div className="row g-3">
+            <div className="col-md-4">
+              <Field label="Location" required error={err(!form.location_uuid)}>
+                <LocationTreeSelect
+                  locationTree={locationOptions}
+                  value={form.location_uuid}
+                  onChange={uuid => setForm(prev => ({ ...prev, location_uuid: uuid, asset_id: '' }))}
+                  placeholder="Select location"
+                />
+              </Field>
+            </div>
+            <div className="col-md-4">
+              <Field label="Asset">
+                <SearchableSelect
+                  options={assetOptions}
+                  value={form.asset_id}
+                  onChange={val => setForm(prev => ({ ...prev, asset_id: val }))}
+                  placeholder={form.location_uuid ? 'Select asset' : 'Select asset'}
+                />
+              </Field>
+            </div>
+            <div className="col-md-4">
               <Field label="Priority" required error={err(!form.priority)}>
                 <SearchableSelect
                   options={PRIORITIES.map(p => ({ value: p.toUpperCase(), label: p }))}
@@ -373,164 +468,227 @@ export default function NewWorkPermit() {
                 />
               </Field>
             </div>
-            <div className="col-md-3">
-              <Field label="Location" required>
-                <LocationTreeSelect
-                  locationTree={locationOptions}
-                  value={form.location_uuid}
-                  onChange={uuid => setForm(prev => ({ ...prev, location_uuid: uuid, asset_id: '' }))}
-                  placeholder="Select location"
-                />
-              </Field>
-            </div>
-            <div className="col-md-3">
-              <Field label="Asset" required>
-                <SearchableSelect
-                  options={assetOptions}
-                  value={form.asset_id}
-                  onChange={val => setForm(prev => ({ ...prev, asset_id: val }))}
-                  placeholder={form.location_uuid ? 'Select asset at location' : 'Select asset'}
-                />
-              </Field>
-            </div>
-            <div className="col-md-3">
-              <Field label="Permit No.">
-                <input
-                  type="text" className="form-control form-control-sm"
-                  value={isEditMode && form['Sequence No'] ? form['Sequence No'] : 'Auto Generated'}
-                  disabled style={{ color: '#adb5bd', background: '#f8f9fa' }}
-                />
-              </Field>
-            </div>
           </div>
 
+          {/* Row 2: Scheduled Date, Start Time, Duration, No. of Persons */}
           <div className="row g-3">
-            <div className="col-md-2">
+            <div className="col-md-3">
               <Field label="Scheduled Date" required error={err(!form.start_date)}>
-                <input type="date" name="start_date" className="form-control form-control-sm" value={form.start_date} min={getTodayStr()} onChange={handleChange} required />
+                <input
+                  type="date"
+                  name="start_date"
+                  className="form-control"
+                  style={commonInputStyle}
+                  value={form.start_date}
+                  min={getTodayStr()}
+                  onChange={handleChange}
+                  required
+                />
               </Field>
             </div>
-            <div className="col-md-2">
+            <div className="col-md-3">
               <Field label="Start Time" required error={err(!form.start_time)}>
                 <TimeSelect
                   value={form.start_time}
                   onChange={val => setForm(prev => ({ ...prev, start_time: val }))}
                   minTime={form.start_date === getTodayStr() ? getNowHHMM() : null}
                   required
+                  placeholder="--:--"
                 />
               </Field>
             </div>
-            <div className="col-md-2">
+            <div className="col-md-3">
               <Field label="Duration (hrs)">
-                <input type="number" name="period_of_work" className="form-control form-control-sm" value={form.period_of_work} onChange={handleChange} placeholder="e.g. 4" min={0} />
+                <input
+                  type="number"
+                  name="period_of_work"
+                  className="form-control"
+                  style={commonInputStyle}
+                  value={form.period_of_work}
+                  onChange={handleChange}
+                  placeholder="e.g. 4"
+                  min={0}
+                />
                 {form.period_of_work !== '' && !isNaN(Number(form.period_of_work)) && (
-                  <div className="text-muted mt-1" style={{ fontSize: 11 }}>{formatDuration(Number(form.period_of_work))}</div>
+                  <div className="text-muted mt-1" style={{ fontSize: 11 }}>
+                    {formatDuration(Number(form.period_of_work))}
+                  </div>
                 )}
               </Field>
             </div>
-            <div className="col-md-2">
+            <div className="col-md-3">
               <Field label="No. of Persons" required error={err(!form.no_of_persons)}>
-                <input type="number" name="no_of_persons" className="form-control form-control-sm" value={form.no_of_persons} onChange={handleChange} placeholder="0" min={1} required />
+                <input
+                  type="number"
+                  name="no_of_persons"
+                  className="form-control"
+                  style={commonInputStyle}
+                  value={form.no_of_persons}
+                  onChange={handleChange}
+                  placeholder="e.g. 3"
+                  min={1}
+                  required
+                />
               </Field>
             </div>
-            <div className="col-md-2">
-              <Field label="LOTO No.">
-                <input type="text" name="loto_no" className="form-control form-control-sm" value={form.loto_no} onChange={handleChange} placeholder="LOTO number" />
+          </div>
+
+          {/* Row 3: LOTO No., Attended By, Approval Flow */}
+          <div className="row g-3">
+            <div className="col-md-4">
+              <Field label="LOTO No. (optional)">
+                <input
+                  type="text"
+                  name="loto_no"
+                  className="form-control"
+                  style={commonInputStyle}
+                  value={form.loto_no}
+                  onChange={handleChange}
+                  placeholder="e.g. LOTO-2026-88"
+                />
               </Field>
             </div>
-            <div className="col-md-2">
-              <Field label="Attended By">
+            <div className="col-md-4">
+              <Field label="Attended By (optional)">
                 <SearchableSelect
                   options={employeeOptions}
                   value={form.attended_by}
                   onChange={val => setForm(prev => ({ ...prev, attended_by: val }))}
-                  placeholder="Select person"
+                  placeholder="Select supervisor"
                 />
               </Field>
             </div>
-            {validApprovalFlows.length > 0 && (
-              <div className="col-md-4 mt-2">
-                <Field label="Approval Flow">
-                  <SearchableSelect
-                    options={validApprovalFlows.map(f => ({ value: f.uuid, label: f.Name }))}
-                    value={form.approval_flow_uuid}
-                    onChange={val => setForm(prev => ({ ...prev, approval_flow_uuid: val }))}
-                    placeholder="Select approval flow"
-                  />
-                </Field>
-              </div>
-            )}
+            <div className="col-md-4">
+              <Field label="Approval Flow">
+                <SearchableSelect
+                  options={validApprovalFlows.map(f => ({ value: f.uuid, label: f.Name }))}
+                  value={form.approval_flow_uuid}
+                  onChange={val => setForm(prev => ({ ...prev, approval_flow_uuid: val }))}
+                  placeholder="Standard 2-Level Approval"
+                />
+              </Field>
+            </div>
           </div>
         </div>
 
-        {/* Section 2: Permit Type & Work Description */}
-<div className="container-rounded-white p-4 mb-4" style={{ background: "#fff" }}>
-  <div
-    style={{
-      fontSize: 11,
-      fontWeight: 700,
-      textTransform: "uppercase",
-      letterSpacing: 1,
-      color: "#17A2B8",
-      marginBottom: 16,
-      display: "flex",
-      alignItems: "center",
-      gap: 8,
-    }}
-  >
-    <i className="fa fa-file-text" style={{ fontSize: 13 }} />
-    Permit Type & Work Description
-  </div>
+        {/* Card 2: Permit Type & Work Description */}
+        <div
+          style={{
+            background: '#FFFFFF',
+            border: '1px solid #E5E7EB',
+            borderRadius: 12,
+            padding: '20px 24px',
+            marginBottom: 20,
+            boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
+          }}
+        >
+          <div
+            style={{
+              fontSize: 14,
+              fontWeight: 700,
+              color: '#111827',
+              marginBottom: 18,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+            }}
+          >
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 28,
+                height: 28,
+                borderRadius: '50%',
+                background: '#E6F4F1',
+                color: '#0D9488',
+              }}
+            >
+              <i className="fa fa-file-text-o" style={{ fontSize: 13 }} />
+            </span>
+            Permit Type & Work Description
+          </div>
 
-  <div className="row gx-2">
+          <div className="row g-3 mb-2">
+            <div className="col-md-4">
+              <Field label="Permit Type" required error={err(!form.type)}>
+                <SearchableSelect
+                  options={permitTypeOptions}
+                  value={form.type}
+                  onChange={handlePermitTypeChange}
+                  placeholder="Select permit type"
+                />
+              </Field>
+            </div>
+            <div className="col-md-8">
+              <Field label="Brief Description">
+                <input
+                  type="text"
+                  name="description"
+                  className="form-control"
+                  style={commonInputStyle}
+                  value={form.description}
+                  onChange={handleChange}
+                  placeholder="Briefly describe the overall nature of work"
+                />
+              </Field>
+            </div>
+          </div>
 
-    {/* Left Column */}
-    <div className="col-md-5">
+          <div className="row g-3">
+            <div className="col-md-12">
+              <Field label="Detailed Scope of Work">
+                <textarea
+                  name="work_to_be_carried"
+                  className="form-control"
+                  style={{ borderRadius: 8, border: '1px solid #D1D5DB', fontSize: 13, padding: '8px 12px' }}
+                  rows={3}
+                  value={form.work_to_be_carried}
+                  onChange={handleChange}
+                  placeholder="Describe specific tasks, equipment, and procedures involved..."
+                />
+              </Field>
+            </div>
+          </div>
+        </div>
 
-      <Field label="Permit Type" required error={err(!form.type)}>
-        <SearchableSelect
-          options={permitTypeOptions}
-          value={form.type}
-          onChange={handlePermitTypeChange}
-          placeholder="Select permit type"
-        />
-      </Field>
-
-      <Field label="Work to be Carried Out">
-        <textarea
-          name="work_to_be_carried"
-          className="form-control form-control-sm"
-          rows={3}
-          value={form.work_to_be_carried}
-          onChange={handleChange}
-          placeholder="Describe specific work tasks, procedures, or equipment"
-        />
-      </Field>
-
-    </div>
-
-    {/* Right Column */}
-    <div className="col-md-7">
-
-      <Field label="Description">
-        <textarea
-          name="description"
-          className="form-control form-control-sm"
-          rows={7}
-          value={form.description}
-          onChange={handleChange}
-          placeholder="Briefly describe the nature of work"
-        />
-      </Field>
-
-    </div>
-
-  </div>
-</div>
-        {/* Section 3: Permit Specific Requirements (Dynamic Fields) */}
-        <div className="container-rounded-white p-4 mb-4" style={{ background: '#fff' }}>
-          <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, color: '#17A2B8', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <i className="fa fa-list-alt" style={{ fontSize: 13 }} />
+        {/* Card 3: Permit Specific Requirements (Dynamic Fields) */}
+        <div
+          style={{
+            background: '#FFFFFF',
+            border: '1px solid #E5E7EB',
+            borderRadius: 12,
+            padding: '20px 24px',
+            marginBottom: 20,
+            boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
+          }}
+        >
+          <div
+            style={{
+              fontSize: 14,
+              fontWeight: 700,
+              color: '#111827',
+              marginBottom: 18,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+            }}
+          >
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 28,
+                height: 28,
+                borderRadius: '50%',
+                background: '#E6F4F1',
+                color: '#0D9488',
+              }}
+            >
+              <i className="fa fa-list-alt" style={{ fontSize: 13 }} />
+            </span>
             {selectedTypeLabel ? `${selectedTypeLabel} — Specific Requirements` : 'Permit Specific Requirements'}
           </div>
 
@@ -569,16 +727,49 @@ export default function NewWorkPermit() {
           )}
         </div>
 
-        {/* Section 4: Vendor & Contact Information */}
-        <div className="container-rounded-white p-4 mb-4" style={{ background: '#fff' }}>
-          <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, color: '#17A2B8', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <i className="fa fa-building-o" style={{ fontSize: 13 }} /> Vendor & Contact Information
+        {/* Card 4: Vendor & Contact Information */}
+        <div
+          style={{
+            background: '#FFFFFF',
+            border: '1px solid #E5E7EB',
+            borderRadius: 12,
+            padding: '20px 24px',
+            marginBottom: 20,
+            boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
+          }}
+        >
+          <div
+            style={{
+              fontSize: 14,
+              fontWeight: 700,
+              color: '#111827',
+              marginBottom: 18,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+            }}
+          >
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 28,
+                height: 28,
+                borderRadius: '50%',
+                background: '#E6F4F1',
+                color: '#0D9488',
+              }}
+            >
+              <i className="fa fa-building-o" style={{ fontSize: 13 }} />
+            </span>
+            Vendor & Contact Information
           </div>
           <div className="row g-3">
             <div className="col-md-3">
               <Field label="Vendor" required={!form.vendor_contact_name.trim()} error={err(!form.vendor_uuid && !form.vendor_contact_name.trim())}>
                 {form.vendor_uuid ? (
-                  <div className="d-flex align-items-center gap-2 form-control form-control-sm">
+                  <div className="d-flex align-items-center gap-2 form-control" style={commonInputStyle}>
                     <i className="fa fa-building-o text-info" style={{ fontSize: 12 }} />
                     <span style={{ flex: 1, fontSize: 13 }}>{selectedVendorLabel}</span>
                     <i className="fa fa-times text-muted" style={{ fontSize: 11, cursor: 'pointer' }} onClick={() => handleVendorChange('')} />
@@ -590,24 +781,56 @@ export default function NewWorkPermit() {
             </div>
             <div className="col-md-3">
               <Field label="Name of Person" required={!form.vendor_uuid} error={err(!form.vendor_uuid && !form.vendor_contact_name.trim())}>
-                <input type="text" name="vendor_contact_name" className="form-control form-control-sm" value={form.vendor_contact_name} onChange={handleChange} placeholder="Person representing vendor" maxLength={100} required={!form.vendor_uuid} />
+                <input
+                  type="text"
+                  name="vendor_contact_name"
+                  className="form-control"
+                  style={commonInputStyle}
+                  value={form.vendor_contact_name}
+                  onChange={handleChange}
+                  placeholder="Person representing vendor"
+                  maxLength={100}
+                  required={!form.vendor_uuid}
+                />
               </Field>
             </div>
             {form.vendor_uuid ? (
               <>
                 <div className="col-md-3">
                   <Field label="Alternative Email">
-                    <input type="email" name="alt_email" className="form-control form-control-sm" value={form.alt_email} onChange={handleChange} placeholder={form.vendor_email || 'e.g. other@company.com'} />
+                    <input
+                      type="email"
+                      name="alt_email"
+                      className="form-control"
+                      style={commonInputStyle}
+                      value={form.alt_email}
+                      onChange={handleChange}
+                      placeholder={form.vendor_email || 'e.g. other@company.com'}
+                    />
                     {form.vendor_email && !form.alt_email && (
-                      <div className="text-muted mt-1" style={{ fontSize: 11 }}><i className="fa fa-info-circle me-1" />Using: {form.vendor_email}</div>
+                      <div className="text-muted mt-1" style={{ fontSize: 11 }}>
+                        <i className="fa fa-info-circle me-1" />Using: {form.vendor_email}
+                      </div>
                     )}
                   </Field>
                 </div>
                 <div className="col-md-3">
                   <Field label="Mobile No." required error={err(!form.alt_mobile && !form.vendor_mobile)}>
-                    <input type="tel" name="alt_mobile" className="form-control form-control-sm" value={form.alt_mobile} onChange={handleChange} placeholder={form.vendor_mobile || 'e.g. 9876543210'} maxLength={15} required={!form.vendor_mobile} />
+                    <input
+                      type="tel"
+                      name="alt_mobile"
+                      className="form-control"
+                      style={commonInputStyle}
+                      value={form.alt_mobile}
+                      onChange={handleChange}
+                      placeholder={form.vendor_mobile || 'e.g. 9876543210'}
+                      maxLength={15}
+                      required={!form.vendor_mobile}
+                    />
                     {form.vendor_mobile && !form.alt_mobile && (
-                      <div className="text-muted mt-1" style={{ fontSize: 11 }}><i className="fa fa-info-circle me-1" />Using: {form.vendor_mobile}</div>
+                      <div className="text-muted mt-1" style={{ fontSize: 11 }}>
+                        <i className="fa fa-info-circle me-1" />Using: {form.vendor_mobile}
+                      </div>
                     )}
                   </Field>
                 </div>
@@ -616,12 +839,30 @@ export default function NewWorkPermit() {
               <>
                 <div className="col-md-3">
                   <Field label="Vendor Email">
-                    <input type="email" name="vendor_email" className="form-control form-control-sm" value={form.vendor_email} onChange={handleChange} placeholder="vendor@company.com" />
+                    <input
+                      type="email"
+                      name="vendor_email"
+                      className="form-control"
+                      style={commonInputStyle}
+                      value={form.vendor_email}
+                      onChange={handleChange}
+                      placeholder="vendor@company.com"
+                    />
                   </Field>
                 </div>
                 <div className="col-md-3">
                   <Field label="Mobile No." required error={err(!form.vendor_mobile)}>
-                    <input type="tel" name="vendor_mobile" className="form-control form-control-sm" value={form.vendor_mobile} onChange={handleChange} placeholder="e.g. 9876543210" maxLength={15} required />
+                    <input
+                      type="tel"
+                      name="vendor_mobile"
+                      className="form-control"
+                      style={commonInputStyle}
+                      value={form.vendor_mobile}
+                      onChange={handleChange}
+                      placeholder="e.g. 9876543210"
+                      maxLength={15}
+                      required
+                    />
                   </Field>
                 </div>
               </>
@@ -629,33 +870,95 @@ export default function NewWorkPermit() {
           </div>
         </div>
 
-        {/* Footer Actions */}
-        <div className="d-flex justify-content-between align-items-center mt-3 pt-3 mb-5" style={{ borderTop: '1px solid #E5E7EB' }}>
+        {/* Sticky Footer Actions */}
+        <div
+          style={{
+            position: 'sticky',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            zIndex: 100,
+            background: '#FFFFFF',
+            borderTop: '1px solid #E5E7EB',
+            boxShadow: '0 -4px 12px rgba(0, 0, 0, 0.08)',
+            padding: '12px 24px 20px 24px',
+            margin: '24px -16px 0 -16px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
           <button
             type="button"
-            className="btn btn-outline-secondary btn-sm px-4"
-            onClick={() => navigate(-1)}
+            onClick={() => navigate(`/site/${siteId}/work-permit`)}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: '#6B7280',
+              fontWeight: 600,
+              fontSize: 13,
+              cursor: 'pointer',
+              padding: '6px 12px',
+            }}
           >
             Cancel
           </button>
 
-          <div className="d-flex gap-2">
+          <div style={{ display: 'flex', gap: 10 }}>
             <button
               type="button"
-              className="btn btn-outline-secondary btn-sm px-3"
               onClick={() => handleSubmit('DRAFT')}
               disabled={submitting}
+              style={{
+                background: '#FFFFFF',
+                border: '1px solid #D1D5DB',
+                borderRadius: 8,
+                padding: '8px 16px',
+                fontSize: 13,
+                fontWeight: 600,
+                color: '#374151',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+              }}
             >
-              <i className="fa fa-floppy-o me-1" />Save as Draft
+              <i className="fa fa-floppy-o" style={{ fontSize: 13 }} />
+              Save as Draft
             </button>
             <button
               type="submit"
-              className="btn btn-success btn-sm px-4"
               disabled={submitting}
+              style={{
+                background: '#2563EB',
+                border: '1px solid #2563EB',
+                borderRadius: 8,
+                padding: '8px 20px',
+                fontSize: 13,
+                fontWeight: 600,
+                color: '#FFFFFF',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                boxShadow: '0 1px 2px rgba(37,99,235,0.2)',
+              }}
             >
-              {submitting
-                ? <><i className="fa fa-circle-o-notch fa-spin me-1" />Submitting...</>
-                : <><i className="fa fa-paper-plane me-1" />{isEditMode ? 'Save & Send for Approval' : form.approval_flow_uuid ? 'Raise & Send for Approval' : 'Raise Work Permit'}</>}
+              {submitting ? (
+                <>
+                  <i className="fa fa-circle-o-notch fa-spin" /> Submitting...
+                </>
+              ) : (
+                <>
+                  <i className="fa fa-paper-plane" style={{ fontSize: 12 }} />
+                  {isEditMode
+                    ? 'Save & Send for Approval'
+                    : form.approval_flow_uuid
+                    ? 'Raise & Send for Approval'
+                    : 'Raise Work Permit'}
+                </>
+              )}
             </button>
           </div>
         </div>
