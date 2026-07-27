@@ -530,14 +530,14 @@ export default function WorkPermitList() {
   const hasFilter = filters.status || filters.type || filters.priority || filters.is_overdue || filters.date_from || filters.date_to || filters.search;
 
   return (
-    <div className="wp-page" style={{ padding: '16px' }}>
+    <div className="wp-page" style={{ padding: '4px 16px 16px' }}>
       {/* ── Top Header & Filter Card Container ── */}
       <div style={{
         background: '#ffffff',
         border: '1px solid #D1D5DB',
         borderRadius: 8,
-        padding: '14px 16px',
-        marginBottom: 16,
+        padding: '12px 16px',
+        marginBottom: 12,
         boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
       }}>
         {/* ── Row 1: Search, Dropdowns, Divider, Chips & Action Buttons ── */}

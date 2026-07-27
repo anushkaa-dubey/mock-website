@@ -38,7 +38,7 @@ export default function Dashboard() {
   }, [siteId]);
 
   return (
-    <div>
+    <div className="wp-page" style={{ padding: '4px 16px 16px' }}>
       <div className="row gx-3 align-items-start">
 
         {/* ── LEFT: Dynamic grid dashboard ─────────────────────────────── */}
