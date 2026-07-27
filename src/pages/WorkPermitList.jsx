@@ -136,21 +136,20 @@ function DateRangePicker({ from, to, onFrom, onTo }) {
       <button
         onClick={() => setOpen(o => !o)}
         style={{
-          background: hasDate ? DATE_COLOR : '#fff',
-          color: hasDate ? '#fff' : DATE_COLOR,
-          border: `1.5px solid ${hasDate ? DATE_COLOR : DATE_COLOR + '66'}`,
+          background: hasDate ? '#F3F4F6' : '#fff',
+          color: hasDate ? '#111827' : '#374151',
+          border: `1px solid ${hasDate ? '#9CA3AF' : '#D1D5DB'}`,
           borderRadius: 20, padding: '3px 10px', fontSize: 11.5,
           cursor: 'pointer', display: 'inline-flex', alignItems: 'center',
           gap: 5, fontWeight: 600, whiteSpace: 'nowrap',
-          boxShadow: hasDate ? `0 2px 6px ${DATE_COLOR}44` : 'none',
-          transition: 'all 0.15s',
+          transition: 'all 0.15s', height: 34,
         }}
       >
-        <i className="fa fa-calendar" style={{ fontSize: 10 }} />
+        <i className="fa fa-calendar" style={{ fontSize: 10, color: '#6B7280' }} />
         {label}
         {hasDate
           ? <span onClick={clearAll} style={{ marginLeft: 4, opacity: 0.8, lineHeight: 1 }}>×</span>
-          : <i className={`fa fa-chevron-${open ? 'up' : 'down'}`} style={{ fontSize: 9, marginLeft: 2 }} />
+          : <i className={`fa fa-chevron-${open ? 'up' : 'down'}`} style={{ fontSize: 9, marginLeft: 2, color: '#6B7280' }} />
         }
       </button>
 
@@ -232,19 +231,18 @@ function TypePillSelect({ value, onChange, types }) {
       <button
         onClick={handleOpen}
         style={{
-          background: value ? TYPE_COLOR : '#fff',
-          color: value ? '#fff' : TYPE_COLOR,
-          border: `1.5px solid ${value ? TYPE_COLOR : TYPE_COLOR + '66'}`,
+          background: value ? '#F3F4F6' : '#fff',
+          color: value ? '#111827' : '#374151',
+          border: `1px solid ${value ? '#9CA3AF' : '#D1D5DB'}`,
           borderRadius: 20, padding: '3px 10px', fontSize: 11.5,
           cursor: 'pointer', display: 'inline-flex', alignItems: 'center',
           gap: 5, fontWeight: 600, whiteSpace: 'nowrap',
-          boxShadow: value ? `0 2px 6px ${TYPE_COLOR}44` : 'none',
-          transition: 'all 0.15s',
+          transition: 'all 0.15s', height: 34,
         }}
       >
-        <i className="fa fa-tag" style={{ fontSize: 10 }} />
+        <i className="fa fa-tag" style={{ fontSize: 10, color: '#6B7280' }} />
         {selected ? selected.label : 'All Types'}
-        <i className={`fa fa-chevron-${open ? 'up' : 'down'}`} style={{ fontSize: 9, marginLeft: 2 }} />
+        <i className={`fa fa-chevron-${open ? 'up' : 'down'}`} style={{ fontSize: 9, marginLeft: 2, color: '#6B7280' }} />
       </button>
       {open && (
         <div style={{
@@ -326,19 +324,18 @@ function PrioritySelect({ value, onChange }) {
       <button
         onClick={() => setOpen(o => !o)}
         style={{
-          background: value ? PRIORITY_COLOR : '#fff',
-          color: value ? '#fff' : PRIORITY_COLOR,
-          border: `1.5px solid ${value ? PRIORITY_COLOR : PRIORITY_COLOR + '66'}`,
+          background: value ? '#F3F4F6' : '#fff',
+          color: value ? '#111827' : '#374151',
+          border: `1px solid ${value ? '#9CA3AF' : '#D1D5DB'}`,
           borderRadius: 20, padding: '3px 10px', fontSize: 11.5,
           cursor: 'pointer', display: 'inline-flex', alignItems: 'center',
           gap: 5, fontWeight: 600, whiteSpace: 'nowrap',
-          boxShadow: value ? `0 2px 6px ${PRIORITY_COLOR}44` : 'none',
           transition: 'all 0.15s', height: 34,
         }}
       >
-        <i className="fa fa-flag" style={{ fontSize: 10 }} />
+        <i className="fa fa-flag" style={{ fontSize: 10, color: '#6B7280' }} />
         {selected || 'All priorities'}
-        <i className={`fa fa-chevron-${open ? 'up' : 'down'}`} style={{ fontSize: 9, marginLeft: 2 }} />
+        <i className={`fa fa-chevron-${open ? 'up' : 'down'}`} style={{ fontSize: 9, marginLeft: 2, color: '#6B7280' }} />
       </button>
       {open && (
         <div style={{
@@ -608,7 +605,8 @@ export default function WorkPermitList() {
                     load(next);
                   }}
                   style={{
-                    fontSize: 12, fontWeight: 500, color: '#4B5563',
+                    fontSize: 12, fontWeight: 600,
+                    color: (!filters.status && !filters.priority && !filters.is_overdue) ? '#111827' : '#4B5563',
                     background: (!filters.status && !filters.priority && !filters.is_overdue) ? '#E5E7EB' : '#F3F4F6',
                     border: (!filters.status && !filters.priority && !filters.is_overdue) ? '1.5px solid #6B7280' : '1px solid #E5E7EB',
                     borderRadius: 20, padding: '3px 12px', whiteSpace: 'nowrap', cursor: 'pointer',
@@ -623,9 +621,9 @@ export default function WorkPermitList() {
                   onClick={() => urgentCount > 0 && handleFilter('priority', filters.priority === 'URGENT' ? '' : 'URGENT')}
                   style={{
                     fontSize: 12, fontWeight: 600,
-                    color: urgentCount > 0 ? '#B91C1C' : '#9CA3AF',
-                    background: filters.priority === 'URGENT' ? '#FCA5A5' : urgentCount > 0 ? '#FEE2E2' : '#F3F4F6',
-                    border: filters.priority === 'URGENT' ? '1.5px solid #DC2626' : urgentCount > 0 ? '1px solid #FECACA' : '1px solid #E5E7EB',
+                    color: filters.priority === 'URGENT' ? '#991B1B' : urgentCount > 0 ? '#4B5563' : '#9CA3AF',
+                    background: filters.priority === 'URGENT' ? '#FEE2E2' : '#F3F4F6',
+                    border: filters.priority === 'URGENT' ? '1.5px solid #EF4444' : '1px solid #E5E7EB',
                     borderRadius: 20, padding: '3px 12px', whiteSpace: 'nowrap', cursor: urgentCount > 0 ? 'pointer' : 'default',
                     userSelect: 'none', transition: 'all 0.15s ease',
                   }}
@@ -642,9 +640,9 @@ export default function WorkPermitList() {
                   })()}
                   style={{
                     fontSize: 12, fontWeight: 600,
-                    color: overdueCount > 0 ? '#B45309' : '#9CA3AF',
-                    background: filters.is_overdue ? '#FDE68A' : overdueCount > 0 ? '#FEF3C7' : '#F3F4F6',
-                    border: filters.is_overdue ? '1.5px solid #D97706' : overdueCount > 0 ? '1px solid #FDE68A' : '1px solid #E5E7EB',
+                    color: filters.is_overdue ? '#92400E' : overdueCount > 0 ? '#4B5563' : '#9CA3AF',
+                    background: filters.is_overdue ? '#FEF3C7' : '#F3F4F6',
+                    border: filters.is_overdue ? '1.5px solid #F59E0B' : '1px solid #E5E7EB',
                     borderRadius: 20, padding: '3px 12px', whiteSpace: 'nowrap', cursor: overdueCount > 0 ? 'pointer' : 'default',
                     userSelect: 'none', transition: 'all 0.15s ease',
                   }}
@@ -739,6 +737,8 @@ export default function WorkPermitList() {
             <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E5E7EB' }}>
               <th style={{ padding: '12px 16px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#0066CC', whiteSpace: 'nowrap' }}>PERMIT NO</th>
               <th style={{ padding: '12px 16px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#0066CC', whiteSpace: 'nowrap' }}>TYPE</th>
+              <th style={{ padding: '12px 16px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#0066CC', whiteSpace: 'nowrap' }}>LOCATION</th>
+              <th style={{ padding: '12px 16px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#0066CC', whiteSpace: 'nowrap' }}>ASSET</th>
               <th style={{ padding: '12px 16px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#0066CC', whiteSpace: 'nowrap' }}>VENDOR</th>
               <th style={{ padding: '12px 16px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#0066CC', whiteSpace: 'nowrap' }}>SCHEDULED</th>
               <th style={{ padding: '12px 16px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#0066CC', whiteSpace: 'nowrap' }}>DUE</th>
@@ -750,7 +750,7 @@ export default function WorkPermitList() {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={7} style={{ padding: 0, border: 'none' }}>
+                <td colSpan={10} style={{ padding: 0, border: 'none' }}>
                   <div className="wp-empty-state">
                     <i className="fa fa-circle-o-notch fa-spin" />
                     <div className="wp-state-title">Loading work permits…</div>
@@ -759,7 +759,7 @@ export default function WorkPermitList() {
               </tr>
             ) : displayedPermits.length === 0 ? (
               <tr>
-                <td colSpan={7} style={{ padding: 0, border: 'none' }}>
+                <td colSpan={10} style={{ padding: 0, border: 'none' }}>
                   <div className="wp-empty-state">
                     <i className="fa fa-file-text-o" />
                     <div className="wp-state-title">No work permits found</div>
@@ -816,6 +816,12 @@ export default function WorkPermitList() {
                     </td>
                     <td style={{ padding: '13px 16px', fontSize: 13.5, color: '#374151' }}>
                       {typeLabel(permit.type)}
+                    </td>
+                    <td style={{ padding: '13px 16px', fontSize: 13.5, color: '#374151', whiteSpace: 'nowrap' }}>
+                      {permit.location_name || permit.location || '—'}
+                    </td>
+                    <td style={{ padding: '13px 16px', fontSize: 13.5, color: '#374151', whiteSpace: 'nowrap' }}>
+                      {permit.asset_name || permit.asset_seq || permit.asset || '—'}
                     </td>
                     <td style={{ padding: '13px 16px', fontSize: 13.5, color: '#374151' }}>
                       {permit.vendor_name || permit.vendor_contact_name || '—'}

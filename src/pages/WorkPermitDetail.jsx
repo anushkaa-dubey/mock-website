@@ -7,10 +7,10 @@ import { formatDuration } from '@/utils/duration';
 import { getStatusStyle } from '@/utils/statusStyle';
 
 const STATUS_STEPS = [
-  { key: 'DRAFT',     label: 'Draft' },
-  { key: 'PENDING',   label: 'Pending' },
-  { key: 'APPROVED',  label: 'Approved' },
-  { key: 'ACTIVE',    label: 'Active' },
+  { key: 'DRAFT', label: 'Draft' },
+  { key: 'PENDING', label: 'Pending' },
+  { key: 'APPROVED', label: 'Approved' },
+  { key: 'ACTIVE', label: 'Active' },
   { key: 'COMPLETED', label: 'Completed' },
 ];
 
@@ -19,16 +19,16 @@ const DECLINED_STATUSES = ['DECLINED', 'REQUEST_CHANGE', 'SUSPENDED', 'EXPIRED',
 // Display metadata for _uh history entries (node-level status history, same {s,t,u}
 // convention as Workorder/HK/LB) — every status change lands here in order.
 const HISTORY_STATUS_META = {
-  DRAFT:          { label: 'Draft',             icon: 'fa-file-text-o' },
-  PENDING:        { label: 'Sent for Approval', icon: 'fa-paper-plane' },
-  APPROVED:       { label: 'Approved',          icon: 'fa-check' },
-  ACTIVE:         { label: 'Activated',         icon: 'fa-play' },
-  COMPLETED:      { label: 'Completed',         icon: 'fa-check-circle' },
-  SUSPENDED:      { label: 'Suspended',         icon: 'fa-pause' },
-  CANCELLED:      { label: 'Cancelled',         icon: 'fa-ban' },
-  DECLINED:       { label: 'Declined',          icon: 'fa-times' },
-  REQUEST_CHANGE: { label: 'Change Requested',  icon: 'fa-undo' },
-  EXPIRED:        { label: 'Expired',           icon: 'fa-clock-o' },
+  DRAFT: { label: 'Draft', icon: 'fa-file-text-o' },
+  PENDING: { label: 'Sent for Approval', icon: 'fa-paper-plane' },
+  APPROVED: { label: 'Approved', icon: 'fa-check' },
+  ACTIVE: { label: 'Activated', icon: 'fa-play' },
+  COMPLETED: { label: 'Completed', icon: 'fa-check-circle' },
+  SUSPENDED: { label: 'Suspended', icon: 'fa-pause' },
+  CANCELLED: { label: 'Cancelled', icon: 'fa-ban' },
+  DECLINED: { label: 'Declined', icon: 'fa-times' },
+  REQUEST_CHANGE: { label: 'Change Requested', icon: 'fa-undo' },
+  EXPIRED: { label: 'Expired', icon: 'fa-clock-o' },
 };
 
 // Backend may return a host-relative url (host not configured server-side) — resolve it
@@ -39,7 +39,7 @@ function resolveAppUrl(url, base) {
   return (base || '').replace(/\/$/, '') + url;
 }
 
-const resolveGatePassUrl  = (url) => resolveAppUrl(url, import.meta.env.VITE_GATE_PASS_APP_URL);
+const resolveGatePassUrl = (url) => resolveAppUrl(url, import.meta.env.VITE_GATE_PASS_APP_URL);
 const resolveWorkPermitUrl = (url) => resolveAppUrl(url, `${window.location.origin}${import.meta.env.BASE_URL}`);
 const resolveMaterialPassUrl = () => `${window.location.origin}/vms/#/app/material-pass`;
 
@@ -143,22 +143,22 @@ function LegacyStatusTimeline({ status, permit }) {
   const isDeclined = DECLINED_STATUSES.includes(status);
   const currentIdx = STATUS_STEPS.findIndex(s => s.key === status);
 
-  const levels     = permit?.approval_levels || [];
+  const levels = permit?.approval_levels || [];
   const approveAct = levels.map(l => l.action).find(a => a?.status === 'APPROVE')
     || (permit?.actions || []).find(a => a?.status === 'APPROVE');
   const timestamps = {
-    DRAFT:     fmtTs(permit?.created_at),
-    PENDING:   fmtTs(permit?.submitted_at || permit?.raised_at),
-    APPROVED:  fmtTs(approveAct?.updated_at || approveAct?.created_at),
-    ACTIVE:    fmtTs(permit?.activated_at),
+    DRAFT: fmtTs(permit?.created_at),
+    PENDING: fmtTs(permit?.submitted_at || permit?.raised_at),
+    APPROVED: fmtTs(approveAct?.updated_at || approveAct?.created_at),
+    ACTIVE: fmtTs(permit?.activated_at),
     COMPLETED: fmtTs(permit?.completed_at || (status === 'COMPLETED' ? permit?.updated_at : null)),
   };
   const actors = {
-    ACTIVE:    permit?.activated_by_name ? `by ${permit.activated_by_name}` : null,
+    ACTIVE: permit?.activated_by_name ? `by ${permit.activated_by_name}` : null,
     COMPLETED: permit?.completed_by_name ? `by ${permit.completed_by_name}` : null,
   };
   const futureHints = {
-    ACTIVE:    'Starts on check-in',
+    ACTIVE: 'Starts on check-in',
     COMPLETED: permit?.['Due Date'] ? `Due ${fmtDateShort(permit['Due Date'])}` : null,
   };
 
@@ -174,12 +174,12 @@ function LegacyStatusTimeline({ status, permit }) {
 
       <div className="wp-vstepper">
         {STATUS_STEPS.map((step, idx) => {
-          const isDone    = !isDeclined && currentIdx > idx;
+          const isDone = !isDeclined && currentIdx > idx;
           const isCurrent = step.key === status && !isDeclined;
-          const isFuture  = !isDone && !isCurrent;
-          const ts        = (isDone || isCurrent) ? timestamps[step.key] : null;
-          const actor     = (isDone || isCurrent) ? actors[step.key] : null;
-          const hint      = isFuture ? futureHints[step.key] : null;
+          const isFuture = !isDone && !isCurrent;
+          const ts = (isDone || isCurrent) ? timestamps[step.key] : null;
+          const actor = (isDone || isCurrent) ? actors[step.key] : null;
+          const hint = isFuture ? futureHints[step.key] : null;
 
           return (
             <div key={step.key} className={`wp-vstep${isDone ? ' done' : ''}${isCurrent ? ' current' : ''}`}>
@@ -188,8 +188,8 @@ function LegacyStatusTimeline({ status, permit }) {
                   {isDone
                     ? <i className="fa fa-check" style={{ fontSize: 11 }} />
                     : isCurrent
-                    ? null
-                    : idx + 1}
+                      ? null
+                      : idx + 1}
                 </div>
                 {idx < STATUS_STEPS.length - 1 && (
                   <div className={`wp-vstep-line${isDone ? ' done' : ''}`} />
@@ -213,7 +213,7 @@ function LegacyStatusTimeline({ status, permit }) {
 }
 
 function ActionModal({ show, onClose, onSubmit, loading, levelName, approvalBlocked = false }) {
-  const [action,  setAction]  = useState(null);
+  const [action, setAction] = useState(null);
   const [comment, setComment] = useState('');
 
   if (!show) return null;
@@ -225,7 +225,11 @@ function ActionModal({ show, onClose, onSubmit, loading, levelName, approvalBloc
     setComment('');
   };
 
-  const actionColors = { APPROVE: 'success', DECLINE: 'danger', REQUEST_CHANGE: 'warning' };
+  const actionConfig = [
+    { key: 'APPROVE', label: 'Approve', icon: 'fa-check', colorClass: 'btn-success', outlineClass: 'btn-outline-success' },
+    { key: 'DECLINE', label: 'Decline', icon: 'fa-times', colorClass: 'btn-danger', outlineClass: 'btn-outline-danger' },
+    { key: 'REQUEST_CHANGE', label: 'Request Change', icon: 'fa-undo', colorClass: 'btn-warning', outlineClass: 'btn-outline-warning' },
+  ];
 
   return (
     <div className="modal d-block" style={{ background: 'rgba(0,0,0,0.5)' }}>
@@ -246,19 +250,26 @@ function ActionModal({ show, onClose, onSubmit, loading, levelName, approvalBloc
                 </div>
               )}
               <div className="mb-3 d-flex gap-2">
-                {['APPROVE', 'DECLINE', 'REQUEST_CHANGE'].map(a => (
-                  <button
-                    key={a}
-                    type="button"
-                    className={`btn btn-sm ${action === a ? `btn-${actionColors[a]}` : `btn-outline-${actionColors[a]}`}`}
-                    onClick={() => setAction(a)}
-                    disabled={a === 'APPROVE' && approvalBlocked}
-                  >
-                    {a === 'APPROVE' ? <><i className="fa fa-check me-1" />Approve</>
-                      : a === 'DECLINE' ? <><i className="fa fa-times me-1" />Decline</>
-                      : <><i className="fa fa-undo me-1" />Request Change</>}
-                  </button>
-                ))}
+                {actionConfig.map(item => {
+                  const isSelected = action === item.key;
+                  return (
+                    <button
+                      key={item.key}
+                      type="button"
+                      className={`btn btn-sm ${isSelected ? `${item.colorClass} active` : item.outlineClass}`}
+                      onClick={() => setAction(item.key)}
+                      disabled={item.key === 'APPROVE' && approvalBlocked}
+                      style={{
+                        fontWeight: 600,
+                        color: isSelected ? '#ffffff' : undefined,
+                        boxShadow: isSelected ? '0 2px 6px rgba(0,0,0,0.2)' : 'none',
+                      }}
+                    >
+                      <i className={`fa ${item.icon} me-1`} style={{ color: isSelected ? '#ffffff' : undefined }} />
+                      {item.label}
+                    </button>
+                  );
+                })}
               </div>
               <div className="mb-3">
                 <label className="form-label fw-semibold small">Comment{action === 'DECLINE' ? ' (required)' : ''}</label>
@@ -292,7 +303,7 @@ function ApprovalFlowPanel({ approvalLevels, permitStatus, extensionApprovalStat
   }
 
   const currentLevelIdx = approvalLevels.findIndex(r => !r.action);
-  const isComplete      = currentLevelIdx === -1;
+  const isComplete = currentLevelIdx === -1;
 
   const levelStatusColor = (act) => {
     if (!act) return '#dee2e6';
@@ -314,8 +325,8 @@ function ApprovalFlowPanel({ approvalLevels, permitStatus, extensionApprovalStat
         ? <span className="wp-badge-approved" style={{ background: '#17A2B8' }}>Pending</span>
         : <span className="badge bg-light text-muted border" style={{ fontSize: 10 }}>Waiting</span>;
     }
-    if (act.status === 'APPROVE')        return <span className="wp-badge-approved" style={{ background: '#10B981' }}>Approved</span>;
-    if (act.status === 'DECLINE')        return <span className="wp-badge-approved" style={{ background: '#DC2626' }}>Declined</span>;
+    if (act.status === 'APPROVE') return <span className="wp-badge-approved" style={{ background: '#10B981' }}>Approved</span>;
+    if (act.status === 'DECLINE') return <span className="wp-badge-approved" style={{ background: '#DC2626' }}>Declined</span>;
     if (act.status === 'REQUEST_CHANGE') return <span className="wp-badge-approved" style={{ background: '#F59E0B' }}>Change Req.</span>;
     return <span className="badge bg-secondary" style={{ fontSize: 10 }}>{act.status}</span>;
   };
@@ -336,8 +347,8 @@ function ApprovalFlowPanel({ approvalLevels, permitStatus, extensionApprovalStat
 
       <div className="d-flex flex-column gap-0">
         {approvalLevels.map((row, idx) => {
-          const lvl      = row.level  || {};
-          const act      = row.action || null;
+          const lvl = row.level || {};
+          const act = row.action || null;
           const isCurrent = idx === currentLevelIdx && (permitStatus === 'PENDING' || (permitStatus === 'EXPIRED' && extensionApprovalStatus === 'PENDING'));
 
           return (
@@ -433,7 +444,7 @@ function ItemSearchField({ value, label, stock, onSelect }) {
   const [options, setOptions] = useState([]);
   const [loading, setLoading] = useState(false);
   const containerRef = useRef(null);
-  const debounceRef  = useRef(null);
+  const debounceRef = useRef(null);
 
   useEffect(() => { setQuery(label || ''); }, [label]);
 
@@ -512,15 +523,15 @@ function ItemSearchField({ value, label, stock, onSelect }) {
 }
 
 function MaterialGatePassPanel({ wpUuid, canRaise }) {
-  const [passes,  setPasses]  = useState([]);
+  const [passes, setPasses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [saving,  setSaving]  = useState(false);
-  const [error,   setError]   = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
 
   const [direction, setDirection] = useState('OUT');
-  const [type,      setType]      = useState('NON_RETURNABLE');
-  const [items,     setItems]     = useState([{ item_uuid: '', item_name: '', qty: '', description: '', stock: null }]);
+  const [type, setType] = useState('NON_RETURNABLE');
+  const [items, setItems] = useState([{ item_uuid: '', item_name: '', qty: '', description: '', stock: null }]);
 
   const load = () => {
     setLoading(true);
@@ -535,7 +546,7 @@ function MaterialGatePassPanel({ wpUuid, canRaise }) {
   const updateItem = (idx, field, value) => {
     setItems(prev => prev.map((it, i) => i === idx ? { ...it, [field]: value } : it));
   };
-  const addItemRow    = () => setItems(prev => [...prev, { item_uuid: '', item_name: '', qty: '', description: '', stock: null }]);
+  const addItemRow = () => setItems(prev => [...prev, { item_uuid: '', item_name: '', qty: '', description: '', stock: null }]);
   const removeItemRow = (idx) => setItems(prev => prev.filter((_, i) => i !== idx));
 
   const selectItem = (idx, opt) => {
@@ -546,7 +557,7 @@ function MaterialGatePassPanel({ wpUuid, canRaise }) {
         const total = rows.reduce((sum, r) => sum + (Number(r.stock) || 0), 0);
         setItems(prev => prev.map((it, i) => i === idx && it.item_uuid === opt.uuid ? { ...it, stock: total } : it));
       })
-      .catch(() => {});
+      .catch(() => { });
   };
 
   const handleSubmit = async (e) => {
@@ -698,19 +709,19 @@ function MaterialGatePassPanel({ wpUuid, canRaise }) {
 
 export default function WorkPermitDetail() {
   const { siteId, sequence } = useParams();
-  const navigate       = useNavigate();
+  const navigate = useNavigate();
   const { loggedInUser, permitTypes } = useApp();
 
   const typeLabel = (val) => permitTypes.find(t => t.value === val)?.label || val || '—';
 
-  const [permit,     setPermit]     = useState(null);
-  const [loading,    setLoading]    = useState(true);
+  const [permit, setPermit] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [actionLoad, setActionLoad] = useState(false);
   const [statusLoad, setStatusLoad] = useState(false);
-  const [error,      setError]      = useState(null);
-  const [dialog,     setDialog]     = useState(null);
-  const [pdfLoad,    setPdfLoad]    = useState(false);
-  const [emailLoad,  setEmailLoad]  = useState(false);
+  const [error, setError] = useState(null);
+  const [dialog, setDialog] = useState(null);
+  const [pdfLoad, setPdfLoad] = useState(false);
+  const [emailLoad, setEmailLoad] = useState(false);
   const [promptValue, setPromptValue] = useState('1');
   const promptValueRef = useRef('1');
 
@@ -746,11 +757,11 @@ export default function WorkPermitDetail() {
     setActionLoad(true);
     try {
       ensureSuccess(await workPermitService.actionApproval({
-        uuid:          id,
+        uuid: id,
         action,
         comment,
         approval_uuid: approvalUuid || undefined,
-        level_uuid:    levelUuid    || undefined,
+        level_uuid: levelUuid || undefined,
       }));
       load();
     } catch (e) {
@@ -872,12 +883,12 @@ export default function WorkPermitDetail() {
 
   const handleExtend = () => {
     const rawDueDate = permit?.['Due Date'] ? String(permit['Due Date']) : null;
-    const parsedDate  = rawDueDate ? new Date(rawDueDate.replace(' ', 'T')) : null;
-    const oldDate     = parsedDate && !isNaN(parsedDate) ? parsedDate : new Date();
-    const now         = new Date();
-    const baseline    = oldDate > now ? oldDate : now;
-    const minValue    = toLocalDatetimeInput(baseline);
-    const dueMinute   = String(oldDate.getMinutes()).padStart(2, '0');
+    const parsedDate = rawDueDate ? new Date(rawDueDate.replace(' ', 'T')) : null;
+    const oldDate = parsedDate && !isNaN(parsedDate) ? parsedDate : new Date();
+    const now = new Date();
+    const baseline = oldDate > now ? oldDate : now;
+    const minValue = toLocalDatetimeInput(baseline);
+    const dueMinute = String(oldDate.getMinutes()).padStart(2, '0');
     const initialDate = new Date(baseline);
     initialDate.setSeconds(0, 0);
     initialDate.setMinutes(oldDate.getMinutes());
@@ -1042,30 +1053,30 @@ export default function WorkPermitDetail() {
     );
   }
 
-  const status      = permit.status || 'DRAFT';
-  const isOwner     = String(permit.created_by) === String(loggedInUser?.id);
+  const status = permit.status || 'DRAFT';
+  const isOwner = String(permit.created_by) === String(loggedInUser?.id);
   const isBackendUser = String(loggedInUser?.designation_name || '').trim().toLowerCase() === 'backend';
-  const finalLevel  = permit.approval_levels?.[permit.approval_levels.length - 1]?.level;
+  const finalLevel = permit.approval_levels?.[permit.approval_levels.length - 1]?.level;
   const isFinalApprover = finalLevel?.role_id && String(finalLevel.role_id) === String(loggedInUser?.role_id);
   const hasLifecycleAuthority = isOwner || isFinalApprover || isBackendUser;
   const canActivate = hasLifecycleAuthority && status === 'APPROVED';
   const canComplete = hasLifecycleAuthority && status === 'ACTIVE';
-  const canSuspend  = hasLifecycleAuthority && status === 'ACTIVE';
-  const canResume   = hasLifecycleAuthority && status === 'SUSPENDED';
-  const canCancel   = hasLifecycleAuthority && ['DRAFT', 'PENDING', 'REQUEST_CHANGE', 'APPROVED'].includes(status);
-  const canExtend   = hasLifecycleAuthority && status === 'EXPIRED' && permit.extension_approval_status !== 'PENDING';
-  const canEdit     = isOwner && ['DRAFT', 'REQUEST_CHANGE'].includes(status);
+  const canSuspend = hasLifecycleAuthority && status === 'ACTIVE';
+  const canResume = hasLifecycleAuthority && status === 'SUSPENDED';
+  const canCancel = hasLifecycleAuthority && ['DRAFT', 'PENDING', 'REQUEST_CHANGE', 'APPROVED'].includes(status);
+  const canExtend = hasLifecycleAuthority && status === 'EXPIRED' && permit.extension_approval_status !== 'PENDING';
+  const canEdit = isOwner && ['DRAFT', 'REQUEST_CHANGE'].includes(status);
   const canSendForApproval = isOwner && status === 'DRAFT';
   const canGeneratePdf = ['APPROVED', 'ACTIVE', 'COMPLETED'].includes(status);
-  const canPreviewPdf  = status !== 'DRAFT';
-  const hasFlow     = permit.approval_levels && permit.approval_levels.length > 0;
+  const canPreviewPdf = status !== 'DRAFT';
+  const hasFlow = permit.approval_levels && permit.approval_levels.length > 0;
   const dueTimestamp = getPermitDueTimestamp(permit);
   const approvalBlocked = status === 'PENDING' && dueTimestamp !== null && dueTimestamp <= Date.now();
   const scheduledDate = permit['Scheduled Date'] || permit.start_date;
   const scheduledAt = scheduledDate
     ? (/\d{1,2}:\d{2}/.test(String(scheduledDate)) || !permit.start_time
-        ? String(scheduledDate)
-        : `${scheduledDate} ${permit.start_time}`)
+      ? String(scheduledDate)
+      : `${scheduledDate} ${permit.start_time}`)
     : null;
   const dynamicFields = permit.dynamic_fields && typeof permit.dynamic_fields === 'object'
     ? Object.entries(permit.dynamic_fields)
@@ -1091,100 +1102,140 @@ export default function WorkPermitDetail() {
         }}
       />
 
-      <button className="btn btn-link p-0 text-muted mb-2" style={{ fontSize: 13 }} onClick={() => navigate(-1)}>
-        <i className="fa fa-arrow-left me-1" />Back
-      </button>
-
-      <div className="wp-header">
-        <div className="wp-header-left">
-          <div className="wp-header-icon"><i className="fa fa-file-text-o" /></div>
-          <div style={{ minWidth: 0 }}>
-            <div className="wp-header-eyebrow">Work Permit{permit.type ? ` · ${typeLabel(permit.type)}` : ''}</div>
-            <h1 className="wp-header-title">
-              {permit["Sequence No"] || 'Work Permit'}
-              {(permit.asset_name || permit.location_name) && ` · ${permit.asset_name || permit.location_name}`}
-            </h1>
-            <div className="wp-header-sub">
-              {[
-                permit.description,
-                permit.vendor_name && `Vendor: ${permit.vendor_name}`,
-                permit.no_of_persons && `${permit.no_of_persons} personnel`,
-              ].filter(Boolean).join(' · ') || 'No additional description provided.'}
+      <div className="wp-sticky-header">
+        <div className="wp-header">
+          <div className="wp-header-left">
+            <div className="wp-header-icon"><i className="fa fa-file-text-o" /></div>
+            <div style={{ minWidth: 0 }}>
+              <div className="wp-header-eyebrow">Work Permit{permit.type ? ` · ${typeLabel(permit.type)}` : ''}</div>
+              <h1 className="wp-header-title">
+                {permit["Sequence No"] || 'Work Permit'}
+                {(permit.asset_name || permit.location_name) && ` · ${permit.asset_name || permit.location_name}`}
+              </h1>
+              <div className="wp-header-sub">
+                {[
+                  permit.description,
+                  permit.vendor_name && `Vendor: ${permit.vendor_name}`,
+                  permit.no_of_persons && `${permit.no_of_persons} personnel`,
+                ].filter(Boolean).join(' · ') || 'No additional description provided.'}
+              </div>
             </div>
           </div>
+          <div className="wp-header-right">
+            {permit.priority && (
+              <span className="wp-chip wp-chip-priority">
+                <span className="dot" />
+                {permit.priority.toUpperCase()}
+              </span>
+            )}
+            <span className="wp-chip status-badge" style={getStatusStyle(status, 'bg')}>
+              {status.replace(/_/g, ' ').toUpperCase()}
+            </span>
+            {(canActivate || canComplete || canSuspend || canResume || canExtend || canCancel) && (
+              <div className="wp-header-divider" />
+            )}
+            {canActivate && (
+              <button
+                type="button"
+                className="wp-btn-action-header activate"
+                onClick={handleActivate}
+                disabled={statusLoad}
+                title="Activate Work Permit"
+              >
+                <i className="fa fa-play" /> ACTIVATE
+              </button>
+            )}
+            {canComplete && (
+              <button
+                type="button"
+                className="wp-btn-action-header complete"
+                onClick={handleComplete}
+                disabled={statusLoad}
+                title="Mark as Completed"
+              >
+                <i className="fa fa-check-circle" /> MARK COMPLETED
+              </button>
+            )}
+            {canSuspend && (
+              <button
+                type="button"
+                className="wp-btn-action-header suspend"
+                onClick={handleSuspend}
+                disabled={statusLoad}
+                title="Suspend Work Permit"
+              >
+                <i className="fa fa-pause" /> SUSPEND
+              </button>
+            )}
+            {canResume && (
+              <button
+                type="button"
+                className="wp-btn-action-header resume"
+                onClick={handleResume}
+                disabled={statusLoad}
+                title="Resume Work Permit"
+              >
+                <i className="fa fa-play" /> RESUME
+              </button>
+            )}
+            {canExtend && (
+              <button
+                type="button"
+                className="wp-btn-action-header extend"
+                onClick={handleExtend}
+                disabled={statusLoad}
+                title="Extend Work Permit"
+              >
+                <i className="fa fa-clock-o" /> EXTEND
+              </button>
+            )}
+            {canCancel && (
+              <button
+                type="button"
+                className="wp-btn-action-header cancel"
+                onClick={handleCancel}
+                disabled={statusLoad}
+                title="Cancel Work Permit"
+              >
+                <i className="fa fa-times-circle" /> CANCEL
+              </button>
+            )}
+          </div>
         </div>
-        <div className="wp-header-right">
-          {permit.priority && (
-            <span className="wp-chip wp-chip-priority"><span className="dot" />{permit.priority}</span>
-          )}
-          <span className="wp-chip status-badge" style={getStatusStyle(status, 'bg')}>
-            {status.replace(/_/g, ' ')}
-          </span>
+
+        <div className="wp-header-toolbar">
+          <div className="wp-actions-bar">
+            {canEdit && (
+              <button className="btn btn-outline-secondary btn-sm" onClick={() => navigate(`/site/${siteId}/work-permit/${sequence}/edit`)}>
+                <i className="fa fa-pencil me-1" />Edit
+              </button>
+            )}
+            {canSendForApproval && (
+              <button className="btn btn-primary-dark btn-sm" onClick={handleSendForApproval} disabled={statusLoad}>
+                <i className="fa fa-paper-plane me-1" />Send for Approval
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
-      <div className="wp-actions-bar">
-          {canEdit && (
-            <button className="btn btn-outline-secondary btn-sm" onClick={() => navigate(`/site/${siteId}/work-permit/${sequence}/edit`)}>
-              <i className="fa fa-pencil me-1" />Edit
-            </button>
-          )}
-          {canSendForApproval && (
-            <button className="btn btn-primary-dark btn-sm" onClick={handleSendForApproval} disabled={statusLoad}>
-              <i className="fa fa-paper-plane me-1" />Send for Approval
-            </button>
-          )}
-          {canActivate && (
-            <button className="btn btn-success btn-sm" onClick={handleActivate} disabled={statusLoad}>
-              <i className="fa fa-play me-1" />Activate
-            </button>
-          )}
-          {canComplete && (
-            <button className="btn btn-success btn-sm" onClick={handleComplete} disabled={statusLoad}>
-              <i className="fa fa-check-circle me-1" />Mark as Completed
-            </button>
-          )}
-          {canSuspend && (
-            <button className="btn btn-outline-warning btn-sm" onClick={handleSuspend} disabled={statusLoad}>
-              <i className="fa fa-pause me-1" />Suspend
-            </button>
-          )}
-          {canResume && (
-            <button className="btn btn-success btn-sm" onClick={handleResume} disabled={statusLoad}>
-              <i className="fa fa-play me-1" />Resume
-            </button>
-          )}
-          {canExtend && (
-            <button className="btn btn-success btn-sm" onClick={handleExtend} disabled={statusLoad}>
-              <i className="fa fa-clock-o me-1" />Extend
-            </button>
-          )}
-          {canCancel && (
-            <button className="btn btn-outline-danger btn-sm" onClick={handleCancel} disabled={statusLoad}>
-              <i className="fa fa-ban me-1" />Cancel
-            </button>
-          )}
-      </div>
-
-      <div className="d-flex gap-3 align-items-start flex-wrap">
-        <div style={{ width: 190, flexShrink: 0, position: 'sticky', top: 72 }}>
+      <div className="wp-detail-container">
+        {/* Leftest Column: WP Timeline */}
+        <div id="sec-timeline" className="wp-left-col">
           <StatusTimeline status={status} permit={permit} />
         </div>
 
-        <div style={{ flex: 1, minWidth: 280 }}>
-      <div className="row g-3">
-
-        {/* Left col */}
-        <div className="col-lg-7">
-          <div className="container-rounded-white mb-3" style={{ padding: '16px 20px' }}>
+        {/* Middle Column: Permit Information & Details */}
+        <div className="wp-mid-col">
+          <div id="sec-info" className="container-rounded-white mb-3" style={{ padding: '16px 20px' }}>
             <div className="wp-card-head"><i className="fa fa-info-circle" />Permit Information</div>
             <div className="wp-field-grid">
-              <Field label="Permit No."    value={permit["Sequence No"]} />
-              <Field label="Permit Type"   value={typeLabel(permit.type)} />
-              <Field label="Priority"      value={permit.priority} />
-              <Field label="Raised By"     value={permit.raised_by} />
-              <Field label="Scheduled At"  value={scheduledAt} />
-              <Field label="Due Date"       value={permit['Due Date']} />
+              <Field label="Permit No." value={permit["Sequence No"]} />
+              <Field label="Permit Type" value={typeLabel(permit.type)} />
+              <Field label="Priority" value={permit.priority} />
+              <Field label="Raised By" value={permit.raised_by} />
+              <Field label="Scheduled At" value={scheduledAt} />
+              <Field label="Due Date" value={permit['Due Date']} />
               {permit.extension_approval_status && (
                 <Field label="Extension Approval" value={permit.extension_approval_status.replace(/_/g, ' ')} />
               )}
@@ -1197,32 +1248,32 @@ export default function WorkPermitDetail() {
               {permit.extension_reason && (
                 <Field label="Extension Reason" value={permit.extension_reason} span />
               )}
-              <Field label="LOTO No."      value={permit.loto_no} />
+              <Field label="LOTO No." value={permit.loto_no} />
               <Field label="Work Duration" value={formatDuration(Number(permit.period_of_work))} />
               <Field label="No. of Person" value={permit.no_of_persons} />
-              {permit.vendor_name   && <Field label="Vendor"        value={permit.vendor_name} />}
+              {permit.vendor_name && <Field label="Vendor" value={permit.vendor_name} />}
               {permit.vendor_contact_name && <Field label="Name of Person" value={permit.vendor_contact_name} />}
-              {permit.vendor_email  && <Field label="Vendor Email"  value={permit.vendor_email} />}
+              {permit.vendor_email && <Field label="Vendor Email" value={permit.vendor_email} />}
               {permit.vendor_mobile && <Field label="Mobile No." value={permit.vendor_mobile} />}
-              {permit.location_name && <Field label="Location"      value={permit.location_name} />}
+              {permit.location_name && <Field label="Location" value={permit.location_name} />}
             </div>
 
             {permit.asset_name && (
               <>
                 <div className="wp-mini-head"><i className="fa fa-cube me-1" />Asset</div>
                 <div className="wp-field-grid">
-                  <Field label="Asset"          value={permit.asset_name} />
-                  {permit.asset_seq          && <Field label="Sequence No."     value={permit.asset_seq} />}
-                  {permit.asset_category     && <Field label="Category"       value={permit.asset_category} />}
+                  <Field label="Asset" value={permit.asset_name} />
+                  {permit.asset_seq && <Field label="Sequence No." value={permit.asset_seq} />}
+                  {permit.asset_category && <Field label="Category" value={permit.asset_category} />}
                   {permit.asset_location_name && <Field label="Asset Location" value={permit.asset_location_name} />}
-                  {permit.asset_nfc_tag      && <Field label="NFC Tag"        value={permit.asset_nfc_tag} />}
-                  {permit.asset_description  && <Field label="Description"    value={permit.asset_description} span />}
+                  {permit.asset_nfc_tag && <Field label="NFC Tag" value={permit.asset_nfc_tag} />}
+                  {permit.asset_description && <Field label="Description" value={permit.asset_description} span />}
                 </div>
               </>
             )}
           </div>
 
-          <div className="container-rounded-white mb-3" style={{ padding: '16px 20px' }}>
+          <div id="sec-tasks" className="container-rounded-white mb-3" style={{ padding: '16px 20px' }}>
             <div className="wp-card-head"><i className="fa fa-tasks" />Task Details</div>
             <div className="wp-info-box">
               <div className="wp-field-label">Description</div>
@@ -1240,11 +1291,11 @@ export default function WorkPermitDetail() {
           </div>
 
           {dynamicFields.length > 0 && (
-            <div className="container-rounded-white mb-3" style={{ padding: '16px 20px' }}>
+            <div id="sec-specific" className="container-rounded-white mb-3" style={{ padding: '16px 20px' }}>
               <div className="wp-card-head"><i className="fa fa-list-alt" />Permit-Specific Details</div>
               {(() => {
                 const shortFields = [];
-                const longFields  = [];
+                const longFields = [];
                 dynamicFields.forEach(([key, val]) => {
                   const display = typeof val === 'boolean' ? (val ? 'Yes' : 'No') : String(val ?? '');
                   (display.length > 50 ? longFields : shortFields).push([key, display]);
@@ -1271,71 +1322,71 @@ export default function WorkPermitDetail() {
           )}
         </div>
 
-        {/* Right col */}
-        <div className="col-lg-5">
-          <div style={{ position: 'sticky', top: 72, display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <div className="container-rounded-white" style={{ padding: '16px 20px' }}>
-              <div className="wp-card-head"><i className="fa fa-shield" />Approval Flow</div>
+        {/* Rightest Column: Approval Flow, Gate Pass & PDF */}
+        <div className="wp-right-col">
+          <div id="sec-approval" className="container-rounded-white" style={{ padding: '16px 20px' }}>
+            <div className="wp-card-head"><i className="fa fa-shield" />Approval Flow</div>
 
-              {approvalBlocked && (
-                <div className="alert alert-warning py-2 small">
-                  <i className="fa fa-clock-o me-1" />The due date has passed. Approval is disabled; choose Request Change so a future time can be provided.
-                </div>
-              )}
+            {approvalBlocked && (
+              <div className="alert alert-warning py-2 small">
+                <i className="fa fa-clock-o me-1" />The due date has passed. Approval is disabled; choose Request Change so a future time can be provided.
+              </div>
+            )}
 
-              {hasFlow ? (
-                <ApprovalFlowPanel
-                  approvalLevels={permit.approval_levels}
-                  permitStatus={status}
-                  extensionApprovalStatus={permit.extension_approval_status}
-                  onAction={handleAction}
-                  actionLoad={actionLoad}
-                  loggedInUser={loggedInUser}
-                  approvalBlocked={approvalBlocked}
-                />
-              ) : (
-                <>
-                  <p className="text-muted small mb-3">
-                    {status === 'PENDING'
-                      ? (isOwner
-                          ? 'No multi-level flow configured. Take a direct action below.'
-                          : 'No multi-level flow configured. Awaiting action from the Work Permit creator.')
-                      : 'No approval flow attached to this permit.'}
-                  </p>
-                  {isOwner && (
-                    <SimpleActionPanel
-                      permitStatus={status}
-                      extensionApprovalStatus={permit.extension_approval_status}
-                      onAction={handleAction}
-                      actionLoad={actionLoad}
-                      approvalBlocked={approvalBlocked}
-                    />
-                  )}
+            {hasFlow ? (
+              <ApprovalFlowPanel
+                approvalLevels={permit.approval_levels}
+                permitStatus={status}
+                extensionApprovalStatus={permit.extension_approval_status}
+                onAction={handleAction}
+                actionLoad={actionLoad}
+                loggedInUser={loggedInUser}
+                approvalBlocked={approvalBlocked}
+              />
+            ) : (
+              <>
+                <p className="text-muted small mb-3">
+                  {status === 'PENDING'
+                    ? (isOwner
+                      ? 'No multi-level flow configured. Take a direct action below.'
+                      : 'No multi-level flow configured. Awaiting action from the Work Permit creator.')
+                    : 'No approval flow attached to this permit.'}
+                </p>
+                {isOwner && (
+                  <SimpleActionPanel
+                    permitStatus={status}
+                    extensionApprovalStatus={permit.extension_approval_status}
+                    onAction={handleAction}
+                    actionLoad={actionLoad}
+                    approvalBlocked={approvalBlocked}
+                  />
+                )}
 
-                  {approvalActions.length > 0 && (
-                    <div className="mt-3 d-flex flex-column gap-2">
-                      {approvalActions.map((act, i) => (
-                        <div key={act.uuid || i}
-                          className="border-start border-3 ps-3"
-                          style={{ borderColor: act.status === 'APPROVE' ? '#10B981' : act.status === 'DECLINE' ? '#DC2626' : '#F59E0B' }}>
-                          <div className="d-flex justify-content-between">
-                            <span className="fw-semibold small">{act.actor || 'System'}</span>
-                            <span className="text-muted" style={{ fontSize: 11 }}>
-                              {act.created_at ? new Date(act.created_at.includes('T') ? act.created_at : act.created_at.replace(' ', 'T') + 'Z').toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : ''}
-                            </span>
-                          </div>
-                          <span className={`status-badge ${(act.status || '').toLowerCase()}`} style={{ fontSize: 10 }}>
-                            {(act.status || '').replace(/_/g, ' ')}
+                {approvalActions.length > 0 && (
+                  <div className="mt-3 d-flex flex-column gap-2">
+                    {approvalActions.map((act, i) => (
+                      <div key={act.uuid || i}
+                        className="border-start border-3 ps-3"
+                        style={{ borderColor: act.status === 'APPROVE' ? '#10B981' : act.status === 'DECLINE' ? '#DC2626' : '#F59E0B' }}>
+                        <div className="d-flex justify-content-between">
+                          <span className="fw-semibold small">{act.actor || 'System'}</span>
+                          <span className="text-muted" style={{ fontSize: 11 }}>
+                            {act.created_at ? new Date(act.created_at.includes('T') ? act.created_at : act.created_at.replace(' ', 'T') + 'Z').toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : ''}
                           </span>
-                          {act.comment && <p className="text-muted small mt-1 mb-0">"{act.comment}"</p>}
                         </div>
-                      ))}
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
+                        <span className={`status-badge ${(act.status || '').toLowerCase()}`} style={{ fontSize: 10 }}>
+                          {(act.status || '').replace(/_/g, ' ')}
+                        </span>
+                        {act.comment && <p className="text-muted small mt-1 mb-0">"{act.comment}"</p>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
 
+          <div id="sec-gatepass" className="d-flex flex-column gap-3">
             {canPreviewPdf && (
               <div className="container-rounded-white" style={{ padding: '16px 20px' }}>
                 <div className="wp-card-head"><i className="fa fa-file-pdf-o" />Work Permit PDF</div>
@@ -1404,11 +1455,7 @@ export default function WorkPermitDetail() {
             {permit._material_gatepass_enabled && !permit.gate_pass_uuid && ['APPROVED', 'ACTIVE', 'COMPLETED'].includes(status) && (
               <MaterialGatePassPanel wpUuid={id} canRaise={['APPROVED', 'ACTIVE'].includes(status)} />
             )}
-
           </div>
-        </div>
-
-      </div>
         </div>
       </div>
     </div>
