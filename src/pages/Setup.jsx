@@ -21,9 +21,19 @@ const EMPTY_FIELD = { name: '', col_name: '', type: 'text', is_required: false, 
 const DISALLOWED_APPROVAL_ROLES = new Set(['resident', 'member']);
 const normalizeRole = value => String(value || '').trim().toLowerCase();
 
-function FieldTypePicker({ value, onChange }) {
+function FieldTypePicker({ value, onChange, compact = false }) {
   return (
-    <div className="d-flex flex-wrap gap-1">
+    <div
+      style={{
+        background: '#F3F4F6',
+        padding: compact ? 2 : 3,
+        borderRadius: compact ? 6 : 8,
+        display: 'inline-flex',
+        flexWrap: 'wrap',
+        gap: compact ? 2 : 3,
+        border: '1px solid #E5E7EB',
+      }}
+    >
       {FIELD_TYPES.map(t => {
         const active = value === t.value;
         return (
@@ -32,15 +42,22 @@ function FieldTypePicker({ value, onChange }) {
             type="button"
             onClick={() => onChange(t.value)}
             style={{
-              display: 'flex', alignItems: 'center', gap: 5,
-              padding: '4px 10px', borderRadius: 20, fontSize: 12, fontWeight: active ? 600 : 400,
-              border: active ? '1.5px solid #17a2b8' : '1.5px solid #dee2e6',
-              background: active ? '#e8f6f8' : '#fff',
-              color: active ? '#17a2b8' : '#555',
-              cursor: 'pointer', transition: 'all 0.15s',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: compact ? 4 : 6,
+              padding: compact ? '3px 8px' : '5px 10px',
+              borderRadius: compact ? 4 : 6,
+              fontSize: compact ? 11.5 : 12,
+              fontWeight: active ? 600 : 500,
+              border: 'none',
+              background: active ? '#FFFFFF' : 'transparent',
+              color: active ? '#0D9488' : '#4B5563',
+              boxShadow: active ? '0 1px 2px rgba(0,0,0,0.06)' : 'none',
+              cursor: 'pointer',
+              transition: 'all 0.12s ease',
             }}
           >
-            <i className={`fa ${t.icon}`} style={{ fontSize: 11 }} />
+            <i className={`fa ${t.icon}`} style={{ fontSize: compact ? 10 : 11, color: active ? '#0D9488' : '#9CA3AF' }} />
             {t.label}
           </button>
         );
@@ -986,6 +1003,7 @@ export default function Setup() {
   };
 
   const startEditField = (f) => {
+    setShowAddField(false);
     const fieldData = typeof f.data === 'string' ? JSON.parse(f.data) : (f.data || {});
     setEditingField(f.id);
     setEditValues({ name: f.name, type: f.type || 'text', placeholder: fieldData.placeholder || '', is_required: !!fieldData.is_required });
@@ -1083,7 +1101,7 @@ export default function Setup() {
         onConfirm={dialog?.onConfirm}
         onCancel={() => setDialog(null)}
       />
-      <div className="mb-4">
+      <div className="mb-2" style={{ marginTop: '-8px' }}>
         <h5 className="fw-bold text-primary-dark mb-0">Setup</h5>
       </div>
 
@@ -1187,71 +1205,151 @@ export default function Setup() {
                 </div>
               ) : (
                 <>
-                  <div className="d-flex align-items-center justify-content-between border-bottom-primary pb-2 mb-3 flex-shrink-0">
-                    <h6 className="fw-bold text-primary-dark mb-0">
-                      <i className="fa fa-list-alt me-2" />{getTypeLabel(selectedType)} — Fields
-                    </h6>
-                    <button className="btn btn-primary-dark btn-sm" onClick={() => setShowAddField(v => !v)}>
-                      <i className={`fa fa-${showAddField ? 'minus' : 'plus'} me-1`} />
-                      {showAddField ? 'Cancel' : 'Add Field'}
-                    </button>
+                  <div className="d-flex align-items-center justify-content-between border-bottom pb-2.5 mb-3 flex-shrink-0">
+                    <div>
+                      <h5 className="fw-bold text-dark mb-0" style={{ fontSize: 15, letterSpacing: '-0.01em', color: '#0F172A' }}>
+                        <i className="fa fa-list-alt me-2" style={{ color: '#17A2B8' }} />{getTypeLabel(selectedType)} — Fields
+                      </h5>
+                    </div>
+                    {!showAddField && (
+                      <button
+                        className="btn btn-sm"
+                        style={{
+                          height: 32,
+                          padding: '0 12px',
+                          fontSize: 12.5,
+                          fontWeight: 600,
+                          borderRadius: 5,
+                          background: '#17A2B8',
+                          color: '#FFFFFF',
+                          border: 'none',
+                          boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 5,
+                          cursor: 'pointer',
+                        }}
+                        onClick={() => { setEditingField(null); setShowAddField(true); }}
+                      >
+                        <i className="fa fa-plus" style={{ fontSize: 11 }} />
+                        Add Field
+                      </button>
+                    )}
                   </div>
 
-                  <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
+                  <div style={{ flex: 1, overflowY: 'auto', minHeight: 0, paddingRight: 4 }}>
                   {showAddField && (
-                    <form onSubmit={handleAddField} className="bg-light rounded p-3 mb-3">
-                      <div className="row g-2">
+                    <form onSubmit={handleAddField} className="rounded-3 p-3 mb-3" style={{ background: '#F8FAFC', border: '1px solid #E2E8F0' }}>
+                      <div className="d-flex align-items-center justify-content-between mb-2">
+                        <span className="fw-bold text-dark" style={{ fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.03em', color: '#475569' }}>
+                          Add New Field
+                        </span>
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-link text-muted p-0 text-decoration-none"
+                          style={{ fontSize: 11.5 }}
+                          onClick={() => setShowAddField(false)}
+                        >
+                          <i className="fa fa-times me-1" /> Close
+                        </button>
+                      </div>
+
+                      <div className="row g-3 mb-2">
                         <div className="col-md-6">
-                          <label className="form-label fw-semibold small">Field Name <span className="text-danger">*</span></label>
+                          <label className="form-label fw-semibold mb-1" style={{ fontSize: 11.5, color: '#475569' }}>
+                            Field Name <span className="text-danger">*</span>
+                          </label>
                           <input
                             type="text"
-                            className="form-control form-control-sm"
+                            className="form-control"
+                            style={{ height: 32, borderRadius: 5, border: '1px solid #CBD5E1', fontSize: 13, color: '#0F172A' }}
                             value={newField.name}
                             onChange={e => setNewField(prev => ({ ...prev, name: e.target.value, col_name: toColName(e.target.value) }))}
                             placeholder="e.g. Working Height"
                             required
+                            autoFocus
                           />
                         </div>
-                        <div className="col-12">
-                          <label className="form-label fw-semibold small">Type <span className="text-danger">*</span></label>
-                          <FieldTypePicker value={newField.type} onChange={v => setNewField(prev => ({ ...prev, type: v }))} />
+
+                        <div className="col-md-6">
+                          <label className="form-label fw-semibold mb-1" style={{ fontSize: 11.5, color: '#475569' }}>
+                            Type <span className="text-danger">*</span>
+                          </label>
+                          <div>
+                            <FieldTypePicker value={newField.type} onChange={v => setNewField(prev => ({ ...prev, type: v }))} compact />
+                          </div>
                         </div>
+
                         {newField.type !== 'checkbox' && (
-                          <div className="col-md-6">
-                            <label className="form-label fw-semibold small">Placeholder</label>
+                          <div className={newField.type === 'select' ? "col-md-6" : "col-md-12"}>
+                            <label className="form-label fw-semibold mb-1" style={{ fontSize: 11.5, color: '#475569' }}>Placeholder</label>
                             <input
                               type="text"
-                              className="form-control form-control-sm"
+                              className="form-control"
+                              style={{ height: 32, borderRadius: 5, border: '1px solid #CBD5E1', fontSize: 12.5, color: '#0F172A' }}
                               value={newField.placeholder}
                               onChange={e => setNewField(prev => ({ ...prev, placeholder: e.target.value }))}
-                              placeholder="Optional placeholder text"
+                              placeholder="Optional placeholder"
                             />
                           </div>
                         )}
+
                         {newField.type === 'select' && (
                           <div className="col-md-6">
-                            <label className="form-label fw-semibold small">Options <span className="text-muted">(comma-separated)</span></label>
+                            <label className="form-label fw-semibold mb-1" style={{ fontSize: 11.5, color: '#475569' }}>
+                              Options <span className="text-muted fw-normal">(comma-separated)</span>
+                            </label>
                             <input
                               type="text"
-                              className="form-control form-control-sm"
+                              className="form-control"
+                              style={{ height: 32, borderRadius: 5, border: '1px solid #CBD5E1', fontSize: 12.5, color: '#0F172A' }}
                               value={newField.options}
                               onChange={e => setNewField(prev => ({ ...prev, options: e.target.value }))}
                               placeholder="Option A, Option B"
                             />
                           </div>
                         )}
-                        <div className="col-12 d-flex align-items-center gap-3 mt-1">
-                          <div className="form-check mb-0">
-                            <input
-                              type="checkbox"
-                              className="form-check-input"
-                              id="field-required"
-                              checked={newField.is_required}
-                              onChange={e => setNewField(prev => ({ ...prev, is_required: e.target.checked }))}
-                            />
-                            <label className="form-check-label small fw-semibold" htmlFor="field-required">Required</label>
-                          </div>
-                          <button type="submit" className="btn btn-primary-dark btn-sm ms-auto" disabled={saving}>
+                      </div>
+
+                      <div className="d-flex align-items-center justify-content-between pt-2 border-top">
+                        <div className="d-flex align-items-center gap-2" style={{ cursor: 'pointer' }}>
+                          <input
+                            type="checkbox"
+                            className="form-check-input mt-0"
+                            id="field-required"
+                            style={{ width: 15, height: 15, accentColor: '#17A2B8', cursor: 'pointer' }}
+                            checked={newField.is_required}
+                            onChange={e => setNewField(prev => ({ ...prev, is_required: e.target.checked }))}
+                          />
+                          <label className="form-check-label fw-semibold mb-0" htmlFor="field-required" style={{ fontSize: 12, color: '#334155', cursor: 'pointer' }}>
+                            Required Field
+                          </label>
+                        </div>
+
+                        <div className="d-flex align-items-center gap-3">
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-outline-secondary"
+                            style={{ height: 30, padding: '0 12px', fontSize: 12, borderRadius: 5 }}
+                            onClick={() => setShowAddField(false)}
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            type="submit"
+                            className="btn btn-sm"
+                            style={{
+                              height: 30,
+                              padding: '0 14px',
+                              fontSize: 12,
+                              fontWeight: 600,
+                              borderRadius: 5,
+                              background: '#17A2B8',
+                              color: '#FFFFFF',
+                              border: 'none',
+                            }}
+                            disabled={saving}
+                          >
                             {saving ? <><i className="fa fa-circle-o-notch fa-spin me-1" />Saving...</> : 'Save Field'}
                           </button>
                         </div>
@@ -1260,21 +1358,21 @@ export default function Setup() {
                   )}
 
                   {fields.length === 0 ? (
-                    <div style={{ padding: '32px 16px', textAlign: 'center', color: '#9CA3AF' }}>
-                      <i className="fa fa-list-alt" style={{ fontSize: 28, marginBottom: 10, display: 'block', color: '#D1D5DB' }} />
-                      <div style={{ fontSize: 14, fontWeight: 600, color: '#6B7280', marginBottom: 4 }}>No fields configured</div>
-                      <div style={{ fontSize: 12 }}>Add fields to collect specific information for this permit type.</div>
+                    <div style={{ padding: '36px 16px', textAlign: 'center', color: '#94A3B8' }}>
+                      <i className="fa fa-list-alt" style={{ fontSize: 28, marginBottom: 8, display: 'block', color: '#CBD5E1' }} />
+                      <div style={{ fontSize: 13.5, fontWeight: 600, color: '#334155', marginBottom: 2 }}>No fields configured</div>
+                      <div style={{ fontSize: 12, color: '#64748B' }}>Add fields to collect specific information for this permit type.</div>
                     </div>
                   ) : (
-                    <div style={{ border: '1px solid #E5E7EB', borderRadius: 8, overflow: 'hidden' }}>
+                    <div style={{ border: '1px solid #E2E8F0', borderRadius: 8, overflow: 'hidden' }}>
                       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead>
-                          <tr style={{ background: '#F9FAFB', borderBottom: '1px solid #E5E7EB' }}>
-                            <th style={{ padding: '10px 14px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#9CA3AF', width: 36 }}>#</th>
-                            <th style={{ padding: '10px 14px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#9CA3AF' }}>Field Name</th>
-                            <th style={{ padding: '10px 14px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#9CA3AF' }}>Type</th>
-                            <th style={{ padding: '10px 14px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#9CA3AF', textAlign: 'center' }}>Required</th>
-                            <th style={{ width: 60 }}></th>
+                          <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
+                            <th style={{ padding: '9px 12px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748B', width: 36 }}>#</th>
+                            <th style={{ padding: '9px 12px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748B' }}>Field Name</th>
+                            <th style={{ padding: '9px 12px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748B' }}>Type</th>
+                            <th style={{ padding: '9px 12px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748B', textAlign: 'center', width: 90 }}>Required</th>
+                            <th style={{ padding: '9px 12px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748B', textAlign: 'right', width: 90 }}>Actions</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -1286,37 +1384,42 @@ export default function Setup() {
 
                             if (isEditing) {
                               return (
-                                <tr key={f.id} style={{ background: '#F0FBFD', borderBottom: '1px solid #E5E7EB' }}>
-                                  <td style={{ padding: '10px 14px', color: '#9CA3AF', fontSize: 13 }}>{i + 1}</td>
-                                  <td style={{ padding: '8px 14px' }}>
+                                <tr key={f.id} style={{ background: '#F0FBFD', borderBottom: '1px solid #E2E8F0', borderLeft: '3px solid #17A2B8' }}>
+                                  <td style={{ padding: '12px 16px', color: '#94A3B8', fontSize: 13, fontWeight: 500, verticalAlign: 'middle' }}>{i + 1}</td>
+                                  <td style={{ padding: '12px 16px', verticalAlign: 'middle' }}>
                                     <input
                                       type="text"
                                       className="form-control"
-                                      style={{ fontSize: 14 }}
+                                      style={{ height: 30, borderRadius: 5, border: '1.5px solid #17A2B8', fontSize: 13, fontWeight: 600, color: '#0F172A', padding: '0 8px', minWidth: 150 }}
                                       value={editValues.name}
                                       onChange={e => setEditValues(p => ({ ...p, name: e.target.value }))}
                                       autoFocus
+                                      placeholder="Field Name"
                                     />
                                   </td>
-                                  <td style={{ padding: '8px 14px' }}>
-                                    <FieldTypePicker value={editValues.type} onChange={v => setEditValues(p => ({ ...p, type: v }))} />
+                                  <td style={{ padding: '12px 16px', verticalAlign: 'middle' }}>
+                                    <FieldTypePicker value={editValues.type} onChange={v => setEditValues(p => ({ ...p, type: v }))} compact />
                                   </td>
-                                  <td style={{ padding: '8px 14px', textAlign: 'center' }}>
-                                    <input
-                                      type="checkbox"
-                                      className="form-check-input"
-                                      style={{ width: 18, height: 18 }}
-                                      checked={editValues.is_required}
-                                      onChange={e => setEditValues(p => ({ ...p, is_required: e.target.checked }))}
-                                    />
+                                  <td
+                                    style={{ padding: '12px 16px', textAlign: 'center', cursor: 'pointer', verticalAlign: 'middle' }}
+                                    onClick={() => setEditValues(p => ({ ...p, is_required: !p.is_required }))}
+                                    title="Click to toggle required"
+                                  >
+                                    {editValues.is_required ? (
+                                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 12, background: '#ECFDF5', color: '#047857', fontSize: 11.5, fontWeight: 600, border: '1px solid #A7F3D0' }}>
+                                        <i className="fa fa-check" style={{ fontSize: 10 }} /> Yes
+                                      </span>
+                                    ) : (
+                                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 12, background: '#F8FAFC', color: '#64748B', fontSize: 11.5, fontWeight: 500, border: '1px solid #E2E8F0' }}>
+                                        No
+                                      </span>
+                                    )}
                                   </td>
-                                  <td style={{ padding: '8px 14px' }}>
-                                    <div className="d-flex gap-1">
-                                      <button className="btn btn-sm btn-primary-dark" style={{ fontSize: 12, padding: '4px 10px' }} onClick={() => handleSaveEdit(f)} disabled={savingEdit}>
-                                        {savingEdit ? <i className="fa fa-circle-o-notch fa-spin" /> : <i className="fa fa-check" />}
-                                      </button>
-                                      <button className="btn btn-sm btn-outline-secondary" style={{ fontSize: 12, padding: '4px 8px' }} onClick={() => setEditingField(null)}>
-                                        <i className="fa fa-times" />
+                                  <td style={{ padding: '12px 16px', textAlign: 'right', verticalAlign: 'middle' }}>
+                                    <div className="d-flex align-items-center justify-content-end gap-3">
+                                      <button type="button" className="btn btn-sm btn-outline-secondary" style={{ height: 28, padding: '0 10px', fontSize: 12, borderRadius: 5 }} onClick={() => setEditingField(null)}>Cancel</button>
+                                      <button type="button" className="btn btn-sm" style={{ height: 28, padding: '0 12px', fontSize: 12, fontWeight: 600, borderRadius: 5, background: '#17A2B8', color: '#FFFFFF', border: 'none', boxShadow: '0 1px 2px rgba(0,0,0,0.04)' }} onClick={() => handleSaveEdit(f)} disabled={savingEdit}>
+                                        {savingEdit ? <i className="fa fa-circle-o-notch fa-spin" /> : 'Save'}
                                       </button>
                                     </div>
                                   </td>
@@ -1327,51 +1430,81 @@ export default function Setup() {
                             return (
                               <tr
                                 key={f.id}
-                                style={{ borderBottom: i < fields.length - 1 ? '1px solid #F3F4F6' : 'none', transition: 'background 0.1s' }}
-                                onMouseEnter={e => { setHoveredField(f.id); e.currentTarget.style.background = '#F9FAFB'; }}
+                                style={{
+                                  borderBottom: i < fields.length - 1 ? '1px solid #F1F5F9' : 'none',
+                                  transition: 'background 0.12s ease',
+                                }}
+                                onMouseEnter={e => { setHoveredField(f.id); e.currentTarget.style.background = '#F8FAFC'; }}
                                 onMouseLeave={e => { setHoveredField(null); e.currentTarget.style.background = 'transparent'; }}
                               >
-                                <td style={{ padding: '12px 14px', color: '#9CA3AF', fontSize: 13 }}>{i + 1}</td>
+                                <td style={{ padding: '12px 16px', color: '#94A3B8', fontSize: 13, fontWeight: 500, verticalAlign: 'middle' }}>{i + 1}</td>
                                 <td
-                                  style={{ padding: '12px 14px', fontWeight: 600, fontSize: 14, color: '#374151', cursor: isGlobal ? undefined : 'pointer' }}
+                                  style={{ padding: '12px 16px', fontWeight: 600, fontSize: 13.5, color: '#0F172A', cursor: isGlobal ? undefined : 'pointer', verticalAlign: 'middle' }}
                                   onClick={isGlobal ? undefined : () => startEditField(f)}
                                   title={isGlobal ? undefined : 'Click to edit'}
                                 >
                                   {f.name}
-                                  {isGlobal && <i className="fa fa-lock ms-2" style={{ fontSize: 10, color: '#D1D5DB' }} title="System field" />}
+                                  {isGlobal && <i className="fa fa-lock ms-2" style={{ fontSize: 11, color: '#94A3B8' }} title="System field (read-only)" />}
                                 </td>
                                 <td
-                                  style={{ padding: '12px 14px', cursor: isGlobal ? undefined : 'pointer' }}
+                                  style={{ padding: '12px 16px', cursor: isGlobal ? undefined : 'pointer', verticalAlign: 'middle' }}
                                   onClick={isGlobal ? undefined : () => startEditField(f)}
                                   title={isGlobal ? undefined : 'Click to edit'}
                                 >
                                   <span style={{
-                                    display: 'inline-flex', alignItems: 'center', gap: 4,
-                                    padding: '3px 10px', borderRadius: 20, fontSize: 12, fontWeight: 600,
-                                    background: '#E8F6F8', color: '#17A2B8', border: '1px solid #B2E4ED',
+                                    display: 'inline-flex', alignItems: 'center', gap: 5,
+                                    padding: '3px 8px', borderRadius: 6, fontSize: 12, fontWeight: 500,
+                                    background: '#F1F5F9', color: '#334155', border: '1px solid #E2E8F0',
                                   }}>
+                                    <i className={`fa ${FIELD_TYPES.find(t => t.value === f.type)?.icon || 'fa-font'}`} style={{ fontSize: 10, color: '#64748B' }} />
                                     {f.type}
                                   </span>
                                 </td>
                                 <td
-                                  style={{ padding: '12px 14px', textAlign: 'center', cursor: isGlobal ? undefined : 'pointer' }}
+                                  style={{ padding: '12px 16px', textAlign: 'center', cursor: isGlobal ? undefined : 'pointer', verticalAlign: 'middle' }}
                                   onClick={isGlobal ? undefined : () => handleToggleRequired(f)}
                                   title={isGlobal ? undefined : 'Click to toggle required'}
                                 >
-                                  {fieldData.is_required
-                                    ? <i className="fa fa-check-circle" style={{ color: '#10B981', fontSize: 16 }} />
-                                    : <i className="fa fa-circle-o" style={{ color: '#D1D5DB', fontSize: 16 }} />}
+                                  {fieldData.is_required ? (
+                                    <span style={{
+                                      display: 'inline-flex', alignItems: 'center', gap: 4,
+                                      padding: '2px 8px', borderRadius: 12, background: '#ECFDF5',
+                                      color: '#047857', fontSize: 11.5, fontWeight: 600, border: '1px solid #A7F3D0',
+                                    }}>
+                                      <i className="fa fa-check" style={{ fontSize: 10 }} /> Yes
+                                    </span>
+                                  ) : (
+                                    <span style={{
+                                      display: 'inline-flex', alignItems: 'center', gap: 4,
+                                      padding: '2px 8px', borderRadius: 12, background: '#F8FAFC',
+                                      color: '#64748B', fontSize: 11.5, fontWeight: 500, border: '1px solid #E2E8F0',
+                                    }}>
+                                      No
+                                    </span>
+                                  )}
                                 </td>
-                                <td style={{ padding: '12px 14px' }}>
+                                <td style={{ padding: '12px 16px', textAlign: 'right', verticalAlign: 'middle' }}>
                                   {!isGlobal && (
-                                    <button
-                                      className="btn btn-sm btn-link text-danger p-0"
-                                      style={{ opacity: isHovered ? 1 : 0, transition: 'opacity 0.15s', fontSize: 14 }}
-                                      onClick={() => handleDeleteField(f.id)}
-                                      title="Delete field"
-                                    >
-                                      <i className="fa fa-trash" />
-                                    </button>
+                                    <div className="d-flex align-items-center justify-content-end gap-2">
+                                      <button
+                                        className="btn btn-sm btn-link p-1 text-secondary text-decoration-none"
+                                        style={{ opacity: isHovered ? 1 : 0, transition: 'opacity 0.15s ease', fontSize: 13 }}
+                                        onClick={() => startEditField(f)}
+                                        title="Edit field"
+                                      >
+                                        <i className="fa fa-pencil" style={{ color: '#64748B' }} />
+                                      </button>
+                                      <button
+                                        className="btn btn-sm text-danger d-flex align-items-center justify-content-center"
+                                        style={{ width: 32, height: 32, opacity: isHovered ? 1 : 0, transition: 'all 0.15s ease', fontSize: 16, borderRadius: 4 }}
+                                        onClick={() => handleDeleteField(f.id)}
+                                        title="Delete field"
+                                        onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#FEE2E2'; }}
+                                        onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; }}
+                                      >
+                                        <i className="fa fa-trash-o" />
+                                      </button>
+                                    </div>
                                   )}
                                 </td>
                               </tr>

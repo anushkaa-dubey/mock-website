@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
 import { redirectToLogin } from '@/services/services';
 
@@ -38,6 +39,8 @@ export default function Navbar({ onMenuClick }) {
   const [search,     setSearch]     = useState('');
   const [dropOpen,   setDropOpen]   = useState(false);
   const dropRef = useRef(null);
+  const location = useLocation();
+  const isSetup = location.pathname.includes('/setup');
 
   useEffect(() => {
     try {
@@ -164,7 +167,7 @@ export default function Navbar({ onMenuClick }) {
 
       {/* Service title */}
       <span className="text-primary-dark fw-bold" style={{ fontSize: 15 }}>
-        Work Permit
+        Work Permit {isSetup && <span style={{ fontWeight: 400, color: '#6B7280' }}>/ Setup</span>}
       </span>
 
       {/* Right side */}

@@ -12,9 +12,9 @@ $wp-text-secondary:  #6B7280;
 $wp-text-body:       #374151;
 $wp-font: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
-// Root-level layout constraints when Work Permit page is rendered
-html:has(.wp-page),
-body:has(.wp-page) {
+// Root-level layout constraints when Work Permit Detail page is rendered
+html:has(.wp-detail-container),
+body:has(.wp-detail-container) {
   overflow: hidden !important;
   height: 100vh !important;
 }
@@ -24,10 +24,14 @@ body:has(.wp-page) {
   max-height: calc(100vh - 56px) !important;
   margin-top: 56px !important;
   padding: 16px 20px 16px 20px !important;
-  overflow: hidden !important;
+  overflow-y: auto !important;
   box-sizing: border-box !important;
   display: flex !important;
   flex-direction: column !important;
+}
+
+.main-content:has(.wp-detail-container) {
+  overflow: hidden !important;
 
   scrollbar-width: none !important;
   -ms-overflow-style: none !important;
@@ -44,14 +48,17 @@ body:has(.wp-page) {
   display: flex !important;
   flex-direction: column !important;
   flex: 1 !important;
-  height: 100% !important;
-  max-height: 100% !important;
   min-height: 0 !important;
-  overflow: hidden !important;
   box-sizing: border-box !important;
   padding-top: 0 !important;
   padding-bottom: 0 !important;
   margin: 0 !important;
+
+  &:has(.wp-detail-container) {
+    height: 100% !important;
+    max-height: 100% !important;
+    overflow: hidden !important;
+  }
 
   @media (max-width: 1024px) {
     height: auto !important;
