@@ -245,71 +245,87 @@ function LevelTable({ levels, flowUuid, onDeleteLevel, onEditLevel, groupName })
   const [hoveredRow, setHoveredRow] = useState(null);
   const sorted = [...levels].sort((a, b) => a.level - b.level);
   return (
-    <div className="mb-3">
-      {sorted.map((lvl, i) => (
-        <div key={lvl.uuid || i}>
+    <div className="mb-0" style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+      {sorted.map((lvl, i) => {
+        const isLast = i === sorted.length - 1;
+        return (
+        <div key={lvl.uuid || i} style={{ transition: 'all 0.2s ease-in-out' }}>
           <div
-            style={{ display: 'flex', alignItems: 'center', gap: 12 }}
+            style={{ display: 'flex', alignItems: 'center', gap: 16 }}
             onMouseEnter={() => setHoveredRow(lvl.uuid)}
             onMouseLeave={() => setHoveredRow(null)}
           >
             <div style={{
-              width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
-              background: i === 0 ? '#17a2b8' : '#e9ecef',
-              color: i === 0 ? '#fff' : '#495057',
+              width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
+              background: '#F3F4F6',
+              color: '#374151',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 12, fontWeight: 700,
+              fontSize: 16, fontWeight: 700,
+              boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
             }}>
               {lvl.level}
             </div>
             <div style={{
               flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              padding: '8px 12px', borderRadius: 8,
-              background: i === 0 ? '#f0fbfd' : '#fafafa',
-              border: `1px solid ${i === 0 ? '#b2e4ed' : '#e9ecef'}`,
+              padding: '12px 16px', borderRadius: 8,
+              background: '#FFFFFF',
+              border: '1px solid #D1D5DB',
+              boxShadow: hoveredRow === lvl.uuid ? '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' : '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+              transition: 'all 0.2s ease',
             }}>
               <div>
-                <div style={{ fontSize: 12, fontWeight: 600, color: '#212529' }}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: '#212529', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   {lvl.Name || `Level ${lvl.level}`}
                   {i === 0 && (
-                    <span style={{ marginLeft: 8, fontSize: 10, background: '#17a2b8', color: '#fff', padding: '1px 7px', borderRadius: 10, fontWeight: 600 }}>
+                    <span style={{ fontSize: 11, background: '#00B8A9', color: '#fff', padding: '2px 8px', borderRadius: 4, fontWeight: 600 }}>
                       First Approver
                     </span>
                   )}
                   {!lvl.role_id && (
-                    <span style={{ marginLeft: 8, fontSize: 10, background: '#dc3545', color: '#fff', padding: '1px 7px', borderRadius: 10, fontWeight: 600 }}>
+                    <span style={{ fontSize: 11, background: '#DC2626', color: '#fff', padding: '2px 8px', borderRadius: 4, fontWeight: 600 }}>
                       Invalid — role required
                     </span>
                   )}
                 </div>
-                <div style={{ fontSize: 11, color: '#6c757d', marginTop: 2 }}>
+                <div style={{ fontSize: 12, color: '#6c757d', marginTop: 4, display: 'flex', alignItems: 'center', gap: '12px' }}>
                   {lvl.role_id && (
-                    <span><i className="fa fa-users me-1" />Role: {groupName(lvl.role_id) || `#${lvl.role_id}`}</span>
+                    <span><i className="fa fa-users me-1" />{groupName(lvl.role_id) || `#${lvl.role_id}`}</span>
                   )}
                   {lvl.user_id && (
-                    <span>{lvl.role_id && ' · '}<i className="fa fa-user me-1" />Preferred: {lvl.approver_name || `User #${lvl.user_id}`}</span>
+                    <span><i className="fa fa-user me-1" />{lvl.approver_name || `User #${lvl.user_id}`}</span>
                   )}
                   {!lvl.user_id && !lvl.role_id && '—'}
                 </div>
               </div>
-              <div className="d-flex gap-2" style={{ opacity: hoveredRow === lvl.uuid || !lvl.role_id ? 1 : 0, transition: 'opacity 0.15s' }}>
-                <button className="btn btn-sm btn-link text-info p-0" onClick={() => onEditLevel(flowUuid, lvl)} title="Edit level">
+              <div className="d-flex gap-2" style={{ opacity: hoveredRow === lvl.uuid || !lvl.role_id ? 1 : 0, transition: 'opacity 0.2s ease' }}>
+                <button 
+                  className="btn btn-sm btn-light text-info p-2 d-flex align-items-center justify-content-center" 
+                  style={{ width: 32, height: 32, borderRadius: 6 }}
+                  onClick={() => onEditLevel(flowUuid, lvl)} 
+                  title="Edit level"
+                >
                   <i className="fa fa-pencil" />
                 </button>
-                <button className="btn btn-sm btn-link text-danger p-0" onClick={() => onDeleteLevel(flowUuid, lvl.uuid)} title="Delete level">
-                  <i className="fa fa-times" />
-                </button>
+                {isLast && (
+                  <div title="Delete level">
+                    <button 
+                      className="btn btn-sm btn-light text-danger p-2 d-flex align-items-center justify-content-center"
+                      style={{ width: 32, height: 32, borderRadius: 6, cursor: 'pointer' }}
+                      onClick={() => onDeleteLevel(flowUuid, lvl.uuid)} 
+                    >
+                      <i className="fa fa-trash" />
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
-          {i < sorted.length - 1 && (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 32, margin: '2px 0' }}>
-              <div style={{ width: 2, height: 16, background: '#dee2e6' }} />
-              <i className="fa fa-chevron-down" style={{ color: '#adb5bd', fontSize: 9 }} />
-            </div>
-          )}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 40, margin: '4px 0' }}>
+            <div style={{ width: 2, height: 24, background: '#dee2e6' }} />
+            <i className="fa fa-chevron-down" style={{ color: '#adb5bd', fontSize: 10, marginTop: '-4px' }} />
+          </div>
         </div>
-      ))}
+      )})}
     </div>
   );
 }
@@ -573,9 +589,11 @@ function ApprovalFlowTab() {
                     <i className="fa fa-shield me-2" />{selectedFlowData.Name} — Levels
                   </h6>
                 </div>
-                <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
+                <div style={{ flex: 1, overflowY: 'auto', minHeight: 0, padding: '0 4px' }}>
                   {(!selectedFlowData.levels || selectedFlowData.levels.length === 0) ? (
-                    <p className="text-muted small mb-3">No approval levels yet. Add at least one level.</p>
+                    <div className="text-center p-4 border rounded dashed mb-3 bg-light">
+                      <p className="text-muted small mb-0">No approval levels yet. Add at least one level to create the workflow.</p>
+                    </div>
                   ) : (
                     <LevelTable
                       levels={selectedFlowData.levels}
@@ -586,59 +604,112 @@ function ApprovalFlowTab() {
                     />
                   )}
 
-                  {addingLevel === selectedFlowData.uuid ? (
-                    <form onSubmit={(e) => handleAddLevel(selectedFlowData.uuid, e)} className="bg-light rounded p-3 mt-3">
-                      <div className="row g-2 align-items-end">
-                        <div className="col-md-4">
-                          <label className="form-label fw-semibold small mb-1">Level Name</label>
-                          <input
-                            type="text"
-                            className="form-control form-control-sm"
-                            value={newLevel.name}
-                            onChange={e => setNewLevel(prev => ({ ...prev, name: e.target.value }))}
-                            placeholder={`Level ${(selectedFlowData.levels?.length || 0) + 1}`}
-                          />
+                  {(() => {
+                    const nextLevelNum = (selectedFlowData.levels?.length || 0) + 1;
+                    const editedLevel = editingLevel ? selectedFlowData.levels?.find(l => l.uuid === editingLevel) : null;
+                    const displayNum = editedLevel ? editedLevel.level : nextLevelNum;
+                    
+                    if (addingLevel === selectedFlowData.uuid) {
+                      return (
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16, transition: 'all 0.2s ease-in-out' }}>
+                          <div style={{
+                            width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
+                            background: editedLevel ? '#F3F4F6' : '#FFFFFF',
+                            border: editedLevel ? 'none' : '1px dashed #D1D5DB',
+                            color: editedLevel ? '#374151' : '#6B7280', 
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: 16, fontWeight: 700,
+                            boxShadow: editedLevel ? '0 1px 2px 0 rgba(0, 0, 0, 0.05)' : 'none',
+                          }}>
+                            {displayNum}
+                          </div>
+                          <form onSubmit={(e) => handleAddLevel(selectedFlowData.uuid, e)} style={{ flex: 1, background: '#F3F4F6', padding: '16px', border: '1px solid #D1D5DB', borderRadius: 8, boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' }}>
+                            <div className="row g-2 align-items-end">
+                              <div className="col-md-4">
+                                <label className="form-label fw-semibold small mb-1">Level Name</label>
+                                <input
+                                  type="text"
+                                  className="form-control form-control-sm"
+                                  value={newLevel.name}
+                                  onChange={e => setNewLevel(prev => ({ ...prev, name: e.target.value }))}
+                                  placeholder={`Level ${displayNum}`}
+                                />
+                              </div>
+                              <div className="col-md-4">
+                                <label className="form-label fw-semibold small mb-1">Role <span className="text-danger">*</span></label>
+                                <SearchableSelect
+                                  options={groupOptions}
+                                  value={newLevel.role_id}
+                                  onChange={val => setNewLevel(prev => ({ ...prev, role_id: val, user_id: '' }))}
+                                  placeholder="Select role"
+                                />
+                              </div>
+                              <div className="col-md-4">
+                                <label className="form-label fw-semibold small mb-1">Preferred Approver <span className="text-muted fw-normal">(optional)</span></label>
+                                <SearchableSelect
+                                  options={employeeOptions}
+                                  value={newLevel.user_id}
+                                  onChange={val => setNewLevel(prev => ({ ...prev, user_id: val }))}
+                                  placeholder={newLevel.role_id ? 'Notify all users in role' : 'Select a role first'}
+                                  disabled={!newLevel.role_id}
+                                />
+                              </div>
+                              <div className="col-12 d-flex align-items-center justify-content-between gap-2 mt-2">
+                                <span className="text-muted" style={{ fontSize: 11 }}>
+                                  Any user in the role may approve. A preferred approver changes notification routing only.
+                                </span>
+                                <div className="d-flex gap-2">
+                                  <button type="submit" className="btn btn-sm" style={{ background: '#0066CC', color: '#FFFFFF', borderRadius: 4, padding: '4px 12px', border: 'none', fontWeight: 500 }} disabled={savingLevel || !newLevel.role_id}>
+                                    {savingLevel ? <i className="fa fa-circle-o-notch fa-spin" /> : (editingLevel ? 'Save' : 'Add')}
+                                  </button>
+                                  <button type="button" className="btn btn-outline-secondary btn-sm" style={{ borderRadius: 4, padding: '4px 12px', fontWeight: 500 }}
+                                    onClick={() => { setAddingLevel(null); setEditingLevel(null); setNewLevel({ name: '', user_id: '', role_id: '' }); }}>
+                                    Cancel
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </form>
                         </div>
-                        <div className="col-md-4">
-                          <label className="form-label fw-semibold small mb-1">Role <span className="text-danger">*</span></label>
-                          <SearchableSelect
-                            options={groupOptions}
-                            value={newLevel.role_id}
-                            onChange={val => setNewLevel(prev => ({ ...prev, role_id: val, user_id: '' }))}
-                            placeholder="Select role"
-                          />
+                      );
+                    }
+                    
+                    return (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 16, transition: 'all 0.2s ease-in-out' }}>
+                        <div style={{
+                          width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
+                          background: '#FFFFFF', border: '1px dashed #D1D5DB',
+                          color: '#6B7280', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: 16, fontWeight: 700,
+                        }}>
+                          {nextLevelNum}
                         </div>
-                        <div className="col-md-4">
-                          <label className="form-label fw-semibold small mb-1">Preferred Approver <span className="text-muted fw-normal">(optional)</span></label>
-                          <SearchableSelect
-                            options={employeeOptions}
-                            value={newLevel.user_id}
-                            onChange={val => setNewLevel(prev => ({ ...prev, user_id: val }))}
-                            placeholder={newLevel.role_id ? 'Notify all users in role' : 'Select a role first'}
-                            disabled={!newLevel.role_id}
-                          />
-                        </div>
-                        <div className="col-12 d-flex align-items-center justify-content-between gap-2 mt-2">
-                          <span className="text-muted" style={{ fontSize: 11 }}>
-                            Any user in the role may approve. A preferred approver changes notification routing only.
-                          </span>
-                          <div className="d-flex gap-2">
-                            <button type="submit" className="btn btn-primary-dark btn-sm" disabled={savingLevel || !newLevel.role_id}>
-                              {savingLevel ? <i className="fa fa-circle-o-notch fa-spin" /> : (editingLevel ? 'Save' : 'Add')}
-                            </button>
-                            <button type="button" className="btn btn-outline-secondary btn-sm"
-                              onClick={() => { setAddingLevel(null); setEditingLevel(null); setNewLevel({ name: '', user_id: '', role_id: '' }); }}>
-                              Cancel
-                            </button>
+                        <div 
+                          style={{
+                            flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                            padding: '12px 16px', borderRadius: 8,
+                            background: '#FFFFFF',
+                            border: '1px dashed #D1D5DB',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                          }}
+                          onClick={() => { setEditingLevel(null); setNewLevel({ name: '', user_id: '', role_id: '' }); setAddingLevel(selectedFlowData.uuid); }}
+                          onMouseOver={(e) => { e.currentTarget.style.backgroundColor = '#F3F4F6'; e.currentTarget.style.borderColor = '#6B7280'; }}
+                          onMouseOut={(e) => { e.currentTarget.style.backgroundColor = '#FFFFFF'; e.currentTarget.style.borderColor = '#D1D5DB'; }}
+                        >
+                          <div>
+                            <div style={{ fontSize: 14, fontWeight: 600, color: '#374151', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <i className="fa fa-plus" />
+                              Add Approval Level
+                            </div>
+                            <div style={{ fontSize: 12, color: '#6B7280', marginTop: 4, display: 'flex', alignItems: 'center' }}>
+                              Click to configure this step
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </form>
-                  ) : (
-                    <button className="btn btn-outline-secondary btn-sm mt-3" onClick={() => { setEditingLevel(null); setNewLevel({ name: '', user_id: '', role_id: '' }); setAddingLevel(selectedFlowData.uuid); }}>
-                      <i className="fa fa-plus me-1" />Add Level
-                    </button>
-                  )}
+                    );
+                  })()}
                 </div>
               </>
             )}
@@ -1101,7 +1172,8 @@ export default function Setup() {
         onConfirm={dialog?.onConfirm}
         onCancel={() => setDialog(null)}
       />
-      <div className="mb-2" style={{ marginTop: '-8px' }}>
+      <style>{`.hide-scrollbar::-webkit-scrollbar { display: none; } .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }`}</style>
+      <div className="mb-2" style={{ paddingTop: '8px' }}>
         <h5 className="fw-bold text-primary-dark mb-0">Setup</h5>
       </div>
 
@@ -1219,8 +1291,8 @@ export default function Setup() {
                           padding: '0 12px',
                           fontSize: 12.5,
                           fontWeight: 600,
-                          borderRadius: 5,
-                          background: '#17A2B8',
+                          borderRadius: 4,
+                          background: '#0066CC',
                           color: '#FFFFFF',
                           border: 'none',
                           boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
@@ -1311,22 +1383,38 @@ export default function Setup() {
                         )}
                       </div>
 
-                      <div className="d-flex align-items-center justify-content-between pt-2 border-top">
-                        <div className="d-flex align-items-center gap-2" style={{ cursor: 'pointer' }}>
-                          <input
-                            type="checkbox"
-                            className="form-check-input mt-0"
-                            id="field-required"
-                            style={{ width: 15, height: 15, accentColor: '#17A2B8', cursor: 'pointer' }}
-                            checked={newField.is_required}
-                            onChange={e => setNewField(prev => ({ ...prev, is_required: e.target.checked }))}
-                          />
-                          <label className="form-check-label fw-semibold mb-0" htmlFor="field-required" style={{ fontSize: 12, color: '#334155', cursor: 'pointer' }}>
-                            Required Field
+                      <div className="d-flex align-items-center justify-content-between pt-3 mt-1 border-top">
+                        <div className="d-flex align-items-center gap-3">
+                          <label className="form-label fw-semibold mb-0" style={{ fontSize: 12, color: '#475569' }}>
+                            Requirement:
                           </label>
+                          <div className="d-flex gap-3">
+                            <label className="d-flex align-items-center gap-2 mb-0" style={{ cursor: 'pointer', fontSize: 12, color: '#334155' }}>
+                              <input 
+                                type="radio" 
+                                name="add-field-required" 
+                                className="form-check-input mt-0" 
+                                style={{ accentColor: '#0066CC', cursor: 'pointer' }} 
+                                checked={newField.is_required} 
+                                onChange={() => setNewField(prev => ({ ...prev, is_required: true }))} 
+                              />
+                              Required
+                            </label>
+                            <label className="d-flex align-items-center gap-2 mb-0" style={{ cursor: 'pointer', fontSize: 12, color: '#334155' }}>
+                              <input 
+                                type="radio" 
+                                name="add-field-required" 
+                                className="form-check-input mt-0" 
+                                style={{ accentColor: '#0066CC', cursor: 'pointer' }} 
+                                checked={!newField.is_required} 
+                                onChange={() => setNewField(prev => ({ ...prev, is_required: false }))} 
+                              />
+                              Optional
+                            </label>
+                          </div>
                         </div>
 
-                        <div className="d-flex align-items-center gap-3">
+                        <div className="d-flex align-items-center gap-2">
                           <button
                             type="button"
                             className="btn btn-sm btn-outline-secondary"
@@ -1343,8 +1431,8 @@ export default function Setup() {
                               padding: '0 14px',
                               fontSize: 12,
                               fontWeight: 600,
-                              borderRadius: 5,
-                              background: '#17A2B8',
+                              borderRadius: 4,
+                              background: '#0066CC',
                               color: '#FFFFFF',
                               border: 'none',
                             }}
@@ -1364,15 +1452,15 @@ export default function Setup() {
                       <div style={{ fontSize: 12, color: '#64748B' }}>Add fields to collect specific information for this permit type.</div>
                     </div>
                   ) : (
-                    <div style={{ border: '1px solid #E2E8F0', borderRadius: 8, overflow: 'hidden' }}>
-                      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <div className="table-responsive hide-scrollbar" style={{ border: '1px solid #D1D5DB', borderRadius: 8, overflowX: 'auto' }}>
+                      <table style={{ width: '100%', minWidth: 580, borderCollapse: 'collapse', tableLayout: 'auto' }}>
                         <thead>
                           <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
-                            <th style={{ padding: '9px 12px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748B', width: 36 }}>#</th>
-                            <th style={{ padding: '9px 12px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748B' }}>Field Name</th>
-                            <th style={{ padding: '9px 12px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748B' }}>Type</th>
-                            <th style={{ padding: '9px 12px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748B', textAlign: 'center', width: 90 }}>Required</th>
-                            <th style={{ padding: '9px 12px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748B', textAlign: 'right', width: 90 }}>Actions</th>
+                            <th style={{ padding: '9px 12px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748B', width: 40 }}>#</th>
+                            <th style={{ padding: '9px 12px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748B', minWidth: 200, width: '40%' }}>Field Name</th>
+                            <th style={{ padding: '9px 12px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748B', minWidth: 120 }}>Type</th>
+                            <th style={{ padding: '9px 12px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748B', textAlign: 'center', width: 110 }}>Required</th>
+                            <th style={{ padding: '9px 12px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748B', textAlign: 'right', width: 100 }}>Actions</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -1384,13 +1472,13 @@ export default function Setup() {
 
                             if (isEditing) {
                               return (
-                                <tr key={f.id} style={{ background: '#F0FBFD', borderBottom: '1px solid #E2E8F0', borderLeft: '3px solid #17A2B8' }}>
+                                <tr key={f.id} style={{ background: '#F3F4F6', borderBottom: '1px solid #D1D5DB', borderLeft: '3px solid #0066CC' }}>
                                   <td style={{ padding: '12px 16px', color: '#94A3B8', fontSize: 13, fontWeight: 500, verticalAlign: 'middle' }}>{i + 1}</td>
                                   <td style={{ padding: '12px 16px', verticalAlign: 'middle' }}>
                                     <input
                                       type="text"
                                       className="form-control"
-                                      style={{ height: 30, borderRadius: 5, border: '1.5px solid #17A2B8', fontSize: 13, fontWeight: 600, color: '#0F172A', padding: '0 8px', minWidth: 150 }}
+                                      style={{ height: 30, borderRadius: 4, border: '1.5px solid #0066CC', fontSize: 13, fontWeight: 600, color: '#0F172A', padding: '0 8px', minWidth: 150 }}
                                       value={editValues.name}
                                       onChange={e => setEditValues(p => ({ ...p, name: e.target.value }))}
                                       autoFocus
@@ -1406,19 +1494,15 @@ export default function Setup() {
                                     title="Click to toggle required"
                                   >
                                     {editValues.is_required ? (
-                                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 12, background: '#ECFDF5', color: '#047857', fontSize: 11.5, fontWeight: 600, border: '1px solid #A7F3D0' }}>
-                                        <i className="fa fa-check" style={{ fontSize: 10 }} /> Yes
-                                      </span>
+                                      <i className="fa fa-check-circle" style={{ fontSize: 18, color: '#10B981' }} />
                                     ) : (
-                                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 12, background: '#F8FAFC', color: '#64748B', fontSize: 11.5, fontWeight: 500, border: '1px solid #E2E8F0' }}>
-                                        No
-                                      </span>
+                                      <i className="fa fa-circle-thin" style={{ fontSize: 18, color: '#94A3B8' }} />
                                     )}
                                   </td>
                                   <td style={{ padding: '12px 16px', textAlign: 'right', verticalAlign: 'middle' }}>
-                                    <div className="d-flex align-items-center justify-content-end gap-3">
-                                      <button type="button" className="btn btn-sm btn-outline-secondary" style={{ height: 28, padding: '0 10px', fontSize: 12, borderRadius: 5 }} onClick={() => setEditingField(null)}>Cancel</button>
-                                      <button type="button" className="btn btn-sm" style={{ height: 28, padding: '0 12px', fontSize: 12, fontWeight: 600, borderRadius: 5, background: '#17A2B8', color: '#FFFFFF', border: 'none', boxShadow: '0 1px 2px rgba(0,0,0,0.04)' }} onClick={() => handleSaveEdit(f)} disabled={savingEdit}>
+                                    <div className="d-flex align-items-center justify-content-end gap-2">
+                                      <button type="button" className="btn btn-sm btn-outline-secondary" style={{ height: 28, padding: '0 10px', fontSize: 12, borderRadius: 4 }} onClick={() => setEditingField(null)}>Cancel</button>
+                                      <button type="button" className="btn btn-sm" style={{ height: 28, padding: '0 12px', fontSize: 12, fontWeight: 600, borderRadius: 4, background: '#0066CC', color: '#FFFFFF', border: 'none', boxShadow: '0 1px 2px rgba(0,0,0,0.04)' }} onClick={() => handleSaveEdit(f)} disabled={savingEdit}>
                                         {savingEdit ? <i className="fa fa-circle-o-notch fa-spin" /> : 'Save'}
                                       </button>
                                     </div>
@@ -1466,21 +1550,9 @@ export default function Setup() {
                                   title={isGlobal ? undefined : 'Click to toggle required'}
                                 >
                                   {fieldData.is_required ? (
-                                    <span style={{
-                                      display: 'inline-flex', alignItems: 'center', gap: 4,
-                                      padding: '2px 8px', borderRadius: 12, background: '#ECFDF5',
-                                      color: '#047857', fontSize: 11.5, fontWeight: 600, border: '1px solid #A7F3D0',
-                                    }}>
-                                      <i className="fa fa-check" style={{ fontSize: 10 }} /> Yes
-                                    </span>
+                                    <i className="fa fa-check-circle" style={{ fontSize: 18, color: '#10B981' }} title="Required" />
                                   ) : (
-                                    <span style={{
-                                      display: 'inline-flex', alignItems: 'center', gap: 4,
-                                      padding: '2px 8px', borderRadius: 12, background: '#F8FAFC',
-                                      color: '#64748B', fontSize: 11.5, fontWeight: 500, border: '1px solid #E2E8F0',
-                                    }}>
-                                      No
-                                    </span>
+                                    <i className="fa fa-circle-thin" style={{ fontSize: 18, color: '#CBD5E1' }} title="Optional" />
                                   )}
                                 </td>
                                 <td style={{ padding: '12px 16px', textAlign: 'right', verticalAlign: 'middle' }}>
