@@ -23,45 +23,31 @@ const normalizeRole = value => String(value || '').trim().toLowerCase();
 
 function FieldTypePicker({ value, onChange, compact = false }) {
   return (
-    <div
-      style={{
-        background: '#F3F4F6',
-        padding: compact ? 2 : 3,
-        borderRadius: compact ? 6 : 8,
-        display: 'inline-flex',
-        flexWrap: 'wrap',
-        gap: compact ? 2 : 3,
-        border: '1px solid #E5E7EB',
-      }}
-    >
-      {FIELD_TYPES.map(t => {
-        const active = value === t.value;
-        return (
-          <button
-            key={t.value}
-            type="button"
-            onClick={() => onChange(t.value)}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: compact ? 4 : 6,
-              padding: compact ? '3px 8px' : '5px 10px',
-              borderRadius: compact ? 4 : 6,
-              fontSize: compact ? 11.5 : 12,
-              fontWeight: active ? 600 : 500,
-              border: 'none',
-              background: active ? '#FFFFFF' : 'transparent',
-              color: active ? '#0D9488' : '#4B5563',
-              boxShadow: active ? '0 1px 2px rgba(0,0,0,0.06)' : 'none',
-              cursor: 'pointer',
-              transition: 'all 0.12s ease',
-            }}
-          >
-            <i className={`fa ${t.icon}`} style={{ fontSize: compact ? 10 : 11, color: active ? '#0D9488' : '#9CA3AF' }} />
-            {t.label}
-          </button>
-        );
-      })}
+    <div style={{ position: 'relative' }}>
+      <select
+        className="form-select"
+        style={{
+          appearance: 'none',
+          WebkitAppearance: 'none',
+          height: compact ? 30 : 32,
+          borderRadius: 5,
+          border: '1px solid #CBD5E1',
+          fontSize: compact ? 12 : 13,
+          color: '#0F172A',
+          background: '#FFFFFF',
+          width: '100%',
+          boxShadow: '0 1px 2px rgba(0,0,0,0.02)',
+          paddingRight: 24,
+          paddingLeft: 8
+        }}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      >
+        {FIELD_TYPES.map(t => (
+          <option key={t.value} value={t.value}>{t.label}</option>
+        ))}
+      </select>
+      <i className="fa fa-chevron-down" style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', fontSize: 10, color: '#64748B', pointerEvents: 'none' }} />
     </div>
   );
 }
@@ -1173,9 +1159,7 @@ export default function Setup() {
         onCancel={() => setDialog(null)}
       />
       <style>{`.hide-scrollbar::-webkit-scrollbar { display: none; } .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }`}</style>
-      <div className="mb-2" style={{ paddingTop: '8px' }}>
-        <h5 className="fw-bold text-primary-dark mb-0">Setup</h5>
-      </div>
+      {/* Setup Heading Removed */}
 
       <div style={{ display: 'flex', gap: 2, marginBottom: 24, borderBottom: '2px solid #E5E7EB', paddingBottom: 0 }}>
         {[
@@ -1316,18 +1300,10 @@ export default function Setup() {
                         <span className="fw-bold text-dark" style={{ fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.03em', color: '#475569' }}>
                           Add New Field
                         </span>
-                        <button
-                          type="button"
-                          className="btn btn-sm btn-link text-muted p-0 text-decoration-none"
-                          style={{ fontSize: 11.5 }}
-                          onClick={() => setShowAddField(false)}
-                        >
-                          <i className="fa fa-times me-1" /> Close
-                        </button>
                       </div>
 
                       <div className="row g-3 mb-2">
-                        <div className="col-md-6">
+                        <div className="col-12 col-md-6">
                           <label className="form-label fw-semibold mb-1" style={{ fontSize: 11.5, color: '#475569' }}>
                             Field Name <span className="text-danger">*</span>
                           </label>
@@ -1343,7 +1319,7 @@ export default function Setup() {
                           />
                         </div>
 
-                        <div className="col-md-6">
+                        <div className="col-12 col-md-6">
                           <label className="form-label fw-semibold mb-1" style={{ fontSize: 11.5, color: '#475569' }}>
                             Type <span className="text-danger">*</span>
                           </label>
@@ -1353,7 +1329,7 @@ export default function Setup() {
                         </div>
 
                         {newField.type !== 'checkbox' && (
-                          <div className={newField.type === 'select' ? "col-md-6" : "col-md-12"}>
+                          <div className={newField.type === 'select' ? "col-12 col-md-6" : "col-12"}>
                             <label className="form-label fw-semibold mb-1" style={{ fontSize: 11.5, color: '#475569' }}>Placeholder</label>
                             <input
                               type="text"
@@ -1367,7 +1343,7 @@ export default function Setup() {
                         )}
 
                         {newField.type === 'select' && (
-                          <div className="col-md-6">
+                          <div className="col-12 col-md-6">
                             <label className="form-label fw-semibold mb-1" style={{ fontSize: 11.5, color: '#475569' }}>
                               Options <span className="text-muted fw-normal">(comma-separated)</span>
                             </label>
@@ -1383,35 +1359,18 @@ export default function Setup() {
                         )}
                       </div>
 
-                      <div className="d-flex align-items-center justify-content-between pt-3 mt-1 border-top">
+                      <div className="d-flex align-items-center justify-content-between pt-3 mt-1 border-top flex-wrap gap-2">
                         <div className="d-flex align-items-center gap-3">
-                          <label className="form-label fw-semibold mb-0" style={{ fontSize: 12, color: '#475569' }}>
-                            Requirement:
+                          <label className="d-flex align-items-center gap-2 mb-0" style={{ cursor: 'pointer', fontSize: 12, color: '#334155', fontWeight: 600 }}>
+                            <input 
+                              type="checkbox" 
+                              className="form-check-input mt-0" 
+                              style={{ accentColor: '#0066CC', cursor: 'pointer', width: 16, height: 16 }} 
+                              checked={newField.is_required} 
+                              onChange={(e) => setNewField(prev => ({ ...prev, is_required: e.target.checked }))} 
+                            />
+                            Required Field
                           </label>
-                          <div className="d-flex gap-3">
-                            <label className="d-flex align-items-center gap-2 mb-0" style={{ cursor: 'pointer', fontSize: 12, color: '#334155' }}>
-                              <input 
-                                type="radio" 
-                                name="add-field-required" 
-                                className="form-check-input mt-0" 
-                                style={{ accentColor: '#0066CC', cursor: 'pointer' }} 
-                                checked={newField.is_required} 
-                                onChange={() => setNewField(prev => ({ ...prev, is_required: true }))} 
-                              />
-                              Required
-                            </label>
-                            <label className="d-flex align-items-center gap-2 mb-0" style={{ cursor: 'pointer', fontSize: 12, color: '#334155' }}>
-                              <input 
-                                type="radio" 
-                                name="add-field-required" 
-                                className="form-check-input mt-0" 
-                                style={{ accentColor: '#0066CC', cursor: 'pointer' }} 
-                                checked={!newField.is_required} 
-                                onChange={() => setNewField(prev => ({ ...prev, is_required: false }))} 
-                              />
-                              Optional
-                            </label>
-                          </div>
                         </div>
 
                         <div className="d-flex align-items-center gap-2">

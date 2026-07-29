@@ -115,7 +115,7 @@ export default function NewWorkPermit() {
   const [form, setForm] = useState({
     "Sequence No": '', asset_id: '', loto_no: '', location_uuid: '',
     description: '', work_to_be_carried: '', attended_by: '',
-    no_of_persons: '', start_date: '', start_time: '',
+    no_of_persons: '', start_date: getTodayStr(), start_time: '',
     period_of_work: '', priority: '', type: '',
     vendor_uuid: '', vendor_contact_name: '', vendor_email: '', vendor_mobile: '',
     alt_email: '', alt_mobile: '',
@@ -509,6 +509,28 @@ export default function NewWorkPermit() {
                   placeholder="e.g. 4"
                   min={0}
                 />
+                <div className="d-flex gap-2 mt-2">
+                  {[4, 6, 12].map(hrs => (
+                    <button
+                      key={hrs}
+                      type="button"
+                      onClick={() => setForm(prev => ({ ...prev, period_of_work: String(hrs) }))}
+                      style={{
+                        padding: '2px 8px',
+                        fontSize: 11,
+                        borderRadius: 12,
+                        border: '1px solid #D1D5DB',
+                        background: form.period_of_work === String(hrs) ? '#E6F4F1' : '#F3F4F6',
+                        color: form.period_of_work === String(hrs) ? '#0D9488' : '#4B5563',
+                        fontWeight: form.period_of_work === String(hrs) ? 600 : 500,
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease'
+                      }}
+                    >
+                      {hrs}h
+                    </button>
+                  ))}
+                </div>
                 {form.period_of_work !== '' && !isNaN(Number(form.period_of_work)) && (
                   <div className="text-muted mt-1" style={{ fontSize: 11 }}>
                     {formatDuration(Number(form.period_of_work))}
@@ -516,6 +538,34 @@ export default function NewWorkPermit() {
                 )}
               </Field>
             </div>
+            <div className="col-md-3">
+              <Field label="Calculated Due Date & Time">
+                <input
+                  type="text"
+                  className="form-control"
+                  style={{ ...commonInputStyle, background: '#F3F4F6', color: '#6B7280', cursor: 'not-allowed' }}
+                  value={
+                    form.start_date && form.start_time && form.period_of_work && !isNaN(Number(form.period_of_work))
+                      ? (() => {
+                          const d = new Date(`${form.start_date}T${form.start_time}`);
+                          if (!isNaN(d.getTime())) {
+                            d.setMinutes(d.getMinutes() + parseFloat(form.period_of_work) * 60);
+                            return `${d.toLocaleDateString('en-GB')} ${d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`;
+                          }
+                          return '0';
+                        })()
+                      : '0'
+                  }
+                  placeholder="0"
+                  readOnly
+                  disabled
+                />
+              </Field>
+            </div>
+          </div>
+
+          {/* Row 3: No. of Persons, LOTO No., Attended By, Approval Flow */}
+          <div className="row g-3">
             <div className="col-md-3">
               <Field label="No. of Persons" required error={err(!form.no_of_persons)}>
                 <input
@@ -531,11 +581,7 @@ export default function NewWorkPermit() {
                 />
               </Field>
             </div>
-          </div>
-
-          {/* Row 3: LOTO No., Attended By, Approval Flow */}
-          <div className="row g-3">
-            <div className="col-md-4">
+            <div className="col-md-3">
               <Field label="LOTO No. (optional)">
                 <input
                   type="text"
@@ -548,7 +594,7 @@ export default function NewWorkPermit() {
                 />
               </Field>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-3">
               <Field label="Attended By (optional)">
                 <SearchableSelect
                   options={employeeOptions}
@@ -558,7 +604,7 @@ export default function NewWorkPermit() {
                 />
               </Field>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-3">
               <Field label="Approval Flow">
                 <SearchableSelect
                   options={validApprovalFlows.map(f => ({ value: f.uuid, label: f.Name }))}

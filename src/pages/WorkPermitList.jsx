@@ -541,9 +541,9 @@ export default function WorkPermitList() {
         boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
       }}>
         {/* ── Row 1: Search, Dropdowns, Divider, Chips & Action Buttons ── */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 12 }}>
+        <div className="hide-scrollbar" style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'nowrap', overflowX: 'auto', marginBottom: 12, paddingBottom: 4 }}>
           {/* Search bar */}
-          <div style={{ position: 'relative', minWidth: 260, flex: '1 1 auto' }}>
+          <div style={{ position: 'relative', minWidth: 260, flexShrink: 0 }}>
             <input
               type="text"
               style={{
@@ -563,28 +563,28 @@ export default function WorkPermitList() {
           </div>
 
           {/* Dropdown 1: All types */}
-          <TypePillSelect
+          <div style={{ flexShrink: 0 }}><TypePillSelect
             value={filters.type}
             onChange={val => handleFilter('type', val)}
             types={permitTypes}
-          />
+          /></div>
 
           {/* Dropdown 2: All priorities */}
-          <PrioritySelect
+          <div style={{ flexShrink: 0 }}><PrioritySelect
             value={filters.priority || ''}
             onChange={val => handleFilter('priority', val)}
-          />
+          /></div>
 
           {/* Dropdown 3: Date range */}
-          <DateRangePicker
+          <div style={{ flexShrink: 0 }}><DateRangePicker
             from={filters.date_from}
             to={filters.date_to}
             onFrom={val => handleFilter('date_from', val)}
             onTo={val => handleFilter('date_to', val)}
-          />
+          /></div>
 
           {/* Vertical divider line */}
-          <div style={{ height: 20, width: 1, background: '#E5E7EB', margin: '0 2px' }} />
+          <div style={{ height: 20, width: 1, background: '#E5E7EB', margin: '0 2px', flexShrink: 0 }} />
 
           {/* Summary Chips */}
           {(() => {
@@ -597,7 +597,7 @@ export default function WorkPermitList() {
             }).length;
 
             return (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
                 <span
                   onClick={() => {
                     const next = { ...filters, status: '', priority: '', is_overdue: false, page_no: 1 };
@@ -678,8 +678,8 @@ export default function WorkPermitList() {
         </div>
 
         {/* ── Row 2: Status Pills (Non-zero count filled pills first, 0 value pills after) ── */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap', paddingTop: 2 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+        <div className="hide-scrollbar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'nowrap', overflowX: 'auto', paddingTop: 2 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'nowrap', flexShrink: 0 }}>
             {[...statusPills]
               .sort((a, b) => {
                 const countA = permits.filter(p => p.status === a.value).length;
@@ -732,8 +732,9 @@ export default function WorkPermitList() {
 
       {/* ── Table Container ── */}
       <div style={{ borderRadius: 8, overflow: 'hidden', border: '1px solid #E5E7EB', background: '#fff' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 900 }}>
+            <thead>
             <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E5E7EB' }}>
               <th style={{ padding: '12px 16px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#0066CC', whiteSpace: 'nowrap' }}>PERMIT NO</th>
               <th style={{ padding: '12px 16px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#0066CC', whiteSpace: 'nowrap' }}>TYPE</th>
@@ -863,6 +864,7 @@ export default function WorkPermitList() {
             )}
           </tbody>
         </table>
+        </div>
 
         {/* Loading more inside table card */}
         {loadingMore && (

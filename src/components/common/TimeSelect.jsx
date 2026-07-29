@@ -1,11 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
 
-const HOURS = Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, '0'));
-const MINUTES = ['00', '05', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55'];
-
 function parse(val) {
   if (!val) return { hour: '09', minute: '00', period: 'AM' };
-  const [h, m] = val.split(':').map(Number);
+  const parts = val.split(':').map(Number);
+  const h = parts[0] || 0;
+  const m = parts[1] || 0;
   return {
     hour: String(h === 0 ? 12 : h > 12 ? h - 12 : h).padStart(2, '0'),
     minute: String(m).padStart(2, '0'),
@@ -67,20 +66,44 @@ export default function TimeSelect({
     setOpen(false);
   };
 
-  const handleOptionClick = (h, m, p) => {
-    setSelHour(h);
-    setSelMinute(m);
-    setSelPeriod(p);
-    if (!isBelowMin(h, m, p)) {
-      onChange(toHHMM(h, m, p));
+  const adjust = (type, dir) => {
+    if (type === 'hour') {
+      let h = parseInt(selHour, 10);
+      h = dir === 1 ? h + 1 : h - 1;
+      if (h > 12) h = 1;
+      if (h < 1) h = 12;
+      setSelHour(String(h).padStart(2, '0'));
+    } else if (type === 'minute') {
+      let m = parseInt(selMinute, 10);
+      m = dir === 1 ? m + 1 : m - 1;
+      if (m > 59) m = 0;
+      if (m < 0) m = 59;
+      setSelMinute(String(m).padStart(2, '0'));
     }
   };
 
-  const displayString = value ? `${selHour}:${selMinute} ${selPeriod}` : '';
+  let displayString = '';
+  if (value) {
+    const p = parse(value);
+    displayString = `${parseInt(p.hour, 10)} : ${p.minute} ${p.period}`;
+  }
+
+  const arrowBtnStyle = {
+    width: 28,
+    height: 28,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 6,
+    border: '1px solid #E5E7EB',
+    background: '#FFFFFF',
+    color: '#6B7280',
+    cursor: 'pointer',
+    boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+  };
 
   return (
     <div ref={containerRef} style={{ position: 'relative' }}>
-      {/* Input container matching screenshot */}
       <div
         className="form-control form-control-sm d-flex align-items-center justify-content-between"
         style={{
@@ -93,7 +116,15 @@ export default function TimeSelect({
           padding: '6px 12px',
           transition: 'all 0.15s ease',
         }}
-        onClick={() => !disabled && setOpen(o => !o)}
+        onClick={() => {
+          if (!disabled) {
+            const p = parse(value);
+            setSelHour(p.hour);
+            setSelMinute(p.minute);
+            setSelPeriod(p.period);
+            setOpen(o => !o);
+          }
+        }}
       >
         <span style={{ fontSize: 13, color: displayString ? '#111827' : '#9CA3AF', fontWeight: displayString ? 500 : 400 }}>
           {displayString || placeholder}
@@ -101,7 +132,6 @@ export default function TimeSelect({
         <i className="fa fa-clock-o" style={{ fontSize: 14, color: '#9CA3AF' }} />
       </div>
 
-      {/* Clean 3-Column Popover: HR | MIN | AM/PM */}
       {open && (
         <div
           style={{
@@ -113,123 +143,100 @@ export default function TimeSelect({
             border: '1px solid #E5E7EB',
             borderRadius: 12,
             boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.05)',
-            width: 230,
-            padding: 12,
+            width: 280,
+            padding: '16px',
             userSelect: 'none',
           }}
         >
-          {/* Column Header Labels */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6, marginBottom: 6, textAlign: 'center' }}>
-            <span style={{ fontSize: 11, fontWeight: 700, color: '#6B7280', letterSpacing: '0.05em' }}>HR</span>
-            <span style={{ fontSize: 11, fontWeight: 700, color: '#6B7280', letterSpacing: '0.05em' }}>MIN</span>
-            <span style={{ fontSize: 11, fontWeight: 700, color: '#6B7280', letterSpacing: '0.05em' }}>AM/PM</span>
-          </div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+            {/* Hour and Minute Controls */}
+            <div style={{ display: 'flex', gap: 16 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                <button type="button" onClick={() => adjust('hour', 1)} style={arrowBtnStyle}><i className="fa fa-chevron-up" style={{ fontSize: 9 }} /></button>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: '#111827' }}>{parseInt(selHour, 10)}</div>
+                  <div style={{ fontSize: 10, color: '#6B7280', marginTop: 2 }}>hour</div>
+                </div>
+                <button type="button" onClick={() => adjust('hour', -1)} style={arrowBtnStyle}><i className="fa fa-chevron-down" style={{ fontSize: 9 }} /></button>
+              </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6, alignItems: 'start' }}>
-            {/* Hour Column */}
-            <div style={{ maxHeight: 160, overflowY: 'auto', paddingRight: 2 }}>
-              {HOURS.map(h => {
-                const dis = isBelowMin(h, selMinute, selPeriod);
-                const isSelected = selHour === h;
-                return (
-                  <div
-                    key={h}
-                    onClick={() => !dis && handleOptionClick(h, selMinute, selPeriod)}
-                    style={{
-                      padding: '5px 0',
-                      textAlign: 'center',
-                      fontSize: 13,
-                      fontWeight: isSelected ? 700 : 400,
-                      borderRadius: 6,
-                      cursor: dis ? 'not-allowed' : 'pointer',
-                      background: isSelected ? '#EFF6FF' : 'transparent',
-                      color: dis ? '#D1D5DB' : isSelected ? '#2563EB' : '#374151',
-                      marginBottom: 2,
-                      transition: 'background 0.1s ease',
-                    }}
-                  >
-                    {h}
-                  </div>
-                );
-              })}
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                <button type="button" onClick={() => adjust('minute', 1)} style={arrowBtnStyle}><i className="fa fa-chevron-up" style={{ fontSize: 9 }} /></button>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: '#111827' }}>{selMinute}</div>
+                  <div style={{ fontSize: 10, color: '#6B7280', marginTop: 2 }}>min</div>
+                </div>
+                <button type="button" onClick={() => adjust('minute', -1)} style={arrowBtnStyle}><i className="fa fa-chevron-down" style={{ fontSize: 9 }} /></button>
+              </div>
             </div>
 
-            {/* Minute Column */}
-            <div style={{ maxHeight: 160, overflowY: 'auto', paddingRight: 2 }}>
-              {MINUTES.map(m => {
-                const dis = isBelowMin(selHour, m, selPeriod);
-                const isSelected = selMinute === m;
-                return (
-                  <div
-                    key={m}
-                    onClick={() => !dis && handleOptionClick(selHour, m, selPeriod)}
-                    style={{
-                      padding: '5px 0',
-                      textAlign: 'center',
-                      fontSize: 13,
-                      fontWeight: isSelected ? 700 : 400,
-                      borderRadius: 6,
-                      cursor: dis ? 'not-allowed' : 'pointer',
-                      background: isSelected ? '#EFF6FF' : 'transparent',
-                      color: dis ? '#D1D5DB' : isSelected ? '#2563EB' : '#374151',
-                      marginBottom: 2,
-                      transition: 'background 0.1s ease',
-                    }}
-                  >
-                    {m}
-                  </div>
-                );
-              })}
-            </div>
+            {/* Vertical Divider */}
+            <div style={{ width: 1, height: '80%', background: '#E5E7EB' }} />
 
-            {/* AM / PM Segment Buttons */}
+            {/* AM/PM Controls */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {['AM', 'PM'].map(p => {
-                const isSelected = selPeriod === p;
-                const dis = isBelowMin(selHour, selMinute, p);
-                return (
-                  <button
-                    key={p}
-                    type="button"
-                    disabled={dis}
-                    onClick={() => !dis && handleOptionClick(selHour, selMinute, p)}
-                    style={{
-                      padding: '6px 0',
-                      borderRadius: 6,
-                      fontSize: 12,
-                      fontWeight: 700,
-                      cursor: dis ? 'not-allowed' : 'pointer',
-                      border: isSelected ? '1px solid #2563EB' : '1px solid #D1D5DB',
-                      background: isSelected ? '#2563EB' : '#FFFFFF',
-                      color: isSelected ? '#FFFFFF' : '#374151',
-                      transition: 'all 0.12s ease',
-                    }}
-                  >
-                    {p}
-                  </button>
-                );
-              })}
+              {['AM', 'PM'].map(p => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => setSelPeriod(p)}
+                  style={{
+                    padding: '8px 16px',
+                    borderRadius: 6,
+                    fontSize: 12,
+                    fontWeight: 600,
+                    border: 'none',
+                    background: selPeriod === p ? '#2563EB' : '#F3F4F6',
+                    color: selPeriod === p ? '#FFFFFF' : '#4B5563',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  {p}
+                </button>
+              ))}
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={handleDone}
-            style={{
-              marginTop: 10,
-              width: '100%',
-              padding: '6px',
-              borderRadius: 8,
-              border: 'none',
-              background: '#2563EB',
-              color: '#FFFFFF',
-              fontWeight: 600,
-              fontSize: 12,
-              cursor: 'pointer',
-            }}
-          >
-            Done
-          </button>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 20, paddingTop: 16, borderTop: '1px solid #E5E7EB' }}>
+            <span style={{ fontSize: 12, fontWeight: 500, color: '#4B5563' }}>
+              {parseInt(selHour, 10)} : {selMinute} {selPeriod}
+            </span>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: 6,
+                  border: '1px solid #D1D5DB',
+                  background: '#FFFFFF',
+                  color: '#374151',
+                  fontWeight: 600,
+                  fontSize: 12,
+                  cursor: 'pointer',
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDone}
+                style={{
+                  padding: '6px 16px',
+                  borderRadius: 6,
+                  border: 'none',
+                  background: '#2563EB',
+                  color: '#FFFFFF',
+                  fontWeight: 600,
+                  fontSize: 12,
+                  cursor: 'pointer',
+                }}
+              >
+                OK
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -245,3 +252,4 @@ export default function TimeSelect({
     </div>
   );
 }
+
