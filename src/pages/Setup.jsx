@@ -195,26 +195,113 @@ function FieldTypePicker({ value, onChange }) {
 function MobilePermitTypeSelect({ types, selectedId, onSelect, activatingId, deleting }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
-  const ref = useRef(null);
+  const [menuStyle, setMenuStyle] = useState({});
+  const triggerRef = useRef(null);
+  const menuRef = useRef(null);
+
   const selected = types.find(t => t.value === selectedId);
   const filtered = search.trim()
     ? types.filter(t => t.label.toLowerCase().includes(search.toLowerCase()))
     : types;
 
+  const openMenu = () => {
+    if (triggerRef.current) {
+      const r = triggerRef.current.getBoundingClientRect();
+      setMenuStyle({
+        position: 'absolute',
+        top: r.bottom + window.scrollY + 6,
+        left: r.left + window.scrollX,
+        width: r.width,
+        zIndex: 999999,
+      });
+    }
+    setOpen(true);
+  };
+
   useEffect(() => {
     if (!open) return;
-    const handler = e => { if (ref.current && !ref.current.contains(e.target)) { setOpen(false); setSearch(''); } };
+    const handler = (e) => {
+      if (
+        triggerRef.current && !triggerRef.current.contains(e.target) &&
+        menuRef.current && !menuRef.current.contains(e.target)
+      ) {
+        setOpen(false);
+        setSearch('');
+      }
+    };
+    const resizeHandler = () => { setOpen(false); setSearch(''); };
     document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
+    window.addEventListener('resize', resizeHandler);
+    return () => {
+      document.removeEventListener('mousedown', handler);
+      window.removeEventListener('resize', resizeHandler);
+    };
   }, [open]);
 
+  const menu = open && createPortal(
+    <div
+      ref={menuRef}
+      style={{
+        ...menuStyle,
+        background: '#fff', border: '1px solid #E2E8F0', borderRadius: 10,
+        boxShadow: '0 8px 24px rgba(0,0,0,0.12)', overflow: 'hidden',
+      }}
+    >
+      <div style={{ padding: 8, borderBottom: '1px solid #F1F5F9' }}>
+        <div style={{ position: 'relative' }}>
+          <i className="fa fa-search" style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#aaa', fontSize: 12 }} />
+          <input
+            autoFocus
+            type="text"
+            placeholder="Search permit types..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            onClick={e => e.stopPropagation()}
+            style={{
+              width: '100%', height: 38, paddingLeft: 30, paddingRight: 10,
+              border: '1px solid #CBD5E1', borderRadius: 6, fontSize: 13,
+              outline: 'none', boxSizing: 'border-box',
+            }}
+          />
+        </div>
+      </div>
+      <div style={{ maxHeight: 260, overflowY: 'auto' }}>
+        {filtered.length === 0 ? (
+          <div style={{ padding: '16px', textAlign: 'center', fontSize: 13, color: '#9CA3AF' }}>No types found</div>
+        ) : filtered.map(t => (
+          <div
+            key={t.value}
+            onMouseDown={() => { onSelect(t.value); setOpen(false); setSearch(''); }}
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '12px 16px', cursor: 'pointer',
+              background: t.value === selectedId ? '#E0F7FA' : 'transparent',
+              borderLeft: t.value === selectedId ? '3px solid #17A2B8' : '3px solid transparent',
+              fontSize: 14, fontWeight: t.value === selectedId ? 600 : 400,
+              color: t.value === selectedId ? '#17A2B8' : '#374151',
+              transition: 'background 0.1s',
+            }}
+            onMouseEnter={e => { if (t.value !== selectedId) e.currentTarget.style.background = '#F8FAFC'; }}
+            onMouseLeave={e => { if (t.value !== selectedId) e.currentTarget.style.background = 'transparent'; }}
+          >
+            <span>{t.label}</span>
+            {t.value === selectedId && <i className="fa fa-check" style={{ fontSize: 12, color: '#17A2B8' }} />}
+            {activatingId === t.value && <i className="fa fa-circle-o-notch fa-spin" style={{ fontSize: 12, color: '#17A2B8' }} />}
+          </div>
+        ))}
+      </div>
+    </div>,
+    document.body
+  );
+
   return (
-    <div ref={ref} style={{ marginBottom: 16, position: 'relative' }}>
+    <div style={{ marginBottom: 16, position: 'relative' }}>
       <label style={{ fontSize: 11, fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6, display: 'block' }}>
         Permit Type
       </label>
       <div
-        onClick={() => setOpen(o => !o)}
+        ref={triggerRef}
+        onClick={() => open ? (setOpen(false), setSearch('')) : openMenu()}
         style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '0 14px', height: 44, borderRadius: 8, cursor: 'pointer',
@@ -231,58 +318,7 @@ function MobilePermitTypeSelect({ types, selectedId, onSelect, activatingId, del
         </span>
         <i className={`fa fa-chevron-${open ? 'up' : 'down'}`} style={{ fontSize: 12, color: '#9CA3AF', flexShrink: 0, marginLeft: 8 }} />
       </div>
-
-      {open && (
-        <div style={{
-          position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0, zIndex: 9999,
-          background: '#fff', border: '1px solid #E2E8F0', borderRadius: 10,
-          boxShadow: '0 8px 24px rgba(0,0,0,0.12)', overflow: 'hidden',
-        }}>
-          <div style={{ padding: 8, borderBottom: '1px solid #F1F5F9' }}>
-            <div style={{ position: 'relative' }}>
-              <i className="fa fa-search" style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#aaa', fontSize: 12 }} />
-              <input
-                autoFocus
-                type="text"
-                placeholder="Search permit types..."
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                onClick={e => e.stopPropagation()}
-                style={{
-                  width: '100%', height: 38, paddingLeft: 30, paddingRight: 10,
-                  border: '1px solid #CBD5E1', borderRadius: 6, fontSize: 13,
-                  outline: 'none', boxSizing: 'border-box',
-                }}
-              />
-            </div>
-          </div>
-          <div style={{ maxHeight: 260, overflowY: 'auto' }}>
-            {filtered.length === 0 ? (
-              <div style={{ padding: '16px', textAlign: 'center', fontSize: 13, color: '#9CA3AF' }}>No types found</div>
-            ) : filtered.map(t => (
-              <div
-                key={t.value}
-                onMouseDown={() => { onSelect(t.value); setOpen(false); setSearch(''); }}
-                style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  padding: '12px 16px', cursor: 'pointer',
-                  background: t.value === selectedId ? '#E0F7FA' : 'transparent',
-                  borderLeft: t.value === selectedId ? '3px solid #17A2B8' : '3px solid transparent',
-                  fontSize: 14, fontWeight: t.value === selectedId ? 600 : 400,
-                  color: t.value === selectedId ? '#17A2B8' : '#374151',
-                  transition: 'background 0.1s',
-                }}
-                onMouseEnter={e => { if (t.value !== selectedId) e.currentTarget.style.background = '#F8FAFC'; }}
-                onMouseLeave={e => { if (t.value !== selectedId) e.currentTarget.style.background = 'transparent'; }}
-              >
-                <span>{t.label}</span>
-                {t.value === selectedId && <i className="fa fa-check" style={{ fontSize: 12, color: '#17A2B8' }} />}
-                {activatingId === t.value && <i className="fa fa-circle-o-notch fa-spin" style={{ fontSize: 12, color: '#17A2B8' }} />}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      {menu}
     </div>
   );
 }
@@ -1496,8 +1532,8 @@ export default function Setup() {
           .fields-cards-wrap { display: flex !important; }
           /* Show mobile permit selector */
           .mobile-permit-select { display: block !important; }
-          /* Ensure card padding on mobile */
-          .container-rounded-white { padding: 16px !important; }
+          /* Ensure card padding and prevent dropdown clipping on mobile */
+          .container-rounded-white { padding: 16px !important; overflow: visible !important; }
         }
         @media (min-width: 769px) {
           .fields-table-wrap { display: block !important; }
