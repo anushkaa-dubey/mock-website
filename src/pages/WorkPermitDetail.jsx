@@ -1087,16 +1087,16 @@ export default function WorkPermitDetail() {
               <div className="d-flex align-items-center gap-2 mb-1" style={{ fontSize: '10px', fontWeight: 700, color: '#6b7280', letterSpacing: '0.05em' }}>
                 WORK PERMIT · {typeLabel(permit.type).toUpperCase()}
               </div>
-              <div className="d-flex align-items-center gap-2 mb-1">
-                <h4 className="wp-header-title text-truncate mb-0" style={{ fontSize: '16px', fontWeight: 700, color: '#0B4A54' }}>
+              <div className="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                <h4 className="wp-header-title mb-0" style={{ fontSize: '16px', fontWeight: 700, color: '#0B4A54', wordBreak: 'break-word' }}>
                   {permit["Sequence No"]} · {permit.asset_name || permit.location_name}
                 </h4>
                 {permit.priority && (
-                  <span className="status-badge" style={{ fontSize: 9.5, background: '#FFF7ED', color: '#C2410C', padding: '2px 8px', borderRadius: '999px', fontWeight: 700 }}>
+                  <span className="status-badge" style={{ fontSize: 9.5, background: '#FFF7ED', color: '#C2410C', padding: '2px 8px', borderRadius: '999px', fontWeight: 700, whiteSpace: 'nowrap' }}>
                     {permit.priority.toUpperCase()} PRIORITY
                   </span>
                 )}
-                <span className="status-badge" style={{ fontSize: 9.5, padding: '2px 8px', borderRadius: '999px', fontWeight: 700, ...getStatusStyle(status, 'bg') }}>
+                <span className="status-badge" style={{ fontSize: 9.5, padding: '2px 8px', borderRadius: '999px', fontWeight: 700, whiteSpace: 'nowrap', ...getStatusStyle(status, 'bg') }}>
                   {status.replace(/_/g, ' ')}
                 </span>
               </div>

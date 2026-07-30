@@ -1259,10 +1259,7 @@ $wp-font: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Rob
     }
   }
 
-  // Sidebar on mobile
-  .sidebar {
-    display: none !important;
-  }
+  // Sidebar handled by _utilities.scss via transform
 
   .with-sidebar {
     margin-left: 0 !important;
