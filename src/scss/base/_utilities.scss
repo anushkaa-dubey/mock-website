@@ -224,6 +224,28 @@ $sidebar-expanded: 220px;
   }
 }
 
+/* ─── Mobile: unlock page scrolling ───────────────────── */
+@media (max-width: 768px) {
+  .page-wrapper {
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+  }
+
+  .content-wrapper {
+    overflow: visible;
+    min-height: calc(100vh - 56px);
+  }
+
+  .main-content {
+    overflow-y: auto;
+    height: auto !important;
+    max-height: none !important;
+    padding: 12px 12px 24px 12px;
+  }
+}
+
+
 /* ─── Dashboard Stat Cards ─────────────────────────────── */
 .dash-stat-card {
   background: #fff;

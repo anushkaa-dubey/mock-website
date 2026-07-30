@@ -634,3 +634,91 @@ body:has(.wp-detail-container) {
     .wp-linked-gp-qr { width: 120px; height: 120px; }
   }
 }
+
+// ─── Global Mobile Responsive Styles ─────────────────────────
+@media (max-width: 768px) {
+  // Make main content area scroll on mobile (remove fixed height constraints)
+  .main-content:has(.wp-page) {
+    height: auto !important;
+    max-height: none !important;
+    overflow-y: auto !important;
+    padding: 12px !important;
+  }
+
+  .wp-page {
+    // Header responsiveness
+    .wp-header {
+      flex-direction: column !important;
+      gap: 10px !important;
+      padding: 14px 16px !important;
+    }
+
+    .wp-header-right {
+      width: 100%;
+      flex-wrap: wrap !important;
+      gap: 6px !important;
+
+      .wp-chip,
+      .status-badge,
+      .wp-btn-action-header,
+      .wp-btn-cancel-header,
+      .wp-btn-activate-header {
+        height: 26px !important;
+        font-size: 10px !important;
+        padding: 0 10px !important;
+      }
+    }
+
+    .wp-header-title { font-size: 16px !important; }
+
+    // Detail page - stack columns
+    .wp-detail-container {
+      flex-direction: column !important;
+      height: auto !important;
+      overflow: visible !important;
+    }
+
+    .wp-left-col,
+    .wp-right-col,
+    .wp-mid-col {
+      width: 100% !important;
+      height: auto !important;
+      max-height: none !important;
+      overflow-y: visible !important;
+    }
+
+    // Stepper - shrink on mobile
+    .wp-stepper { flex-wrap: wrap !important; gap: 4px !important; }
+    .wp-step-node { width: 70px !important; }
+    .wp-step-label { font-size: 10px !important; }
+
+    // Field grid
+    .wp-field-grid { grid-template-columns: 1fr !important; }
+    .wp-field-row { grid-template-columns: 45% 1fr !important; }
+
+    // QR card
+    .wp-qr-row { flex-direction: column !important; align-items: flex-start !important; }
+    .wp-qr-box { width: 110px !important; height: 110px !important; }
+  }
+}
+
+@media (max-width: 576px) {
+  // Work Permit List page - filter bar
+  .wp-page {
+    padding: 4px 8px 8px !important;
+
+    // Header info
+    h2 { font-size: 18px !important; }
+
+    // Form cards on new permit page
+    > form > div {
+      padding: 14px 14px !important;
+      border-radius: 8px !important;
+    }
+  }
+
+  // Sidebar on mobile
+  .sidebar { display: none !important; }
+  .with-sidebar { margin-left: 0 !important; }
+}
+

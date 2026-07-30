@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useParams } from 'react-router-dom';
 import formService from '@/services/formService';
 import workPermitService from '@/services/workPermitService';
@@ -21,33 +22,275 @@ const EMPTY_FIELD = { name: '', col_name: '', type: 'text', is_required: false, 
 const DISALLOWED_APPROVAL_ROLES = new Set(['resident', 'member']);
 const normalizeRole = value => String(value || '').trim().toLowerCase();
 
-function FieldTypePicker({ value, onChange, compact = false }) {
+// Portal dropdown — floats completely outside the table DOM so it never
+// affects column widths, cell padding, or table layout whatsoever.
+// Brand-aligned: Primary Blue #0066CC focus/selected states, MD shadow, SM border-radius on trigger.
+function FieldTypePicker({ value, onChange }) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const [menuStyle, setMenuStyle] = useState({});
+  const triggerRef = useRef(null);
+  const menuRef = useRef(null);
+
+  const selected = FIELD_TYPES.find(t => t.value === value);
+  const filtered = FIELD_TYPES.filter(t =>
+    t.label.toLowerCase().includes(search.toLowerCase())
+  );
+
+  // Compute fixed-position coords from the trigger element
+  const openMenu = () => {
+    if (triggerRef.current) {
+      const r = triggerRef.current.getBoundingClientRect();
+      setMenuStyle({
+        position: 'fixed',
+        top: r.bottom + 4,
+        left: r.left,
+        minWidth: Math.max(r.width, 220),
+        width: 280,
+        zIndex: 99999,
+      });
+    }
+    setOpen(true);
+  };
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e) => {
+      if (
+        triggerRef.current && !triggerRef.current.contains(e.target) &&
+        menuRef.current && !menuRef.current.contains(e.target)
+      ) {
+        setOpen(false);
+        setSearch('');
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open]);
+
+  const menu = open && createPortal(
+    <div
+      ref={menuRef}
+      style={{
+        ...menuStyle,
+        background: '#fff',
+        border: '1px solid #D1D5DB',
+        borderRadius: 8,
+        boxShadow: '0 4px 6px -1px rgba(0,0,0,0.10), 0 2px 4px -1px rgba(0,0,0,0.06)',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+        fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
+      }}
+    >
+      {/* Search box */}
+      <div style={{ padding: '8px 8px 6px', borderBottom: '1px solid #F3F4F6' }}>
+        <div style={{ position: 'relative' }}>
+          <i className="fa fa-search" style={{
+            position: 'absolute', left: 9, top: '50%', transform: 'translateY(-50%)',
+            color: '#9CA3AF', fontSize: 11, pointerEvents: 'none',
+          }} />
+          <input
+            autoFocus
+            type="text"
+            placeholder="Search field type..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            onClick={e => e.stopPropagation()}
+            style={{
+              width: '100%', height: 32, paddingLeft: 28, paddingRight: 8,
+              border: '1px solid #D1D5DB', borderRadius: 4, fontSize: 12.5,
+              outline: 'none', boxSizing: 'border-box', color: '#374151',
+              fontFamily: 'inherit',
+            }}
+            onFocus={e => { e.target.style.borderColor = '#0066CC'; e.target.style.boxShadow = '0 0 0 3px rgba(0,102,204,0.12)'; }}
+            onBlur={e => { e.target.style.borderColor = '#D1D5DB'; e.target.style.boxShadow = 'none'; }}
+          />
+        </div>
+      </div>
+
+      {/* Options */}
+      <div style={{ overflowY: 'auto', maxHeight: 216, paddingBottom: 4 }}>
+        {filtered.length === 0 ? (
+          <div style={{ padding: '12px 14px', fontSize: 12.5, color: '#9CA3AF', textAlign: 'center' }}>
+            No matching types
+          </div>
+        ) : filtered.map(opt => {
+          const isSel = opt.value === value;
+          return (
+            <div
+              key={opt.value}
+              onMouseDown={() => { onChange(opt.value); setOpen(false); setSearch(''); }}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                padding: '8px 12px',
+                cursor: 'pointer',
+                background: isSel ? '#EBF3FF' : 'transparent',
+                color: isSel ? '#0066CC' : '#374151',
+                fontSize: 13,
+                fontWeight: isSel ? 600 : 400,
+                borderLeft: isSel ? '2px solid #0066CC' : '2px solid transparent',
+                transition: 'background 0.08s',
+              }}
+              onMouseEnter={e => { if (!isSel) e.currentTarget.style.background = '#F9FAFB'; }}
+              onMouseLeave={e => { if (!isSel) e.currentTarget.style.background = 'transparent'; }}
+            >
+              <i
+                className={`fa ${opt.icon}`}
+                style={{ fontSize: 11, color: isSel ? '#0066CC' : '#6B7280', flexShrink: 0, width: 14, textAlign: 'center' }}
+              />
+              <span style={{ flex: 1 }}>{opt.label}</span>
+              {/* Checkmark on selected — consistent with MobilePermitTypeSelect */}
+              {isSel && <i className="fa fa-check" style={{ fontSize: 11, color: '#0066CC', flexShrink: 0 }} />}
+            </div>
+          );
+        })}
+      </div>
+    </div>,
+    document.body
+  );
+
   return (
-    <div style={{ position: 'relative' }}>
-      <select
-        className="form-select"
+    <>
+      <div
+        ref={triggerRef}
+        role="button"
+        tabIndex={0}
         style={{
-          appearance: 'none',
-          WebkitAppearance: 'none',
-          height: compact ? 30 : 32,
-          borderRadius: 5,
-          border: '1px solid #CBD5E1',
-          fontSize: compact ? 12 : 13,
-          color: '#0F172A',
-          background: '#FFFFFF',
-          width: '100%',
-          boxShadow: '0 1px 2px rgba(0,0,0,0.02)',
-          paddingRight: 24,
-          paddingLeft: 8
+          display: 'inline-flex', alignItems: 'center', justifyContent: 'space-between',
+          width: 190, minWidth: 190,
+          height: 32, padding: '0 8px',
+          cursor: 'pointer', userSelect: 'none',
+          background: '#fff',
+          fontSize: 13, borderRadius: 4,
+          border: open ? '1.5px solid #0066CC' : '1px solid #D1D5DB',
+          boxShadow: open ? '0 0 0 3px rgba(0,102,204,0.12)' : '0 1px 2px rgba(0,0,0,0.04)',
+          transition: 'border-color 0.15s, box-shadow 0.15s',
+          boxSizing: 'border-box',
+          fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
         }}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onClick={() => open ? (setOpen(false), setSearch('')) : openMenu()}
+        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open ? (setOpen(false), setSearch('')) : openMenu(); } }}
       >
-        {FIELD_TYPES.map(t => (
-          <option key={t.value} value={t.value}>{t.label}</option>
-        ))}
-      </select>
-      <i className="fa fa-chevron-down" style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', fontSize: 10, color: '#64748B', pointerEvents: 'none' }} />
+        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, color: selected ? '#374151' : '#9CA3AF' }}>
+          {selected ? (
+            <>
+              <i className={`fa ${selected.icon}`} style={{ fontSize: 10, color: '#6B7280', marginRight: 6 }} />
+              {selected.label}
+            </>
+          ) : (
+            <span style={{ fontStyle: 'italic', color: '#9CA3AF' }}>Select field type…</span>
+          )}
+        </span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0, marginLeft: 4 }}>
+          {value && (
+            <i
+              className="fa fa-times"
+              style={{ fontSize: 10, color: '#9CA3AF', padding: 2 }}
+              onMouseDown={e => { e.stopPropagation(); onChange(''); }}
+              title="Clear"
+            />
+          )}
+          <i className={`fa fa-chevron-${open ? 'up' : 'down'}`} style={{ fontSize: 9, color: '#6B7280' }} />
+        </span>
+      </div>
+      {menu}
+    </>
+  );
+}
+
+// Mobile-only searchable permit type dropdown
+function MobilePermitTypeSelect({ types, selectedId, onSelect, activatingId, deleting }) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const ref = useRef(null);
+  const selected = types.find(t => t.value === selectedId);
+  const filtered = search.trim()
+    ? types.filter(t => t.label.toLowerCase().includes(search.toLowerCase()))
+    : types;
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = e => { if (ref.current && !ref.current.contains(e.target)) { setOpen(false); setSearch(''); } };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open]);
+
+  return (
+    <div ref={ref} style={{ marginBottom: 16, position: 'relative' }}>
+      <label style={{ fontSize: 11, fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6, display: 'block' }}>
+        Permit Type
+      </label>
+      <div
+        onClick={() => setOpen(o => !o)}
+        style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '0 14px', height: 44, borderRadius: 8, cursor: 'pointer',
+          background: '#fff', border: open ? '2px solid #17A2B8' : '1.5px solid #CBD5E1',
+          boxShadow: open ? '0 0 0 3px rgba(23,162,184,0.12)' : '0 1px 3px rgba(0,0,0,0.06)',
+          fontSize: 14, fontWeight: selected ? 600 : 400,
+          color: selected ? '#0F172A' : '#9CA3AF',
+          transition: 'border 0.15s, box-shadow 0.15s',
+          userSelect: 'none',
+        }}
+      >
+        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {selected ? selected.label : 'Select a permit type...'}
+        </span>
+        <i className={`fa fa-chevron-${open ? 'up' : 'down'}`} style={{ fontSize: 12, color: '#9CA3AF', flexShrink: 0, marginLeft: 8 }} />
+      </div>
+
+      {open && (
+        <div style={{
+          position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0, zIndex: 9999,
+          background: '#fff', border: '1px solid #E2E8F0', borderRadius: 10,
+          boxShadow: '0 8px 24px rgba(0,0,0,0.12)', overflow: 'hidden',
+        }}>
+          <div style={{ padding: 8, borderBottom: '1px solid #F1F5F9' }}>
+            <div style={{ position: 'relative' }}>
+              <i className="fa fa-search" style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#aaa', fontSize: 12 }} />
+              <input
+                autoFocus
+                type="text"
+                placeholder="Search permit types..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                onClick={e => e.stopPropagation()}
+                style={{
+                  width: '100%', height: 38, paddingLeft: 30, paddingRight: 10,
+                  border: '1px solid #CBD5E1', borderRadius: 6, fontSize: 13,
+                  outline: 'none', boxSizing: 'border-box',
+                }}
+              />
+            </div>
+          </div>
+          <div style={{ maxHeight: 260, overflowY: 'auto' }}>
+            {filtered.length === 0 ? (
+              <div style={{ padding: '16px', textAlign: 'center', fontSize: 13, color: '#9CA3AF' }}>No types found</div>
+            ) : filtered.map(t => (
+              <div
+                key={t.value}
+                onMouseDown={() => { onSelect(t.value); setOpen(false); setSearch(''); }}
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  padding: '12px 16px', cursor: 'pointer',
+                  background: t.value === selectedId ? '#E0F7FA' : 'transparent',
+                  borderLeft: t.value === selectedId ? '3px solid #17A2B8' : '3px solid transparent',
+                  fontSize: 14, fontWeight: t.value === selectedId ? 600 : 400,
+                  color: t.value === selectedId ? '#17A2B8' : '#374151',
+                  transition: 'background 0.1s',
+                }}
+                onMouseEnter={e => { if (t.value !== selectedId) e.currentTarget.style.background = '#F8FAFC'; }}
+                onMouseLeave={e => { if (t.value !== selectedId) e.currentTarget.style.background = 'transparent'; }}
+              >
+                <span>{t.label}</span>
+                {t.value === selectedId && <i className="fa fa-check" style={{ fontSize: 12, color: '#17A2B8' }} />}
+                {activatingId === t.value && <i className="fa fa-circle-o-notch fa-spin" style={{ fontSize: 12, color: '#17A2B8' }} />}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -521,8 +764,8 @@ function ApprovalFlowTab() {
         onConfirm={dialog?.onConfirm}
         onCancel={() => setDialog(null)}
       />
-      <div style={{ flex: 1, minHeight: 0, display: 'flex', gap: 16 }}>
-        <div style={{ flexShrink: 0, width: '33%', display: 'flex', flexDirection: 'column' }}>
+      <div className="setup-two-col">
+        <div className="setup-sidebar-col">
           <div className="container-rounded-white d-flex flex-column" style={{ flex: 1, overflow: 'hidden' }}>
             <SidebarList
               title="Approval Flows"
@@ -561,7 +804,7 @@ function ApprovalFlowTab() {
           </div>
         </div>
 
-        <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+        <div className="setup-content-col">
           <div className="container-rounded-white d-flex flex-column" style={{ flex: 1, overflow: 'hidden' }}>
             {!selectedFlowData ? (
               <div className="text-center text-muted d-flex flex-column align-items-center justify-content-center" style={{ flex: 1 }}>
@@ -1148,7 +1391,7 @@ export default function Setup() {
   };
 
   return (
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <div className="setup-outer wp-page" style={{ padding: '4px 16px 16px' }}>
       <ConfirmDialog
         show={!!dialog}
         title={dialog?.title}
@@ -1158,10 +1401,45 @@ export default function Setup() {
         onConfirm={dialog?.onConfirm}
         onCancel={() => setDialog(null)}
       />
-      <style>{`.hide-scrollbar::-webkit-scrollbar { display: none; } .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }`}</style>
+      <style>{`
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .setup-tab-bar { display: flex; gap: 2px; margin-bottom: 16px; border-bottom: 2px solid #E5E7EB; padding-bottom: 0; overflow-x: auto; flex-shrink: 0; scrollbar-width: none; -ms-overflow-style: none; }
+        .setup-tab-bar::-webkit-scrollbar { display: none; }
+        .setup-two-col { display: flex; gap: 16px; flex: 1; min-height: 0; }
+        .setup-sidebar-col { flex-shrink: 0; width: 33%; display: flex; flex-direction: column; min-width: 0; }
+        .setup-content-col { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+        .setup-outer { height: 100%; display: flex; flex-direction: column; overflow: hidden; }
+        /* Mobile permit selector hidden by default (shown via media query) */
+        .mobile-permit-select { display: none; }
+        /* Desktop table — fixed layout keeps columns stable; Type column won't squeeze */
+        .fields-table-wrap table { table-layout: auto; }
+
+        @media (max-width: 768px) {
+          .setup-outer { height: auto !important; overflow-y: auto !important; min-height: 0 !important; }
+          /* On mobile the two-col layout becomes single-column, sidebar hidden */
+          .setup-two-col { flex-direction: column !important; overflow-y: visible !important; flex: none !important; min-height: 0 !important; }
+          .setup-sidebar-col { display: none !important; }
+          .setup-content-col { min-height: 0 !important; flex: none !important; width: 100% !important; }
+          .setup-tab-bar button { padding: 7px 10px !important; font-size: 11.5px !important; }
+          .setup-tab-bar button i { display: none !important; }
+          /* Fields table → stacked cards */
+          .fields-table-wrap { display: none !important; }
+          .fields-cards-wrap { display: flex !important; }
+          /* Show mobile permit selector */
+          .mobile-permit-select { display: block !important; }
+          /* Ensure card padding on mobile */
+          .container-rounded-white { padding: 16px !important; }
+        }
+        @media (min-width: 769px) {
+          .fields-table-wrap { display: block !important; }
+          .fields-cards-wrap { display: none !important; }
+          .mobile-permit-select { display: none !important; }
+        }
+      `}</style>
       {/* Setup Heading Removed */}
 
-      <div style={{ display: 'flex', gap: 2, marginBottom: 24, borderBottom: '2px solid #E5E7EB', paddingBottom: 0 }}>
+      <div className="setup-tab-bar">
         {[
           { key: 'types',    icon: 'fa-file-text', label: 'Work Permit Types' },
           { key: 'approval', icon: 'fa-shield',    label: 'Approval Flow' },
@@ -1210,8 +1488,8 @@ export default function Setup() {
       {tab === 'pdf' && <PdfTemplateTab />}
 
       {tab === 'types' && (
-        <div style={{ flex: 1, minHeight: 0, display: 'flex', gap: 16 }}>
-          <div style={{ flexShrink: 0, width: '33%', display: 'flex', flexDirection: 'column' }}>
+        <div className="setup-two-col">
+          <div className="setup-sidebar-col">
             <div className="container-rounded-white d-flex flex-column" style={{ flex: 1, overflow: 'hidden' }}>
               <SidebarList
                 title="Permit Types"
@@ -1252,11 +1530,21 @@ export default function Setup() {
             </div>
           </div>
 
-          <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+          <div className="setup-content-col">
             <div className="container-rounded-white d-flex flex-column" style={{ flex: 1, overflow: 'hidden' }}>
+              {/* Mobile-only permit type selector — hidden on desktop via CSS */}
+              <div className="mobile-permit-select">
+                <MobilePermitTypeSelect
+                  types={allTypes}
+                  selectedId={selectedType}
+                  onSelect={handleSelectType}
+                  activatingId={activating}
+                  deleting={deleting}
+                />
+              </div>
               {!selectedType ? (
-                <div className="text-center text-muted d-flex flex-column align-items-center justify-content-center" style={{ flex: 1 }}>
-                  <i className="fa fa-hand-o-left fa-2x mb-3 d-block" />
+                <div className="text-center text-muted d-flex flex-column align-items-center justify-content-center" style={{ flex: 1, minHeight: 120 }}>
+                  <i className="fa fa-list fa-2x mb-3 d-block" />
                   Select a permit type to manage its fields
                 </div>
               ) : (
@@ -1324,7 +1612,7 @@ export default function Setup() {
                             Type <span className="text-danger">*</span>
                           </label>
                           <div>
-                            <FieldTypePicker value={newField.type} onChange={v => setNewField(prev => ({ ...prev, type: v }))} compact />
+                            <FieldTypePicker value={newField.type} onChange={v => setNewField(prev => ({ ...prev, type: v }))} />
                           </div>
                         </div>
 
@@ -1410,16 +1698,24 @@ export default function Setup() {
                       <div style={{ fontSize: 13.5, fontWeight: 600, color: '#334155', marginBottom: 2 }}>No fields configured</div>
                       <div style={{ fontSize: 12, color: '#64748B' }}>Add fields to collect specific information for this permit type.</div>
                     </div>
-                  ) : (
-                    <div className="table-responsive hide-scrollbar" style={{ border: '1px solid #D1D5DB', borderRadius: 8, overflowX: 'auto' }}>
-                      <table style={{ width: '100%', minWidth: 580, borderCollapse: 'collapse', tableLayout: 'auto' }}>
+                  ) : (<>
+                    {/* ── Desktop table (hidden on mobile via CSS) ── */}
+                    <div className="fields-table-wrap table-responsive hide-scrollbar" style={{ border: '1px solid #D1D5DB', borderRadius: 8, overflowX: 'auto' }}>
+                      <table style={{ width: '100%', minWidth: 640, borderCollapse: 'collapse', tableLayout: 'fixed' }}>
+                        <colgroup>
+                          <col style={{ width: 40 }} />
+                          <col />{/* Field Name — takes remaining space */}
+                          <col style={{ width: 200 }} />
+                          <col style={{ width: 110 }} />
+                          <col style={{ width: 100 }} />
+                        </colgroup>
                         <thead>
                           <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
-                            <th style={{ padding: '9px 12px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748B', width: 40 }}>#</th>
-                            <th style={{ padding: '9px 12px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748B', minWidth: 200, width: '40%' }}>Field Name</th>
-                            <th style={{ padding: '9px 12px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748B', minWidth: 120 }}>Type</th>
-                            <th style={{ padding: '9px 12px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748B', textAlign: 'center', width: 110 }}>Required</th>
-                            <th style={{ padding: '9px 12px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748B', textAlign: 'right', width: 100 }}>Actions</th>
+                            <th style={{ padding: '9px 12px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748B' }}>#</th>
+                            <th style={{ padding: '9px 12px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748B' }}>Field Name</th>
+                            <th style={{ padding: '9px 12px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748B' }}>Type</th>
+                            <th style={{ padding: '9px 12px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748B', textAlign: 'center' }}>Required</th>
+                            <th style={{ padding: '9px 12px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748B', textAlign: 'right' }}>Actions</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -1445,7 +1741,7 @@ export default function Setup() {
                                     />
                                   </td>
                                   <td style={{ padding: '12px 16px', verticalAlign: 'middle' }}>
-                                    <FieldTypePicker value={editValues.type} onChange={v => setEditValues(p => ({ ...p, type: v }))} compact />
+                                    <FieldTypePicker value={editValues.type} onChange={v => setEditValues(p => ({ ...p, type: v }))} />
                                   </td>
                                   <td
                                     style={{ padding: '12px 16px', textAlign: 'center', cursor: 'pointer', verticalAlign: 'middle' }}
@@ -1461,7 +1757,7 @@ export default function Setup() {
                                   <td style={{ padding: '12px 16px', textAlign: 'right', verticalAlign: 'middle' }}>
                                     <div className="d-flex align-items-center justify-content-end gap-2">
                                       <button type="button" className="btn btn-sm btn-outline-secondary" style={{ height: 28, padding: '0 10px', fontSize: 12, borderRadius: 4 }} onClick={() => setEditingField(null)}>Cancel</button>
-                                      <button type="button" className="btn btn-sm" style={{ height: 28, padding: '0 12px', fontSize: 12, fontWeight: 600, borderRadius: 4, background: '#0066CC', color: '#FFFFFF', border: 'none', boxShadow: '0 1px 2px rgba(0,0,0,0.04)' }} onClick={() => handleSaveEdit(f)} disabled={savingEdit}>
+                                      <button type="button" className="btn btn-sm" style={{ height: 28, padding: '0 12px', fontSize: 12, fontWeight: 600, borderRadius: 4, background: '#0066CC', color: '#FFFFFF', border: 'none' }} onClick={() => handleSaveEdit(f)} disabled={savingEdit}>
                                         {savingEdit ? <i className="fa fa-circle-o-notch fa-spin" /> : 'Save'}
                                       </button>
                                     </div>
@@ -1473,41 +1769,22 @@ export default function Setup() {
                             return (
                               <tr
                                 key={f.id}
-                                style={{
-                                  borderBottom: i < fields.length - 1 ? '1px solid #F1F5F9' : 'none',
-                                  transition: 'background 0.12s ease',
-                                }}
+                                style={{ borderBottom: i < fields.length - 1 ? '1px solid #F1F5F9' : 'none', transition: 'background 0.12s ease' }}
                                 onMouseEnter={e => { setHoveredField(f.id); e.currentTarget.style.background = '#F8FAFC'; }}
                                 onMouseLeave={e => { setHoveredField(null); e.currentTarget.style.background = 'transparent'; }}
                               >
                                 <td style={{ padding: '12px 16px', color: '#94A3B8', fontSize: 13, fontWeight: 500, verticalAlign: 'middle' }}>{i + 1}</td>
-                                <td
-                                  style={{ padding: '12px 16px', fontWeight: 600, fontSize: 13.5, color: '#0F172A', cursor: isGlobal ? undefined : 'pointer', verticalAlign: 'middle' }}
-                                  onClick={isGlobal ? undefined : () => startEditField(f)}
-                                  title={isGlobal ? undefined : 'Click to edit'}
-                                >
+                                <td style={{ padding: '12px 16px', fontWeight: 600, fontSize: 13.5, color: '#0F172A', cursor: isGlobal ? undefined : 'pointer', verticalAlign: 'middle' }} onClick={isGlobal ? undefined : () => startEditField(f)} title={isGlobal ? undefined : 'Click to edit'}>
                                   {f.name}
                                   {isGlobal && <i className="fa fa-lock ms-2" style={{ fontSize: 11, color: '#94A3B8' }} title="System field (read-only)" />}
                                 </td>
-                                <td
-                                  style={{ padding: '12px 16px', cursor: isGlobal ? undefined : 'pointer', verticalAlign: 'middle' }}
-                                  onClick={isGlobal ? undefined : () => startEditField(f)}
-                                  title={isGlobal ? undefined : 'Click to edit'}
-                                >
-                                  <span style={{
-                                    display: 'inline-flex', alignItems: 'center', gap: 5,
-                                    padding: '3px 8px', borderRadius: 6, fontSize: 12, fontWeight: 500,
-                                    background: '#F1F5F9', color: '#334155', border: '1px solid #E2E8F0',
-                                  }}>
+                                <td style={{ padding: '12px 16px', cursor: isGlobal ? undefined : 'pointer', verticalAlign: 'middle' }} onClick={isGlobal ? undefined : () => startEditField(f)} title={isGlobal ? undefined : 'Click to edit'}>
+                                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 8px', borderRadius: 6, fontSize: 12, fontWeight: 500, background: '#F1F5F9', color: '#334155', border: '1px solid #E2E8F0' }}>
                                     <i className={`fa ${FIELD_TYPES.find(t => t.value === f.type)?.icon || 'fa-font'}`} style={{ fontSize: 10, color: '#64748B' }} />
                                     {f.type}
                                   </span>
                                 </td>
-                                <td
-                                  style={{ padding: '12px 16px', textAlign: 'center', cursor: isGlobal ? undefined : 'pointer', verticalAlign: 'middle' }}
-                                  onClick={isGlobal ? undefined : () => handleToggleRequired(f)}
-                                  title={isGlobal ? undefined : 'Click to toggle required'}
-                                >
+                                <td style={{ padding: '12px 16px', textAlign: 'center', cursor: isGlobal ? undefined : 'pointer', verticalAlign: 'middle' }} onClick={isGlobal ? undefined : () => handleToggleRequired(f)} title={isGlobal ? undefined : 'Click to toggle required'}>
                                   {fieldData.is_required ? (
                                     <i className="fa fa-check-circle" style={{ fontSize: 18, color: '#10B981' }} title="Required" />
                                   ) : (
@@ -1517,22 +1794,10 @@ export default function Setup() {
                                 <td style={{ padding: '12px 16px', textAlign: 'right', verticalAlign: 'middle' }}>
                                   {!isGlobal && (
                                     <div className="d-flex align-items-center justify-content-end gap-2">
-                                      <button
-                                        className="btn btn-sm btn-link p-1 text-secondary text-decoration-none"
-                                        style={{ opacity: isHovered ? 1 : 0, transition: 'opacity 0.15s ease', fontSize: 13 }}
-                                        onClick={() => startEditField(f)}
-                                        title="Edit field"
-                                      >
+                                      <button className="btn btn-sm btn-link p-1 text-secondary text-decoration-none" style={{ opacity: isHovered ? 1 : 0, transition: 'opacity 0.15s ease', fontSize: 13 }} onClick={() => startEditField(f)} title="Edit field">
                                         <i className="fa fa-pencil" style={{ color: '#64748B' }} />
                                       </button>
-                                      <button
-                                        className="btn btn-sm text-danger d-flex align-items-center justify-content-center"
-                                        style={{ width: 32, height: 32, opacity: isHovered ? 1 : 0, transition: 'all 0.15s ease', fontSize: 16, borderRadius: 4 }}
-                                        onClick={() => handleDeleteField(f.id)}
-                                        title="Delete field"
-                                        onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#FEE2E2'; }}
-                                        onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; }}
-                                      >
+                                      <button className="btn btn-sm text-danger d-flex align-items-center justify-content-center" style={{ width: 32, height: 32, opacity: isHovered ? 1 : 0, transition: 'all 0.15s ease', fontSize: 16, borderRadius: 4 }} onClick={() => handleDeleteField(f.id)} title="Delete field" onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#FEE2E2'; }} onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; }}>
                                         <i className="fa fa-trash-o" />
                                       </button>
                                     </div>
@@ -1544,7 +1809,116 @@ export default function Setup() {
                         </tbody>
                       </table>
                     </div>
-                  )}
+
+                    {/* ── Mobile stacked cards (hidden on desktop via CSS) ── */}
+                    <div className="fields-cards-wrap" style={{ flexDirection: 'column', gap: 8 }}>
+                      {fields.map((f, i) => {
+                        const fieldData = typeof f.data === 'string' ? JSON.parse(f.data) : (f.data || {});
+                        const isGlobal  = f.society_id === 0;
+                        const isEditing = editingField === f.id;
+                        const typeInfo  = FIELD_TYPES.find(t => t.value === f.type);
+                        return (
+                          <div key={f.id} style={{
+                            border: isEditing ? '1.5px solid #0066CC' : '1px solid #E2E8F0',
+                            borderLeft: isEditing ? '3px solid #0066CC' : '3px solid transparent',
+                            borderRadius: 8,
+                            background: isEditing ? '#F0F6FF' : '#fff',
+                            overflow: 'hidden',
+                          }}>
+                            {isEditing ? (
+                              /* ── Editing state ── */
+                              <div style={{ padding: '12px 14px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+                                  <i className="fa fa-pencil" style={{ fontSize: 10, color: '#0066CC' }} />
+                                  <span style={{ fontSize: 10.5, fontWeight: 700, color: '#0066CC', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Editing Field #{i + 1}</span>
+                                </div>
+                                <div style={{ marginBottom: 8 }}>
+                                  <label style={{ fontSize: 11, fontWeight: 600, color: '#475569', display: 'block', marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Field Name</label>
+                                  <input
+                                    type="text"
+                                    className="form-control form-control-sm"
+                                    style={{ width: '100%', borderRadius: 4, border: '1.5px solid #0066CC', fontSize: 13, fontWeight: 600, color: '#0F172A' }}
+                                    value={editValues.name}
+                                    onChange={e => setEditValues(p => ({ ...p, name: e.target.value }))}
+                                    autoFocus
+                                    placeholder="Field Name"
+                                  />
+                                </div>
+                                <div style={{ marginBottom: 8 }}>
+                                  <label style={{ fontSize: 11, fontWeight: 600, color: '#475569', display: 'block', marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Type</label>
+                                  <FieldTypePicker value={editValues.type} onChange={v => setEditValues(p => ({ ...p, type: v }))} />
+                                </div>
+                                <div
+                                  style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 10, cursor: 'pointer', userSelect: 'none' }}
+                                  onClick={() => setEditValues(p => ({ ...p, is_required: !p.is_required }))}
+                                >
+                                  <i className={`fa ${editValues.is_required ? 'fa-check-circle' : 'fa-circle-thin'}`} style={{ fontSize: 16, color: editValues.is_required ? '#10B981' : '#CBD5E1' }} />
+                                  <span style={{ fontSize: 12.5, fontWeight: 600, color: '#374151' }}>Required</span>
+                                </div>
+                                <div style={{ display: 'flex', gap: 6, borderTop: '1px solid #E2E8F0', paddingTop: 10 }}>
+                                  <button type="button" className="btn btn-sm" style={{ flex: 1, height: 32, fontSize: 12, fontWeight: 600, borderRadius: 4, background: '#0066CC', color: '#fff', border: 'none' }} onClick={() => handleSaveEdit(f)} disabled={savingEdit}>
+                                    {savingEdit ? <i className="fa fa-circle-o-notch fa-spin" /> : <><i className="fa fa-check me-1" />Save</>}
+                                  </button>
+                                  <button type="button" className="btn btn-sm btn-outline-secondary" style={{ height: 32, padding: '0 12px', fontSize: 12, borderRadius: 4 }} onClick={() => setEditingField(null)}>Cancel</button>
+                                </div>
+                              </div>
+                            ) : (
+                              /* ── View state ── */
+                              <div style={{ display: 'flex', alignItems: 'center', padding: '10px 14px', gap: 10 }}>
+                                {/* Row number */}
+                                <span style={{ fontSize: 11, fontWeight: 600, color: '#CBD5E1', flexShrink: 0, width: 18, textAlign: 'center' }}>{i + 1}</span>
+                                {/* Field info */}
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                  <div style={{ fontSize: 13, fontWeight: 600, color: '#0F172A', marginBottom: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                    {f.name}
+                                    {isGlobal && <i className="fa fa-lock ms-1" style={{ fontSize: 10, color: '#CBD5E1' }} title="System field" />}
+                                  </div>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                                    {/* Type badge — matches desktop exactly */}
+                                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 7px', borderRadius: 4, fontSize: 11, fontWeight: 500, background: '#F1F5F9', color: '#334155', border: '1px solid #E2E8F0' }}>
+                                      <i className={`fa ${typeInfo?.icon || 'fa-font'}`} style={{ fontSize: 9, color: '#64748B' }} />
+                                      {f.type}
+                                    </span>
+                                    {/* Required indicator — matches desktop icon style */}
+                                    {fieldData.is_required ? (
+                                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 11, fontWeight: 600, color: '#10B981' }}>
+                                        <i className="fa fa-check-circle" style={{ fontSize: 11 }} />Required
+                                      </span>
+                                    ) : (
+                                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 11, color: '#CBD5E1' }}>
+                                        <i className="fa fa-circle-thin" style={{ fontSize: 11 }} />Optional
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                                {/* Compact icon actions */}
+                                {!isGlobal && (
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+                                    <button
+                                      className="btn btn-sm"
+                                      style={{ width: 30, height: 30, padding: 0, borderRadius: 4, border: '1px solid #E2E8F0', background: '#F8FAFC', color: '#64748B', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                      onClick={() => startEditField(f)}
+                                      title="Edit"
+                                    >
+                                      <i className="fa fa-pencil" style={{ fontSize: 11 }} />
+                                    </button>
+                                    <button
+                                      className="btn btn-sm"
+                                      style={{ width: 30, height: 30, padding: 0, borderRadius: 4, border: '1px solid #FECACA', background: '#FEF2F2', color: '#DC2626', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                      onClick={() => handleDeleteField(f.id)}
+                                      title="Delete"
+                                    >
+                                      <i className="fa fa-trash-o" style={{ fontSize: 11 }} />
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </>)}
                   </div>
                 </>
               )}
