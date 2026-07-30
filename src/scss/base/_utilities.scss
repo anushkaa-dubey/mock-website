@@ -93,7 +93,7 @@ $sidebar-expanded: 220px;
 .sidebar {
   width: $sidebar-collapsed;
   min-width: $sidebar-collapsed;
-  background: #2b2e2e;
+  background: #17A2B8;
   height: calc(100vh - 56px);
   margin-top: 56px;
   overflow: hidden;
@@ -156,7 +156,7 @@ $sidebar-expanded: 220px;
       }
 
       &.active {
-        background: $color-primary;
+        background: rgba(0, 0, 0, 0.15);
         color: #fff;
       }
     }
@@ -241,7 +241,7 @@ $sidebar-expanded: 220px;
     overflow-y: auto;
     height: auto !important;
     max-height: none !important;
-    padding: 12px 12px 24px 12px;
+    padding: 68px 12px 24px 12px;
   }
 }
 

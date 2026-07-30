@@ -45,18 +45,10 @@ const resolveMaterialPassUrl = () => `${window.location.origin}/vms/#/app/materi
 
 
 function Field({ label, value, span }) {
-  if (span) {
-    return (
-      <div className="wp-field span-2">
-        <div className="wp-field-label">{label}</div>
-        <div className={`wp-field-value${value ? '' : ' muted'}`}>{value || 'Not added'}</div>
-      </div>
-    );
-  }
   return (
-    <div className="wp-field-row">
-      <span className="wp-field-row-label">{label}</span>
-      <span className={`wp-field-row-value${value ? '' : ' muted'}`}>{value || 'Not added'}</span>
+    <div className={`wp-field${span ? ' span-2' : ''}`}>
+      <div className="wp-field-label">{label}:</div>
+      <div className={`wp-field-value${value ? '' : ' muted'}`}>{value || 'Not added'}</div>
     </div>
   );
 }
@@ -102,8 +94,8 @@ function HistoryTimeline({ uh }) {
   const entries = uh.slice().sort((a, b) => (b.t || '').localeCompare(a.t || '')); // latest on top
 
   return (
-    <div className="container-rounded-white" style={{ padding: '16px 20px' }}>
-      <div className="wp-card-head"><i className="fa fa-shield" />WP Timeline</div>
+    <div className="container-rounded-white wp-card" >
+      <div className="wp-card-head"><i className="fa fa-history" />Activity History</div>
 
       <div className="wp-vstepper">
         {entries.map((e, idx) => {
@@ -125,11 +117,11 @@ function HistoryTimeline({ uh }) {
                 </div>
                 {e.t && (
                   <div className="wp-vstep-sub">
-                    {fmtTs(e.t)}
-                    {e.count > 1 && ` · ${e.count} people`}
+                    <span className="fw-semibold">{fmtTs(e.t)}</span>
+                    {e.count > 1 && <span className="ms-1 text-muted">· {e.count} people</span>}
                   </div>
                 )}
-                {e.actor && <div className="wp-vstep-sub">by {e.actor}</div>}
+                {e.actor && <div className="wp-vstep-sub text-muted">by {e.actor}</div>}
               </div>
             </div>
           );
@@ -163,50 +155,45 @@ function LegacyStatusTimeline({ status, permit }) {
   };
 
   return (
-    <div className="container-rounded-white" style={{ padding: '16px 20px' }}>
-      <div className="wp-card-head"><i className="fa fa-shield" />Status</div>
+    <div className="container-rounded-white wp-card" >
+      <div className="wp-card-head"><i className="fa fa-clock-o" />Activity History</div>
 
       {isDeclined && (
-        <span className="status-badge d-inline-block mb-3" style={{ fontSize: 11, ...getStatusStyle(status, 'bg') }}>
+        <span className="status-badge d-inline-block mb-4" style={{ fontSize: 11, ...getStatusStyle(status, 'bg') }}>
           {status.replace(/_/g, ' ')}
         </span>
       )}
 
-      <div className="wp-vstepper">
+      <div className="d-flex flex-column" style={{ gap: '16px', paddingLeft: '8px' }}>
         {STATUS_STEPS.map((step, idx) => {
           const isDone = !isDeclined && currentIdx > idx;
           const isCurrent = step.key === status && !isDeclined;
           const isFuture = !isDone && !isCurrent;
           const ts = (isDone || isCurrent) ? timestamps[step.key] : null;
           const actor = (isDone || isCurrent) ? actors[step.key] : null;
-          const hint = isFuture ? futureHints[step.key] : null;
+
+          if (isFuture) return null; // Reference only shows past/current activities
 
           return (
-            <div key={step.key} className={`wp-vstep${isDone ? ' done' : ''}${isCurrent ? ' current' : ''}`}>
-              <div className="wp-vstep-track">
-                <div className="wp-step-circle">
-                  {isDone
-                    ? <i className="fa fa-check" style={{ fontSize: 11 }} />
-                    : isCurrent
-                      ? null
-                      : idx + 1}
-                </div>
-                {idx < STATUS_STEPS.length - 1 && (
-                  <div className={`wp-vstep-line${isDone ? ' done' : ''}`} />
-                )}
+            <div key={step.key} className="d-flex" style={{ gap: '16px' }}>
+              <div className="d-flex flex-column align-items-center mt-1">
+                <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: isCurrent ? '#10B981' : '#D1D5DB', flexShrink: 0 }} />
+                {idx > 0 && <div style={{ width: '2px', flex: 1, background: '#E5E7EB', margin: '4px 0', minHeight: '32px' }} />}
               </div>
-              <div className="wp-vstep-body">
-                <div className="wp-vstep-label">
+              <div style={{ paddingBottom: '0' }}>
+                <div style={{ fontSize: '13.5px', fontWeight: 600, color: '#0B4A54' }}>
                   {step.label}
-                  {isCurrent && <span className="wp-current-pill">Current</span>}
                 </div>
-                {ts && <div className="wp-vstep-sub">{ts}</div>}
-                {actor && <div className="wp-vstep-sub">{actor}</div>}
-                {hint && <div className="wp-vstep-hint">{hint}</div>}
+                {(ts || actor) && (
+                  <div style={{ fontSize: '11.5px', color: '#6b7280', marginTop: '2px' }}>
+                    {ts && <span>{ts}</span>}
+                    {actor && <span> by {actor}</span>}
+                  </div>
+                )}
               </div>
             </div>
           );
-        })}
+        }).reverse()}
       </div>
     </div>
   );
@@ -345,7 +332,7 @@ function ApprovalFlowPanel({ approvalLevels, permitStatus, extensionApprovalStat
         approvalBlocked={approvalBlocked}
       />
 
-      <div className="d-flex flex-column gap-0">
+      <div className="d-flex flex-column gap-3 mt-1">
         {approvalLevels.map((row, idx) => {
           const lvl = row.level || {};
           const act = row.action || null;
@@ -353,53 +340,43 @@ function ApprovalFlowPanel({ approvalLevels, permitStatus, extensionApprovalStat
 
           return (
             <div key={lvl.uuid || idx} className={`wp-approval-row ${levelRowClass(act, isCurrent)}`}>
-              <div className="wp-approval-dot" style={{ background: levelStatusColor(act) }}>
-                {act?.status === 'APPROVE' && <i className="fa fa-check" />}
-                {act?.status === 'DECLINE' && <i className="fa fa-times" />}
-              </div>
-
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div className="d-flex justify-content-between align-items-start">
+              <div>
+                <div className="d-flex justify-content-between align-items-start mb-2">
                   <div>
-                    <div className="fw-semibold" style={{ fontSize: 12.5, color: '#0B4A54' }}>
+                    <div className="wp-approval-row-title">
                       L{lvl.level} — {lvl.Name || `Level ${lvl.level}`}
                     </div>
-                    <div className="text-muted" style={{ fontSize: 11 }}>
+                    <div className="wp-approval-row-sub">
                       {lvl.user_id
-                        ? `Preferred approver: ${lvl.approver_name || `User #${lvl.user_id}`}`
-                        : (lvl.role_id ? 'Anyone with assigned role' : '—')}
+                        ? `${lvl.approver_name || `User #${lvl.user_id}`}`
+                        : (lvl.role_id ? 'Assigned Role' : '—')}
+                      {act?.updated_at && ` · ${new Date(act.updated_at.includes('T') ? act.updated_at : act.updated_at.replace(' ', 'T') + 'Z').toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }).replace(',', '')}`}
                     </div>
                   </div>
                   {levelStatusBadge(act, idx)}
                 </div>
 
-                {act && (
-                  <div className="mt-1 pt-1" style={{ borderTop: '1px solid rgba(0,0,0,0.06)' }}>
-                    {act.comment && (
-                      <p className="text-muted mb-0" style={{ fontSize: 11 }}>"{act.comment}"</p>
-                    )}
-                    <div className="text-muted" style={{ fontSize: 10 }}>
-                      by {row.actor_name || act.actor || act.user_name || `User #${act.user_id}`}
-                      {act.updated_at && <> · {new Date(act.updated_at.includes('T') ? act.updated_at : act.updated_at.replace(' ', 'T') + 'Z').toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</>}
-                    </div>
+                {act?.comment && (
+                  <div className="wp-approval-comment">
+                    "{act.comment}"
                   </div>
                 )}
 
                 {isCurrent && (
-                  <div className="mt-2">
+                  <div className="mt-3">
                     {lvl.role_id && String(lvl.role_id) === String(loggedInUser?.role_id) ? (
                       <button
-                        className="btn btn-primary-dark btn-sm"
-                        style={{ fontSize: 11, padding: '3px 10px' }}
+                        className="btn w-100"
+                        style={{ fontSize: 13, padding: '8px 12px', fontWeight: 600, background: '#2563EB', borderColor: '#2563EB', color: '#fff', borderRadius: '6px' }}
                         onClick={() => setActiveLevel(row)}
                         disabled={actionLoad}
                       >
-                        <i className="fa fa-check me-1" />Take Action
+                        Take Action
                       </button>
                     ) : (
-                      <span className="text-muted" style={{ fontSize: 11 }}>
+                      <div className="text-muted text-center" style={{ fontSize: 11.5, background: 'rgba(0,0,0,0.03)', padding: '6px', borderRadius: 4 }}>
                         <i className="fa fa-lock me-1" />Awaiting assigned approver
-                      </span>
+                      </div>
                     )}
                   </div>
                 )}
@@ -409,7 +386,7 @@ function ApprovalFlowPanel({ approvalLevels, permitStatus, extensionApprovalStat
         })}
 
         {isComplete && approvalLevels.length > 0 && (
-          <div className="wp-all-done">
+          <div className="wp-all-done mt-1">
             <i className="fa fa-check-circle" />All approval levels completed
           </div>
         )}
@@ -588,7 +565,7 @@ function MaterialGatePassPanel({ wpUuid, canRaise }) {
   };
 
   return (
-    <div className="container-rounded-white" style={{ padding: '16px 20px' }}>
+    <div className="container-rounded-white" >
       <div className="d-flex align-items-center justify-content-between wp-card-head" style={{ marginBottom: 12 }}>
         <span><i className="fa fa-cubes" /> Material Gate Pass</span>
         {canRaise && (
@@ -1107,98 +1084,105 @@ export default function WorkPermitDetail() {
           <div className="wp-header-left">
             <div className="wp-header-icon"><i className="fa fa-file-text-o" /></div>
             <div style={{ minWidth: 0 }}>
-              <div className="wp-header-eyebrow">Work Permit{permit.type ? ` · ${typeLabel(permit.type)}` : ''}</div>
-              <h1 className="wp-header-title">
-                {permit["Sequence No"] || 'Work Permit'}
-                {(permit.asset_name || permit.location_name) && ` · ${permit.asset_name || permit.location_name}`}
-              </h1>
-              <div className="wp-header-sub">
-                {[
-                  permit.description,
-                  permit.vendor_name && `Vendor: ${permit.vendor_name}`,
-                  permit.no_of_persons && `${permit.no_of_persons} personnel`,
-                ].filter(Boolean).join(' · ') || 'No additional description provided.'}
+              <div className="d-flex align-items-center gap-2 mb-1" style={{ fontSize: '10px', fontWeight: 700, color: '#6b7280', letterSpacing: '0.05em' }}>
+                WORK PERMIT · {typeLabel(permit.type).toUpperCase()}
+              </div>
+              <div className="d-flex align-items-center gap-2 mb-1">
+                <h4 className="wp-header-title text-truncate mb-0" style={{ fontSize: '16px', fontWeight: 700, color: '#0B4A54' }}>
+                  {permit["Sequence No"]} · {permit.asset_name || permit.location_name}
+                </h4>
+                {permit.priority && (
+                  <span className="status-badge" style={{ fontSize: 9.5, background: '#FFF7ED', color: '#C2410C', padding: '2px 8px', borderRadius: '999px', fontWeight: 700 }}>
+                    {permit.priority.toUpperCase()} PRIORITY
+                  </span>
+                )}
+                <span className="status-badge" style={{ fontSize: 9.5, padding: '2px 8px', borderRadius: '999px', fontWeight: 700, ...getStatusStyle(status, 'bg') }}>
+                  {status.replace(/_/g, ' ')}
+                </span>
+              </div>
+              <div className="wp-header-sub text-truncate" style={{ fontSize: '12px', color: '#6b7280' }}>
+                {permit.description || 'No description provided'} · Vendor: {permit.vendor_name} ({permit.no_of_personnels} Personnel)
               </div>
             </div>
           </div>
           <div className="wp-header-right">
-            {permit.priority && (
-              <span className="wp-chip wp-chip-priority">
-                <span className="dot" />
-                {permit.priority.toUpperCase()}
-              </span>
-            )}
-            <span className="wp-chip status-badge" style={getStatusStyle(status, 'bg')}>
-              {status.replace(/_/g, ' ').toUpperCase()}
-            </span>
-            {(canActivate || canComplete || canSuspend || canResume || canExtend || canCancel) && (
-              <div className="wp-header-divider" />
-            )}
             {canActivate && (
               <button
                 type="button"
-                className="wp-btn-action-header activate"
+                className="btn btn-outline-success btn-sm"
                 onClick={handleActivate}
                 disabled={statusLoad}
                 title="Activate Work Permit"
               >
-                <i className="fa fa-play" /> ACTIVATE
+                <i className="fa fa-play me-1" /> Activate
               </button>
             )}
             {canComplete && (
               <button
                 type="button"
-                className="wp-btn-action-header complete"
+                className="btn btn-outline-success btn-sm"
                 onClick={handleComplete}
                 disabled={statusLoad}
                 title="Mark as Completed"
               >
-                <i className="fa fa-check-circle" /> MARK COMPLETED
+                <i className="fa fa-check-circle me-1" /> Mark Completed
               </button>
             )}
             {canSuspend && (
               <button
                 type="button"
-                className="wp-btn-action-header suspend"
+                className="btn btn-outline-warning btn-sm"
                 onClick={handleSuspend}
                 disabled={statusLoad}
                 title="Suspend Work Permit"
               >
-                <i className="fa fa-pause" /> SUSPEND
+                <i className="fa fa-pause me-1" /> Suspend
               </button>
             )}
             {canResume && (
               <button
                 type="button"
-                className="wp-btn-action-header resume"
+                className="btn btn-outline-success btn-sm"
                 onClick={handleResume}
                 disabled={statusLoad}
                 title="Resume Work Permit"
               >
-                <i className="fa fa-play" /> RESUME
+                <i className="fa fa-play me-1" /> Resume
               </button>
             )}
             {canExtend && (
               <button
                 type="button"
-                className="wp-btn-action-header extend"
+                className="btn btn-outline-info btn-sm"
                 onClick={handleExtend}
                 disabled={statusLoad}
                 title="Extend Work Permit"
               >
-                <i className="fa fa-clock-o" /> EXTEND
+                <i className="fa fa-clock-o me-1" /> Extend
               </button>
             )}
             {canCancel && (
               <button
                 type="button"
-                className="wp-btn-action-header cancel"
+                className="btn btn-outline-danger btn-sm"
                 onClick={handleCancel}
                 disabled={statusLoad}
                 title="Cancel Work Permit"
               >
-                <i className="fa fa-times-circle" /> CANCEL
+                <i className="fa fa-times-circle me-1" /> Cancel Permit
               </button>
+            )}
+
+            {canPreviewPdf && (
+              <div className="d-flex align-items-center gap-2" style={{ borderLeft: '1px solid #E5E7EB', paddingLeft: '12px', marginLeft: '4px' }}>
+                <button
+                  className="btn btn-outline-secondary btn-sm"
+                  onClick={permit.pdf_url ? handlePreviewPdf : handleGeneratePdf}
+                  disabled={pdfLoad}
+                >
+                  {pdfLoad ? <i className="fa fa-circle-o-notch fa-spin me-1" /> : <i className="fa fa-print me-1" />} Print PDF
+                </button>
+              </div>
             )}
           </div>
         </div>
@@ -1221,119 +1205,145 @@ export default function WorkPermitDetail() {
         )}
       </div>
 
-      <div className="wp-detail-container">
-        {/* Leftest Column: WP Timeline */}
-        <div id="sec-timeline" className="wp-left-col">
-          <StatusTimeline status={status} permit={permit} />
+      {approvalBlocked && (
+        <div className="wp-warning-banner">
+          <div className="wp-warning-text">
+            <i className="fa fa-exclamation-circle" />
+            <span>
+              <strong>Schedule Extended / Expired:</strong> The scheduled due date ({permit['Due Date']}) has passed. Standard approval is locked until a new work timeframe is requested.
+            </span>
+          </div>
+          {canExtend && (
+            <button className="btn btn-primary" style={{ background: '#2563EB', borderColor: '#2563EB', color: '#fff', fontWeight: 600 }} onClick={handleExtend} disabled={statusLoad}>
+              Request Extension
+            </button>
+          )}
         </div>
+      )}
 
-        {/* Middle Column: Permit Information & Details */}
-        <div className="wp-mid-col">
-          <div id="sec-info" className="container-rounded-white mb-3" style={{ padding: '16px 20px' }}>
-            <div className="wp-card-head"><i className="fa fa-info-circle" />Permit Information</div>
+      <div className="wp-detail-container">
+        {/* Main Content */}
+        <div className="wp-main-col">
+
+          <div id="sec-schedule" className="container-rounded-white wp-card" >
+            <div className="wp-card-head"><i className="fa fa-calendar" />Permit Schedule & Details</div>
             <div className="wp-field-grid">
               <Field label="Permit No." value={permit["Sequence No"]} />
               <Field label="Permit Type" value={typeLabel(permit.type)} />
-              <Field label="Priority" value={permit.priority} />
-              <Field label="Raised By" value={permit.raised_by} />
-              <Field label="Scheduled At" value={scheduledAt} />
-              <Field label="Due Date" value={permit['Due Date']} />
-              {permit.extension_approval_status && (
-                <Field label="Extension Approval" value={permit.extension_approval_status.replace(/_/g, ' ')} />
-              )}
-              {permit.requested_due_date && (
-                <Field label="Requested Due Date" value={permit.requested_due_date} />
-              )}
-              {permit.requested_period_of_work && (
-                <Field label="Requested Duration" value={formatDuration(Number(permit.requested_period_of_work))} />
-              )}
-              {permit.extension_reason && (
-                <Field label="Extension Reason" value={permit.extension_reason} span />
-              )}
-              <Field label="LOTO No." value={permit.loto_no} />
+              <Field label="Scheduled Start" value={scheduledAt} />
+              <Field label="Due Date" value={(() => {
+                if (!permit['Due Date']) return null;
+                const isPassed = dueTimestamp !== null && dueTimestamp <= Date.now();
+                return isPassed ? (
+                  <span className="text-danger fw-bold">{permit['Due Date']} (Expired)</span>
+                ) : (
+                  <span className="fw-bold" style={{ color: '#0B4A54' }}>{permit['Due Date']}</span>
+                );
+              })()} />
               <Field label="Work Duration" value={formatDuration(Number(permit.period_of_work))} />
-              <Field label="No. of Person" value={permit.no_of_persons} />
-              {permit.vendor_name && <Field label="Vendor" value={permit.vendor_name} />}
-              {permit.vendor_contact_name && <Field label="Name of Person" value={permit.vendor_contact_name} />}
-              {permit.vendor_email && <Field label="Vendor Email" value={permit.vendor_email} />}
-              {permit.vendor_mobile && <Field label="Mobile No." value={permit.vendor_mobile} />}
-              {permit.location_name && <Field label="Location" value={permit.location_name} />}
+              <Field label="LOTO Reference" value={permit.loto_reference} />
+              <Field label="Priority" value={permit.priority ? (
+                <span className="fw-bold" style={{
+                  color: String(permit.priority).toLowerCase() === 'high' ? '#DC2626' : (String(permit.priority).toLowerCase() === 'medium' ? '#F59E0B' : '#0B4A54')
+                }}>{String(permit.priority).toUpperCase()}</span>
+              ) : null} />
+              <Field label="Extension Status" value={permit.extension_approval_status?.replace(/_/g, ' ')} />
+              <Field label="Requested Due Date" value={permit.requested_due_date} />
+            </div>
+            {permit.extension_reason && (
+              <div className="wp-info-box mt-3">
+                <div className="wp-field-label">Extension Reason</div>
+                {permit.extension_reason}
+              </div>
+            )}
+          </div>
+
+          <div id="sec-personnel" className="container-rounded-white wp-card" >
+            <div className="wp-card-head"><i className="fa fa-users" />Personnel & Vendor Details</div>
+            <div className="wp-field-grid">
+              <Field label="Raised By" value={permit.raised_by} />
+              <Field label="Attended By" value={permit.attended_by_name || permit.attended_by} />
+              <Field label="Vendor Name" value={permit.vendor_name} />
+              <Field label="Vendor Email" value={permit.vendor_email} />
+              <Field label="Primary Contact Person" value={permit.vendor_contact_name} />
+              <Field label="Contact Phone" value={permit.vendor_phone} />
+              <Field label="Personnel Count" value={permit.no_of_persons} />
+              <Field label="Location" value={permit.location_name} />
+            </div>
+          </div>
+
+          <div id="sec-asset" className="container-rounded-white wp-card" >
+            <div className="wp-card-head"><i className="fa fa-cube" />Asset & Equipment Details</div>
+            <div className="wp-field-grid">
+              <Field label="Asset Name" value={permit.asset_name} />
+              <Field label="Sequence No." value={permit.asset_seq} />
+              <Field label="Category" value={permit.asset_category} />
+              <Field label="NFC Tag Reference" value={permit.nfc_reference || permit.nfc_tag} />
+            </div>
+            {(permit.asset_description || permit.asset_location_name) && (
+              <div className="wp-info-box mt-3">
+                <div className="wp-field-label">Asset Description</div>
+                {permit.asset_description || permit.asset_location_name}
+              </div>
+            )}
+          </div>
+
+          <div id="sec-safety" className="container-rounded-white wp-card" >
+            <div className="wp-card-head"><i className="fa fa-shield" />Safety Measures & Scope</div>
+            <div className="wp-field-grid">
+              <Field label="Fire Watch Assigned" value={permit.fire_watch} />
+              <Field label="Gas Test Reading" value={permit.gas_test_reading} />
+              <Field label="PPE Checklist" value={permit.ppe_checklist} />
             </div>
 
-            {permit.asset_name && (
+            <div className="wp-info-box mt-3">
+              <div className="wp-field-label">Work Scope Description</div>
+              {permit.work_to_be_carried || <span className="text-muted fst-italic">No scope added</span>}
+            </div>
+            {permit.description && (
+              <div className="wp-info-box mt-3">
+                <div className="wp-field-label">Description</div>
+                {permit.description}
+              </div>
+            )}
+
+            {dynamicFields.length > 0 && (
               <>
-                <div className="wp-mini-head"><i className="fa fa-cube me-1" />Asset</div>
-                <div className="wp-field-grid">
-                  <Field label="Asset" value={permit.asset_name} />
-                  {permit.asset_seq && <Field label="Sequence No." value={permit.asset_seq} />}
-                  {permit.asset_category && <Field label="Category" value={permit.asset_category} />}
-                  {permit.asset_location_name && <Field label="Asset Location" value={permit.asset_location_name} />}
-                  {permit.asset_nfc_tag && <Field label="NFC Tag" value={permit.asset_nfc_tag} />}
-                  {permit.asset_description && <Field label="Description" value={permit.asset_description} span />}
-                </div>
+                <div className="wp-mini-head"><i className="fa fa-list-alt me-1" />Permit-Specific Details</div>
+                {(() => {
+                  const shortFields = [];
+                  const longFields = [];
+                  dynamicFields.forEach(([key, val]) => {
+                    const display = typeof val === 'boolean' ? (val ? 'Yes' : 'No') : String(val ?? '');
+                    (display.length > 50 ? longFields : shortFields).push([key, display]);
+                  });
+                  return (
+                    <>
+                      {shortFields.length > 0 && (
+                        <div className="wp-field-grid">
+                          {shortFields.map(([key, display]) => (
+                            <Field key={key} label={key.replace(/_/g, ' ')} value={display} />
+                          ))}
+                        </div>
+                      )}
+                      {longFields.map(([key, display]) => (
+                        <div className="wp-info-box mt-3" key={key}>
+                          <div className="wp-field-label">{key.replace(/_/g, ' ')}</div>
+                          {display}
+                        </div>
+                      ))}
+                    </>
+                  );
+                })()}
               </>
             )}
           </div>
-
-          <div id="sec-tasks" className="container-rounded-white mb-3" style={{ padding: '16px 20px' }}>
-            <div className="wp-card-head"><i className="fa fa-tasks" />Task Details</div>
-            <div className="wp-info-box">
-              <div className="wp-field-label">Description</div>
-              {permit.description || <span className="text-muted fst-italic">No description added</span>}
-            </div>
-            <div className="wp-info-box">
-              <div className="wp-field-label">Work to be Carried Out</div>
-              {permit.work_to_be_carried || <span className="text-muted fst-italic">Not specified</span>}
-            </div>
-            {(permit.attended_by_name || permit.attended_by) && (
-              <div className="wp-field-grid mt-3">
-                <Field label="Attended By" value={permit.attended_by_name || permit.attended_by} />
-              </div>
-            )}
-          </div>
-
-          {dynamicFields.length > 0 && (
-            <div id="sec-specific" className="container-rounded-white mb-3" style={{ padding: '16px 20px' }}>
-              <div className="wp-card-head"><i className="fa fa-list-alt" />Permit-Specific Details</div>
-              {(() => {
-                const shortFields = [];
-                const longFields = [];
-                dynamicFields.forEach(([key, val]) => {
-                  const display = typeof val === 'boolean' ? (val ? 'Yes' : 'No') : String(val ?? '');
-                  (display.length > 50 ? longFields : shortFields).push([key, display]);
-                });
-                return (
-                  <>
-                    {shortFields.length > 0 && (
-                      <div className="wp-field-grid">
-                        {shortFields.map(([key, display]) => (
-                          <Field key={key} label={key.replace(/_/g, ' ')} value={display} />
-                        ))}
-                      </div>
-                    )}
-                    {longFields.map(([key, display]) => (
-                      <div className="wp-note-box" key={key}>
-                        <strong>{key.replace(/_/g, ' ')}</strong>
-                        {display}
-                      </div>
-                    ))}
-                  </>
-                );
-              })()}
-            </div>
-          )}
         </div>
 
-        {/* Rightest Column: Approval Flow, Gate Pass & PDF */}
-        <div className="wp-right-col">
-          <div id="sec-approval" className="container-rounded-white" style={{ padding: '16px 20px' }}>
-            <div className="wp-card-head"><i className="fa fa-shield" />Approval Flow</div>
-
-            {approvalBlocked && (
-              <div className="alert alert-warning py-2 small">
-                <i className="fa fa-clock-o me-1" />The due date has passed. Approval is disabled; choose Request Change so a future time can be provided.
-              </div>
-            )}
+        {/* Sidebar */}
+        <div className="wp-side-col">
+          <div id="sec-approval" className="container-rounded-white wp-card" >
+            <div className="wp-card-head"><i className="fa fa-check-circle-o" />Approval Hierarchy</div>
 
             {hasFlow ? (
               <ApprovalFlowPanel
@@ -1388,40 +1398,35 @@ export default function WorkPermitDetail() {
             )}
           </div>
 
+          <div id="sec-timeline" className="d-flex flex-column gap-3">
+            <StatusTimeline status={status} permit={permit} />
+          </div>
+
           <div id="sec-gatepass" className="d-flex flex-column gap-3">
             {canPreviewPdf && (
-              <div className="container-rounded-white" style={{ padding: '16px 20px' }}>
-                <div className="wp-card-head"><i className="fa fa-file-pdf-o" />Work Permit PDF</div>
+              <div className="container-rounded-white wp-card" >
+                <div className="wp-card-head"><i className="fa fa-download" />Export Options</div>
                 <div className="wp-action-grid">
-                  {canGeneratePdf && (
-                    <button className="btn btn-primary-dark btn-sm" onClick={handleGeneratePdf} disabled={pdfLoad}>
-                      {pdfLoad ? <i className="fa fa-circle-o-notch fa-spin me-1" /> : <i className="fa fa-file-pdf-o me-1" />}Generate PDF
-                    </button>
-                  )}
-                  <button className="btn btn-outline-secondary btn-sm" onClick={handlePreviewPdf} disabled={pdfLoad}>
-                    <i className="fa fa-eye me-1" />Preview
+                  <button className="btn btn-outline-secondary btn-sm fw-bold" onClick={handlePreviewPdf} disabled={pdfLoad}>
+                     Preview
                   </button>
-                  {permit.pdf_url && (
-                    <>
-                      <button className="btn btn-outline-secondary btn-sm" onClick={handleDownloadPdf}>
-                        <i className="fa fa-download me-1" />Download
-                      </button>
-                      <button className="btn btn-outline-secondary btn-sm" onClick={handleShareEmail} disabled={emailLoad}>
-                        <i className="fa fa-envelope me-1" />Email
-                      </button>
-                      <button className="btn btn-outline-secondary btn-sm" onClick={handleShareWhatsApp}>
-                        <i className="fa fa-whatsapp me-1" />WhatsApp
-                      </button>
-                    </>
-                  )}
+                  <button className="btn btn-outline-secondary btn-sm fw-bold" onClick={handleDownloadPdf}>
+                     Download
+                  </button>
+                  <button className="btn btn-outline-secondary btn-sm fw-bold" onClick={handleShareEmail} disabled={emailLoad}>
+                     Email
+                  </button>
+                  <button className="btn btn-outline-secondary btn-sm fw-bold" onClick={handleShareWhatsApp}>
+                     WhatsApp
+                  </button>
                 </div>
               </div>
             )}
-
+            
             {permit.gate_pass_uuid && (
-              <div className="container-rounded-white" style={{ padding: '16px 20px' }}>
+              <div className="container-rounded-white wp-card" >
                 <div className="wp-card-head"><i className="fa fa-id-card" />Linked Gate Pass</div>
-                <div className="text-muted mb-2" style={{ fontSize: 11, marginTop: -6 }}>
+                <div className="text-muted mb-3" style={{ fontSize: 11.5, marginTop: -6 }}>
                   Created once on final approval and retained after extension reapproval
                 </div>
                 <div className="wp-linked-gp-card">
@@ -1435,7 +1440,7 @@ export default function WorkPermitDetail() {
                       href={resolveGatePassUrl(`/#!/site/${siteId}/browse/uuid/${permit.gate_pass_uuid}`)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="btn btn-sm btn-outline-info"
+                      className="btn w-100 btn-sm btn-outline-info"
                     >
                       <i className={`fa ${status === 'APPROVED' ? 'fa-plus' : 'fa-external-link'} me-1`} />
                       {status === 'APPROVED' ? 'Add / Update Items' : 'View Gate Pass'}
@@ -1444,7 +1449,7 @@ export default function WorkPermitDetail() {
                       href={resolveMaterialPassUrl()}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="btn btn-sm btn-outline-success"
+                      className="btn w-100 btn-sm btn-outline-success"
                     >
                       <i className="fa fa-check-circle me-1" />
                       Verify Items at Gate

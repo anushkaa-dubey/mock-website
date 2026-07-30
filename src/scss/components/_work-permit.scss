@@ -1,44 +1,46 @@
 // FacTech Kaizen brand tokens — scoped to Work Permit views only (.wp-page)
 // so the rest of the app keeps its current theme until it's rebranded separately.
-$wp-primary:        #17A2B8; // Brand Blue
-$wp-navy:            #0B4A54; // Dark shade of brand primary ($wp-primary darkened)
-$wp-green:           #10B981; // Efficiency Green
-$wp-orange:          #F59E0B; // Alert Orange
-$wp-red:             #DC2626; // Critical Red
-$wp-purple:          #7C3AED; // Insight Purple
-$wp-gray-bg:         #F3F4F6;
-$wp-border:          #D1D5DB;
-$wp-text-secondary:  #6B7280;
-$wp-text-body:       #374151;
+$wp-primary: #17A2B8; // Brand Blue
+$wp-navy: #0B4A54; // Dark shade of brand primary ($wp-primary darkened)
+$wp-green: #10B981; // Efficiency Green
+$wp-orange: #F59E0B; // Alert Orange
+$wp-red: #DC2626; // Critical Red
+$wp-purple: #7C3AED; // Insight Purple
+$wp-gray-bg: #F3F4F6;
+$wp-border: #D1D5DB;
+$wp-text-secondary: #6B7280;
+$wp-text-body: #374151;
 $wp-font: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
-// Root-level layout constraints when Work Permit Detail page is rendered
-html:has(.wp-detail-container),
-body:has(.wp-detail-container) {
-  overflow: hidden !important;
-  height: 100vh !important;
-}
+@media (min-width: 1025px) {
+  html:has(.wp-detail-container),
+  body:has(.wp-detail-container) {
+    overflow: hidden !important;
+    height: 100vh !important;
+  }
 
-.main-content:has(.wp-page) {
-  height: calc(100vh - 56px) !important;
-  max-height: calc(100vh - 56px) !important;
-  margin-top: 56px !important;
-  padding: 16px 20px 16px 20px !important;
-  overflow-y: auto !important;
-  box-sizing: border-box !important;
-  display: flex !important;
-  flex-direction: column !important;
-}
+  .main-content:has(.wp-page) {
+    height: calc(100vh - 56px) !important;
+    max-height: calc(100vh - 56px) !important;
+    margin-top: 56px !important;
+    padding: 16px 20px 16px 20px !important;
+    overflow-y: auto !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
 
-.main-content:has(.wp-detail-container) {
-  overflow: hidden !important;
+  .main-content:has(.wp-detail-container) {
+    overflow: hidden !important;
 
-  scrollbar-width: none !important;
-  -ms-overflow-style: none !important;
-  &::-webkit-scrollbar {
-    display: none !important;
-    width: 0 !important;
-    height: 0 !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+
+    &::-webkit-scrollbar {
+      display: none !important;
+      width: 0 !important;
+      height: 0 !important;
+    }
   }
 }
 
@@ -66,11 +68,26 @@ body:has(.wp-detail-container) {
     overflow: visible !important;
   }
 
-  h1, h2, h3, h4, h5, h6 { font-family: $wp-font; }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: $wp-font;
+  }
 
-  .text-primary-dark { color: $wp-navy !important; }
-  .border-bottom-primary { border-bottom: 1px solid $wp-border !important; }
-  .bg-primary-dark { background: $wp-primary !important; }
+  .text-primary-dark {
+    color: $wp-navy !important;
+  }
+
+  .border-bottom-primary {
+    border-bottom: 1px solid $wp-border !important;
+  }
+
+  .bg-primary-dark {
+    background: $wp-primary !important;
+  }
 
   .btn {
     border-radius: 4px;
@@ -82,66 +99,132 @@ body:has(.wp-detail-container) {
     border-color: $wp-primary !important;
     color: #fff !important;
 
-    &:hover  { background: darken($wp-primary, 8%) !important; border-color: darken($wp-primary, 8%) !important; color: #fff !important; }
-    &:focus  { box-shadow: 0 0 0 3px rgba($wp-primary, 0.25) !important; }
-    &:disabled { opacity: 0.55; }
+    &:hover {
+      background: darken($wp-primary, 8%) !important;
+      border-color: darken($wp-primary, 8%) !important;
+      color: #fff !important;
+    }
+
+    &:focus {
+      box-shadow: 0 0 0 3px rgba($wp-primary, 0.25) !important;
+    }
+
+    &:disabled {
+      opacity: 0.55;
+    }
   }
 
   .btn-outline-primary {
     color: $wp-primary !important;
     border-color: $wp-primary !important;
     background: transparent;
-    &:hover { background: $wp-primary !important; border-color: $wp-primary !important; color: #fff !important; }
+
+    &:hover {
+      background: $wp-primary !important;
+      border-color: $wp-primary !important;
+      color: #fff !important;
+    }
   }
 
   .btn-success {
     background: $wp-green !important;
     border-color: $wp-green !important;
     color: #fff !important;
-    &:hover { background: darken($wp-green, 8%) !important; border-color: darken($wp-green, 8%) !important; color: #fff !important; }
+
+    &:hover {
+      background: darken($wp-green, 8%) !important;
+      border-color: darken($wp-green, 8%) !important;
+      color: #fff !important;
+    }
   }
 
   .btn-outline-success {
     color: $wp-green !important;
     border-color: $wp-green !important;
     background: transparent;
-    &:hover, &:focus, &:active, &.active { background: $wp-green !important; border-color: $wp-green !important; color: #fff !important; }
+
+    &:hover,
+    &:focus,
+    &:active,
+    &.active {
+      background: $wp-green !important;
+      border-color: $wp-green !important;
+      color: #fff !important;
+    }
   }
 
   .btn-danger {
     background: $wp-red !important;
     border-color: $wp-red !important;
     color: #fff !important;
-    &:hover { background: darken($wp-red, 8%) !important; border-color: darken($wp-red, 8%) !important; color: #fff !important; }
-    &:focus, &:active, &.active { color: #fff !important; background: darken($wp-red, 12%) !important; border-color: darken($wp-red, 12%) !important; }
+
+    &:hover {
+      background: darken($wp-red, 8%) !important;
+      border-color: darken($wp-red, 8%) !important;
+      color: #fff !important;
+    }
+
+    &:focus,
+    &:active,
+    &.active {
+      color: #fff !important;
+      background: darken($wp-red, 12%) !important;
+      border-color: darken($wp-red, 12%) !important;
+    }
   }
 
   .btn-outline-danger {
     color: $wp-red !important;
     border-color: $wp-red !important;
     background: transparent;
-    &:hover, &:focus, &:active, &.active { background: $wp-red !important; border-color: $wp-red !important; color: #fff !important; }
+
+    &:hover,
+    &:focus,
+    &:active,
+    &.active {
+      background: $wp-red !important;
+      border-color: $wp-red !important;
+      color: #fff !important;
+    }
   }
 
   .btn-warning {
     background: $wp-orange !important;
     border-color: $wp-orange !important;
     color: #fff !important;
-    &:hover { background: darken($wp-orange, 8%) !important; border-color: darken($wp-orange, 8%) !important; color: #fff !important; }
+
+    &:hover {
+      background: darken($wp-orange, 8%) !important;
+      border-color: darken($wp-orange, 8%) !important;
+      color: #fff !important;
+    }
   }
 
   .btn-outline-warning {
     color: $wp-orange !important;
     border-color: $wp-orange !important;
     background: transparent;
-    &:hover, &:focus, &:active, &.active { background: $wp-orange !important; border-color: $wp-orange !important; color: #fff !important; }
+
+    &:hover,
+    &:focus,
+    &:active,
+    &.active {
+      background: $wp-orange !important;
+      border-color: $wp-orange !important;
+      color: #fff !important;
+    }
   }
 
   .btn-outline-secondary {
     color: $wp-text-secondary !important;
     border-color: $wp-border !important;
     background: transparent;
-    &:hover { background: $wp-text-secondary !important; border-color: $wp-text-secondary !important; color: #fff !important; }
+
+    &:hover {
+      background: $wp-text-secondary !important;
+      border-color: $wp-text-secondary !important;
+      color: #fff !important;
+    }
   }
 
   .container-rounded-white {
@@ -149,15 +232,31 @@ body:has(.wp-detail-container) {
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 4px 6px -1px rgba(0, 0, 0, 0.06);
   }
 
-  .form-control, .form-select {
+  .wp-card {
+    background: #ffffff;
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+    padding: 12px 16px !important;
+  }
+
+  .form-control,
+  .form-select {
     border-radius: 4px;
     border-color: $wp-border;
 
-    &:focus { border-color: $wp-primary; box-shadow: 0 0 0 3px rgba($wp-primary, 0.12); }
-    &::placeholder { color: #9CA3AF; }
+    &:focus {
+      border-color: $wp-primary;
+      box-shadow: 0 0 0 3px rgba($wp-primary, 0.12);
+    }
+
+    &::placeholder {
+      color: #9CA3AF;
+    }
   }
 
-  .form-control-sm:not(textarea), .form-select-sm {
+  .form-control-sm:not(textarea),
+  .form-select-sm {
     height: 36px !important;
     min-height: 36px !important;
     max-height: 36px !important;
@@ -167,9 +266,14 @@ body:has(.wp-detail-container) {
     box-sizing: border-box !important;
   }
 
-  .form-label { color: $wp-text-body; }
+  .form-label {
+    color: $wp-text-body;
+  }
 
-  .status-badge { font-weight: 600; letter-spacing: 0.02em; }
+  .status-badge {
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
 
   table th {
     font-size: 12px;
@@ -180,8 +284,40 @@ body:has(.wp-detail-container) {
     border-bottom-width: 1px;
   }
 
+  // ─── Headers & Typographics ─────────────────────────────
+  .wp-card-head {
+    font-weight: 700;
+    font-size: 13.5px;
+    margin-bottom: 12px;
+    color: $wp-navy;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    i {
+      color: #10B981;
+      font-size: 14px;
+    }
+  }
+
+  .wp-mini-head {
+    font-weight: 600;
+    font-size: 12.5px;
+    margin-bottom: 12px;
+    color: $wp-text-secondary;
+    display: flex;
+    align-items: center;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+
+    i {
+      color: $wp-text-secondary;
+    }
+  }
+
   // ─── Empty / error state ────────────────────────────────
-  .wp-empty-state, .wp-error-state {
+  .wp-empty-state,
+  .wp-error-state {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -189,120 +325,155 @@ body:has(.wp-detail-container) {
     padding: 48px 24px;
     text-align: center;
 
-    i { font-size: 30px; margin-bottom: 12px; }
-    .wp-state-title { font-size: 14px; font-weight: 600; color: $wp-text-body; margin-bottom: 4px; }
-    .wp-state-sub { font-size: 12px; color: $wp-text-secondary; max-width: 320px; }
+    i {
+      font-size: 30px;
+      margin-bottom: 12px;
+    }
+
+    .wp-state-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: $wp-text-body;
+      margin-bottom: 4px;
+    }
+
+    .wp-state-sub {
+      font-size: 12px;
+      color: $wp-text-secondary;
+      max-width: 320px;
+    }
   }
 
-  .wp-empty-state i { color: $wp-border; }
-  .wp-error-state i { color: $wp-red; }
+  .wp-empty-state i {
+    color: $wp-border;
+  }
+
+  .wp-error-state i {
+    color: $wp-red;
+  }
 
   // ─── Work Permit Page Fixed Layout & Independent Center Scrolling ─────
-  .wp-header-wrapper {
-    flex-shrink: 0 !important;
-    margin-bottom: 12px !important;
-  }
 
-  // ─── 3-Column Detail Page Layout ────────────────────────
+  // ─── 2-Column Detail Page Layout ────────────────────────
   .wp-detail-container {
-    flex: 1 !important;
-    min-height: 0 !important;
-    display: flex !important;
-    gap: 16px !important;
-    align-items: stretch !important;
-    overflow: hidden !important;
+    display: flex;
+    gap: 16px;
+    align-items: stretch;
+    min-height: 0;
+    flex: 1;
+    overflow: hidden;
 
     @media (max-width: 1024px) {
-      flex-direction: column !important;
-      height: auto !important;
-      overflow: visible !important;
-      .wp-left-col, .wp-right-col, .wp-mid-col {
-        width: 100% !important;
-        overflow-y: visible !important;
-        max-height: none !important;
-      }
+      flex-direction: column;
+      overflow-y: auto;
     }
   }
 
-  .wp-left-col {
-    width: 190px !important;
-    flex-shrink: 0 !important;
-    overflow-y: auto !important;
-    height: 100% !important;
-    max-height: 100% !important;
-    scrollbar-width: none !important;
-    -ms-overflow-style: none !important;
+  .wp-main-col {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    overflow-y: auto;
+    padding-right: 8px;
+
+    // Hide scrollbar for a cleaner look
+    scrollbar-width: none;
+
     &::-webkit-scrollbar {
-      display: none !important;
-      width: 0 !important;
-      height: 0 !important;
+      display: none;
     }
   }
 
-  .wp-mid-col {
-    flex: 1 !important;
-    min-width: 0 !important;
-    overflow-y: auto !important;
-    height: 100% !important;
-    max-height: 100% !important;
-    padding-right: 4px !important;
+  .wp-side-col {
+    width: 310px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    overflow-y: auto;
 
-    scrollbar-width: none !important;
-    -ms-overflow-style: none !important;
+    scrollbar-width: none;
+
     &::-webkit-scrollbar {
-      display: none !important;
-      width: 0 !important;
-      height: 0 !important;
-    }
-  }
-
-  .wp-right-col {
-    width: 360px !important;
-    flex-shrink: 0 !important;
-    overflow-y: auto !important;
-    height: 100% !important;
-    max-height: 100% !important;
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 12px !important;
-
-    scrollbar-width: none !important;
-    -ms-overflow-style: none !important;
-    &::-webkit-scrollbar {
-      display: none !important;
-      width: 0 !important;
-      height: 0 !important;
+      display: none;
     }
   }
 
   // ─── Detail identity header ─────────────────────────────
-  .wp-header {
-    background: $wp-navy;
+  .wp-header-wrapper {
+    background: #fff;
     border-radius: 8px;
-    padding: 16px 20px;
-    color: #fff;
+    border: 1px solid $wp-border;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    margin-bottom: 16px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .wp-header {
+    padding: 24px;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
+    gap: 16px;
     margin-bottom: 0;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   }
-  .wp-header-left { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; min-width: 0; }
+
+  .wp-header-left {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    flex-wrap: nowrap;
+    min-width: 0;
+  }
+
   .wp-header-icon {
-    width: 44px; height: 44px; border-radius: 8px;
-    background: rgba(255, 255, 255, 0.12);
-    display: flex; align-items: center; justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    background: $wp-gray-bg;
+    border: 1px solid $wp-border;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     flex-shrink: 0;
-    i { font-size: 18px; color: #fff; }
+
+    i {
+      font-size: 20px;
+      color: $wp-navy;
+    }
   }
+
   .wp-header-eyebrow {
-    font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.6); margin-bottom: 2px; font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: $wp-text-secondary;
+    margin-bottom: 4px;
+    font-weight: 700;
   }
-  .wp-header-title { font-size: 19px; font-weight: 700; margin: 0; color: #fff; letter-spacing: -0.01em; }
-  .wp-header-sub { font-size: 12.5px; color: rgba(255, 255, 255, 0.72); margin-top: 3px; }
+
+  .wp-header-title {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0;
+    color: $wp-text-body;
+    letter-spacing: -0.01em;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .wp-header-sub {
+    font-size: 13px;
+    color: $wp-text-secondary;
+    margin-top: 4px;
+    font-weight: 400;
+  }
+
   // ─── Header Right Chips & Action Buttons (Standardized UX) ─────
   .wp-header-right {
     display: flex;
@@ -312,10 +483,7 @@ body:has(.wp-detail-container) {
     flex-shrink: 0;
 
     .wp-chip,
-    .status-badge,
-    .wp-btn-action-header,
-    .wp-btn-cancel-header,
-    .wp-btn-activate-header {
+    .status-badge {
       height: 28px !important;
       line-height: 1 !important;
       padding: 0 12px !important;
@@ -333,9 +501,9 @@ body:has(.wp-detail-container) {
     }
 
     .wp-chip-priority {
-      background: rgba(255, 255, 255, 0.14) !important;
-      border: 1px solid rgba(255, 255, 255, 0.2) !important;
-      color: #ffffff !important;
+      background: rgba($wp-orange, 0.1) !important;
+      border: 1px solid rgba($wp-orange, 0.2) !important;
+      color: $wp-orange !important;
 
       .dot {
         width: 6px;
@@ -347,195 +515,395 @@ body:has(.wp-detail-container) {
       }
     }
 
-    .wp-btn-action-header {
-      gap: 5px;
-      cursor: pointer;
-      transition: all 0.2s ease;
 
-      i {
-        font-size: 11px;
-        transition: transform 0.2s ease;
-      }
+    .btn {
+      font-weight: 500 !important;
+      border-radius: 6px;
+    }
 
-      &.activate, &.complete, &.resume {
-        background: rgba(16, 185, 129, 0.16) !important;
-        border: 1px solid rgba(16, 185, 129, 0.45) !important;
-        color: #6EE7B7 !important;
-        i { color: #10B981; }
-
-        &:hover {
-          background: #10B981 !important;
-          border-color: #10B981 !important;
-          color: #FFFFFF !important;
-          box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35);
-          i { color: #FFFFFF !important; transform: scale(1.1); }
-        }
-      }
-
-      &.suspend {
-        background: rgba(245, 158, 11, 0.16) !important;
-        border: 1px solid rgba(245, 158, 11, 0.45) !important;
-        color: #FDE68A !important;
-        i { color: #F59E0B; }
-
-        &:hover {
-          background: #F59E0B !important;
-          border-color: #F59E0B !important;
-          color: #FFFFFF !important;
-          box-shadow: 0 2px 8px rgba(245, 158, 11, 0.35);
-          i { color: #FFFFFF !important; transform: scale(1.1); }
-        }
-      }
-
-      &.extend {
-        background: rgba(14, 165, 233, 0.16) !important;
-        border: 1px solid rgba(14, 165, 233, 0.45) !important;
-        color: #7DD3FC !important;
-        i { color: #0EA5E9; }
-
-        &:hover {
-          background: #0EA5E9 !important;
-          border-color: #0EA5E9 !important;
-          color: #FFFFFF !important;
-          box-shadow: 0 2px 8px rgba(14, 165, 233, 0.35);
-          i { color: #FFFFFF !important; transform: scale(1.1); }
-        }
-      }
-
-      &.cancel {
-        background: rgba(239, 68, 68, 0.15) !important;
-        border: 1px solid rgba(239, 68, 68, 0.4) !important;
-        color: #FCA5A5 !important;
-        i { color: #EF4444; }
-
-        &:hover {
-          background: #DC2626 !important;
-          border-color: #DC2626 !important;
-          color: #FFFFFF !important;
-          box-shadow: 0 2px 8px rgba(220, 38, 38, 0.35);
-          i { color: #FFFFFF !important; transform: scale(1.1); }
-        }
-      }
-
-      &:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
+    .btn-outline-success {
+      &:hover {
+        background: rgba($wp-green, 0.1) !important;
+        color: $wp-green !important;
+        border-color: $wp-green !important;
       }
     }
 
-    .wp-header-divider {
-      width: 1px;
-      height: 16px;
-      background: rgba(255, 255, 255, 0.25);
-      margin: 0 2px;
-      flex-shrink: 0;
+    .btn-outline-warning {
+      &:hover {
+        background: rgba($wp-orange, 0.1) !important;
+        color: $wp-orange !important;
+        border-color: $wp-orange !important;
+      }
+    }
+
+    .btn-outline-info {
+      &:hover {
+        background: rgba($wp-primary, 0.1) !important;
+        color: $wp-primary !important;
+        border-color: $wp-primary !important;
+      }
+    }
+
+    .btn-outline-secondary {
+      color: #6b7280 !important;
+      border-color: #e5e7eb !important;
+
+      &:hover {
+        background: #f9fafb !important;
+        color: #111827 !important;
+        border-color: #d1d5db !important;
+      }
+    }
+
+    .btn-outline-danger {
+      color: #ef4444 !important;
+      border-color: #fca5a5 !important;
+
+      &:hover {
+        background: rgba(#ef4444, 0.1) !important;
+        color: #dc2626 !important;
+        border-color: #f87171 !important;
+      }
     }
   }
 
   .wp-header-toolbar {
-    &:empty { display: none; }
-    background: #fff;
-    padding: 6px 20px;
-    border-bottom: 1px solid #E5E7EB;
-    border-radius: 0 0 6px 6px;
+    &:empty {
+      display: none;
+    }
+
+    padding: 16px 24px;
+    border-top: 1px solid $wp-border;
   }
 
-  .wp-actions-bar { display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap; margin-bottom: 0; }
+  .wp-actions-bar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 0;
+  }
 
   // ─── Lifecycle stepper ───────────────────────────────────
-  .wp-stepper-card { padding: 18px 24px; }
-  .wp-stepper { display: flex; align-items: center; }
-  .wp-step { display: flex; align-items: center; flex: 1; }
-  .wp-step:last-child { flex: 0; }
+  .wp-stepper-card {
+    padding: 18px 24px;
+  }
+
+  .wp-stepper {
+    display: flex;
+    align-items: center;
+  }
+
+  .wp-step {
+    display: flex;
+    align-items: center;
+    flex: 1;
+  }
+
+  .wp-step:last-child {
+    flex: 0;
+  }
+
   .wp-step-node {
-    display: flex; flex-direction: column; align-items: center; gap: 6px;
-    flex-shrink: 0; width: 100px; text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    width: 100px;
+    text-align: center;
   }
+
   .wp-step-circle {
-    width: 26px; height: 26px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 700;
-    border: 2px solid $wp-border; background: #fff; color: $wp-text-secondary;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    border: 2px solid $wp-border;
+    background: #fff;
+    color: $wp-text-secondary;
   }
-  .wp-step.done .wp-step-circle { background: $wp-green; border-color: $wp-green; color: #fff; }
-  .wp-step.current .wp-step-circle { background: #fff; border-color: $wp-primary; color: $wp-primary; box-shadow: 0 0 0 4px rgba($wp-primary, 0.12); }
-  .wp-step-label { font-size: 11.5px; font-weight: 600; color: $wp-text-secondary; }
-  .wp-step.done .wp-step-label, .wp-step.current .wp-step-label { color: $wp-text-body; }
-  .wp-step-sub { font-size: 10px; color: $wp-text-secondary; }
-  .wp-step-line { height: 2px; background: $wp-border; flex: 1; margin: 0 -4px 20px -4px; }
-  .wp-step-line.done { background: $wp-green; }
+
+  .wp-step.done .wp-step-circle {
+    background: $wp-green;
+    border-color: $wp-green;
+    color: #fff;
+  }
+
+  .wp-step.current .wp-step-circle {
+    background: #fff;
+    border-color: $wp-primary;
+    color: $wp-primary;
+    box-shadow: 0 0 0 4px rgba($wp-primary, 0.12);
+  }
+
+  .wp-step-label {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: $wp-text-secondary;
+  }
+
+  .wp-step.done .wp-step-label,
+  .wp-step.current .wp-step-label {
+    color: $wp-text-body;
+  }
+
+  .wp-step-sub {
+    font-size: 10px;
+    color: $wp-text-secondary;
+  }
+
+  .wp-step-line {
+    height: 2px;
+    background: $wp-border;
+    flex: 1;
+    margin: 0 -4px 20px -4px;
+  }
+
+  .wp-step-line.done {
+    background: $wp-green;
+  }
 
   // ─── Vertical lifecycle rail ─────────────────────────────
-  .wp-vstepper { display: flex; flex-direction: column; }
-  .wp-vstep { display: flex; gap: 14px; }
-  .wp-vstep-track { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
-  .wp-vstep-line { width: 2px; flex: 1; min-height: 30px; background: $wp-border; }
-  .wp-vstep-line.done { background: $wp-green; }
-  .wp-vstep-body { padding-bottom: 32px; min-width: 0; padding-top: 2px; }
-  .wp-vstep:last-child .wp-vstep-body { padding-bottom: 0; }
-  .wp-vstep-label { font-size: 13px; font-weight: 600; color: $wp-border; }
-  .wp-vstep.done .wp-vstep-label, .wp-vstep.current .wp-vstep-label { color: $wp-text-body; font-weight: 700; }
-  .wp-vstep-sub { font-size: 11px; color: $wp-text-secondary; margin-top: 3px; }
-  .wp-vstep-hint { font-size: 11px; color: $wp-text-secondary; margin-top: 3px; font-style: italic; }
+  .wp-vstepper {
+    display: flex;
+    flex-direction: column;
+    padding-top: 4px;
+  }
 
-  .wp-vstep .wp-step-circle { width: 28px; height: 28px; background: $wp-gray-bg; border-color: $wp-border; color: $wp-border; }
-  .wp-vstep.done .wp-step-circle { background: $wp-green; border-color: $wp-green; color: #fff; }
-  .wp-vstep.current .wp-step-circle { background: #fff; border-color: $wp-green; border-width: 2px; color: $wp-green; }
+  .wp-vstep {
+    display: flex;
+    gap: 18px;
+  }
+
+  .wp-vstep-track {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0;
+    width: 28px;
+  }
+
+  .wp-vstep-line {
+    width: 2px;
+    flex: 1;
+    min-height: 28px;
+    background: $wp-border;
+    margin: 6px 0;
+  }
+
+  .wp-vstep-line.done {
+    background: $wp-green;
+    opacity: 0.6;
+  }
+
+  .wp-vstep-body {
+    padding-bottom: 28px;
+    min-width: 0;
+    padding-top: 2px;
+  }
+
+  .wp-vstep:last-child .wp-vstep-body {
+    padding-bottom: 0;
+  }
+
+  .wp-vstep-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: $wp-text-secondary;
+  }
+
+  .wp-vstep.done .wp-vstep-label {
+    color: $wp-text-body;
+    font-weight: 600;
+  }
+
+  .wp-vstep.current .wp-vstep-label {
+    color: $wp-primary;
+    font-weight: 700;
+  }
+
+  .wp-vstep-sub {
+    font-size: 12px;
+    color: $wp-text-secondary;
+    margin-top: 6px;
+    line-height: 1.4;
+  }
+
+  .wp-vstep-hint {
+    font-size: 12px;
+    color: $wp-text-secondary;
+    margin-top: 6px;
+    font-style: italic;
+  }
+
+  .wp-vstep .wp-step-circle {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    border: 2px solid $wp-border;
+    color: $wp-text-secondary;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .wp-vstep.done .wp-step-circle {
+    background: $wp-green;
+    border-color: $wp-green;
+    color: #fff;
+  }
+
+  .wp-vstep.current .wp-step-circle {
+    background: #fff;
+    border-color: $wp-primary;
+    color: $wp-primary;
+    box-shadow: 0 0 0 4px rgba($wp-primary, 0.12);
+  }
 
   .wp-current-pill {
-    display: inline-block; font-size: 9.5px; font-weight: 700; letter-spacing: 0.03em;
-    text-transform: uppercase; color: $wp-green; background: rgba($wp-green, 0.12);
-    padding: 2px 8px; border-radius: 999px; vertical-align: middle; margin-left: 6px;
+    display: inline-block;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: $wp-green;
+    background: rgba($wp-green, 0.12);
+    padding: 2px 8px;
+    border-radius: 999px;
+    vertical-align: middle;
+    margin-left: 6px;
   }
 
-  // ─── Card head ───────────────────────────────────────────
-  .wp-card-head {
-    display: flex; align-items: center; gap: 8px;
-    font-size: 13px; font-weight: 700; color: $wp-navy;
-    padding-bottom: 10px; margin-bottom: 12px;
-    border-bottom: 1px solid $wp-border;
-    i { color: $wp-navy; font-size: 13px; }
-  }
-
-  // ─── Field grid ──────────────────────────────────────────
-  // Compact single-line rows (label left, value right) for scalar fields.
-  .wp-field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 32px; }
-  .wp-field-row {
+  // ─── Field Grids & Displays ──────────────────────────────
+  .wp-field-grid {
     display: grid;
-    grid-template-columns: minmax(110px, 42%) 1fr;
-    align-items: baseline;
-    gap: 12px;
-    min-width: 0;
-    padding: 6px 0; border-bottom: 1px solid #F3F4F6;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 16px;
   }
-  .wp-field-grid .wp-field-row:last-child { border-bottom: none; }
-  .wp-field-row-label {
-    font-size: 10.5px; font-weight: 600; letter-spacing: 0.04em;
-    color: $wp-text-secondary; text-transform: uppercase;
-    min-width: 0; line-height: 1.4; overflow-wrap: anywhere;
-    text-align: left;
-  }
-  .wp-field-row-value {
-    font-size: 13px; font-weight: 600; color: $wp-text-body;
-    min-width: 0; line-height: 1.4; text-align: left; overflow-wrap: anywhere;
-  }
-  .wp-field-row-value.muted { color: $wp-text-secondary; font-weight: 400; font-style: italic; }
 
-  // Stacked variant — used for long-form values (span-2)
-  .wp-field.span-2 { grid-column: 1 / -1; padding: 8px 0; }
+  .wp-field.span-2 {
+    grid-column: 1 / -1;
+  }
+
   .wp-field-label {
-    font-size: 10.5px; font-weight: 600; letter-spacing: 0.05em;
-    color: $wp-text-secondary; text-transform: uppercase; margin-bottom: 4px;
+    font-size: 11px;
+    color: #6b7280;
+    margin-bottom: 2px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
   }
-  .wp-field-value { font-size: 13.5px; font-weight: 600; color: $wp-text-body; }
-  .wp-field-value.muted { color: $wp-text-secondary; font-weight: 400; font-style: italic; }
 
-  // Mini section divider — used to fold a small related section into a bigger card
-  .wp-mini-head {
-    font-size: 10.5px; font-weight: 700; letter-spacing: 0.05em;
-    color: $wp-text-secondary; text-transform: uppercase;
-    margin: 14px 0 6px; padding-top: 12px; border-top: 1px solid $wp-border;
+  .wp-field-value {
+    font-size: 13px;
+    color: $wp-navy;
+    font-weight: 600;
+    line-height: 1.3;
   }
+
+  .wp-warning-banner {
+    background: #FFFBEB;
+    border: 1px solid #FDE68A;
+    border-radius: 8px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+
+    .wp-warning-text {
+      font-size: 13px;
+      color: #92400E;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      
+      i {
+        margin-top: 3px;
+        color: #D97706;
+      }
+    }
+  }
+
+  @media (max-width: 767px) {
+    .wp-header {
+      padding: 16px;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 16px;
+    }
+
+    .wp-header-title {
+      font-size: 16px;
+    }
+
+    .wp-header-left {
+      width: 100%;
+    }
+
+    .wp-header-right {
+      width: 100%;
+      margin-left: 64px; /* Align with text by offsetting icon (48px) + gap (16px) */
+      display: flex;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      scrollbar-width: none;
+      &::-webkit-scrollbar {
+        display: none;
+      }
+    }
+
+    .wp-field-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .wp-field {
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      padding: 10px 0;
+      border-bottom: 1px dashed #E5E7EB;
+
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+
+    .wp-field-label {
+      width: 40%;
+      flex-shrink: 0;
+      margin-bottom: 0;
+      font-size: 12px;
+      color: $wp-navy;
+    }
+
+    .wp-field-value {
+      flex: 1;
+      font-size: 12.5px;
+    }
+
+    .wp-warning-banner {
+      flex-direction: column;
+      align-items: stretch;
+
+      button {
+        width: 100%;
+      }
+    }
+  }
+
 
   // ─── Prose / note boxes ──────────────────────────────────
   .wp-info-box {
@@ -546,8 +914,14 @@ body:has(.wp-detail-container) {
     line-height: 1.55;
     color: $wp-text-body;
   }
-  .wp-info-box + .wp-info-box { margin-top: 10px; }
-  .wp-info-box .wp-field-label { margin-bottom: 5px; }
+
+  .wp-info-box+.wp-info-box {
+    margin-top: 10px;
+  }
+
+  .wp-info-box .wp-field-label {
+    margin-bottom: 5px;
+  }
 
   .wp-note-box {
     background: rgba($wp-orange, 0.1);
@@ -558,47 +932,162 @@ body:has(.wp-detail-container) {
     line-height: 1.55;
     color: #6E4A0E;
   }
-  .wp-note-box + .wp-note-box { margin-top: 10px; }
+
+  .wp-note-box+.wp-note-box {
+    margin-top: 10px;
+  }
+
   .wp-note-box strong {
-    display: block; font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase;
-    color: $wp-orange; margin-bottom: 4px; font-weight: 700;
+    display: block;
+    font-size: 10.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: $wp-orange;
+    margin-bottom: 4px;
+    font-weight: 700;
   }
 
   // ─── Approval flow ───────────────────────────────────────
   .wp-approval-row {
-    display: flex; gap: 12px; padding: 12px; border-radius: 8px; margin-bottom: 10px;
-    background: $wp-gray-bg; border: 1px solid $wp-border;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    background: #fff;
+    border: 1px solid $wp-border;
   }
-  .wp-approval-row.is-approved { background: rgba($wp-green, 0.08); border-color: rgba($wp-green, 0.28); }
-  .wp-approval-row.is-current  { background: rgba($wp-primary, 0.06); border-color: rgba($wp-primary, 0.28); }
-  .wp-approval-row.is-declined { background: rgba($wp-red, 0.06); border-color: rgba($wp-red, 0.28); }
-  .wp-approval-dot {
-    width: 22px; height: 22px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0; margin-top: 1px; color: #fff;
-    i { font-size: 11px; }
+
+  .wp-approval-row.is-approved {
+    background: #F4FBFA;
+    border-color: #A3E4C4;
   }
+
+  .wp-approval-row.is-current {
+    background: #FFF9ED;
+    border-color: #FDE68A;
+  }
+
+  .wp-approval-row.is-declined {
+    background: #FEF2F2;
+    border-color: #FECACA;
+  }
+
+  .wp-approval-row-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: $wp-navy;
+  }
+
+  .wp-approval-row-sub {
+    font-size: 11px;
+    color: #6b7280;
+    margin-top: 2px;
+  }
+
+  .wp-approval-comment {
+    background: #fff;
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-size: 12px;
+    font-style: italic;
+    color: #6b7280;
+    margin-top: 10px;
+    border: 1px solid #E5E7EB;
+  }
+
   .wp-badge-approved {
-    color: #fff; font-size: 10.5px; font-weight: 700;
-    padding: 3px 9px; border-radius: 999px; letter-spacing: 0.03em; white-space: nowrap;
+    background: #10B981;
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+    text-transform: uppercase;
   }
-  .wp-all-done { display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; color: $wp-green; margin-top: 4px; }
+
+  .wp-badge-pending {
+    background: #0ea5e9;
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+    text-transform: uppercase;
+  }
+
+  .wp-all-done {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    color: $wp-green;
+    margin-top: 4px;
+  }
 
   // ─── PDF actions ─────────────────────────────────────────
-  .wp-action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .wp-action-grid .btn-primary-dark { grid-column: 1 / -1; }
+  .wp-action-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .wp-action-grid .btn-primary-dark {
+    grid-column: 1 / -1;
+  }
 
   // ─── Site access badge card ──────────────────────────────
-  .wp-qr-row { display: flex; gap: 16px; align-items: center; }
-  .wp-qr-box {
-    width: 140px; height: 140px; border-radius: 8px; border: 1px solid $wp-border;
-    padding: 8px; background: #fff; flex-shrink: 0;
-    img { width: 100%; height: 100%; object-fit: contain; }
+  .wp-qr-row {
+    display: flex;
+    gap: 16px;
+    align-items: center;
   }
-  .wp-access-stats { display: flex; gap: 18px; margin-bottom: 10px; }
-  .wp-stat-num { font-size: 20px; font-weight: 700; color: $wp-text-body; line-height: 1; }
-  .wp-stat-label { font-size: 10px; color: $wp-text-secondary; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; margin-top: 3px; }
-  .wp-perforation { border-top: 1.5px dashed $wp-border; margin: 14px 0; }
+
+  .wp-qr-box {
+    width: 140px;
+    height: 140px;
+    border-radius: 8px;
+    border: 1px solid $wp-border;
+    padding: 8px;
+    background: #fff;
+    flex-shrink: 0;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+  }
+
+  .wp-access-stats {
+    display: flex;
+    gap: 18px;
+    margin-bottom: 10px;
+  }
+
+  .wp-stat-num {
+    font-size: 20px;
+    font-weight: 700;
+    color: $wp-text-body;
+    line-height: 1;
+  }
+
+  .wp-stat-label {
+    font-size: 10px;
+    color: $wp-text-secondary;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+    margin-top: 3px;
+  }
+
+  .wp-perforation {
+    border-top: 1.5px dashed $wp-border;
+    margin: 14px 0;
+  }
 
   // ─── Linked gate pass card ────────────────────────────────
   .wp-linked-gp-card {
@@ -610,6 +1099,7 @@ body:has(.wp-detail-container) {
     border-radius: 10px;
     padding: 14px;
   }
+
   .wp-linked-gp-copy {
     display: flex;
     min-width: 0;
@@ -617,35 +1107,59 @@ body:has(.wp-detail-container) {
     flex-direction: column;
     align-items: flex-start;
     gap: 8px;
-    strong { color: $wp-navy; }
-    span { color: $wp-text-secondary; font-size: 12px; line-height: 1.45; }
+
+    strong {
+      color: $wp-navy;
+    }
+
+    span {
+      color: $wp-text-secondary;
+      font-size: 12px;
+      line-height: 1.45;
+    }
   }
 
   // ─── Material gate pass row ───────────────────────────────
   .wp-gp-row {
-    display: flex; gap: 10px; align-items: flex-start;
-    border-left: 3px solid $wp-border; padding-left: 10px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    border-left: 3px solid $wp-border;
+    padding-left: 10px;
   }
-  .wp-gp-qr { cursor: pointer; }
+
+  .wp-gp-qr {
+    cursor: pointer;
+  }
 
   @media (max-width: 575px) {
-    .wp-field-grid { grid-template-columns: 1fr; gap: 0; }
-    .wp-linked-gp-card { align-items: flex-start; }
-    .wp-linked-gp-qr { width: 120px; height: 120px; }
+    .wp-field-grid {
+      grid-template-columns: 1fr;
+      gap: 0;
+    }
+
+    .wp-linked-gp-card {
+      align-items: flex-start;
+    }
+
+    .wp-linked-gp-qr {
+      width: 120px;
+      height: 120px;
+    }
   }
 }
 
 // ─── Global Mobile Responsive Styles ─────────────────────────
 @media (max-width: 768px) {
-  // Make main content area scroll on mobile (remove fixed height constraints)
   .main-content:has(.wp-page) {
     height: auto !important;
     max-height: none !important;
     overflow-y: auto !important;
-    padding: 12px !important;
+    padding: 68px 12px 24px 12px !important;
   }
 
   .wp-page {
+
     // Header responsiveness
     .wp-header {
       flex-direction: column !important;
@@ -669,7 +1183,9 @@ body:has(.wp-detail-container) {
       }
     }
 
-    .wp-header-title { font-size: 16px !important; }
+    .wp-header-title {
+      font-size: 16px !important;
+    }
 
     // Detail page - stack columns
     .wp-detail-container {
@@ -680,7 +1196,9 @@ body:has(.wp-detail-container) {
 
     .wp-left-col,
     .wp-right-col,
-    .wp-mid-col {
+    .wp-mid-col,
+    .wp-main-col,
+    .wp-side-col {
       width: 100% !important;
       height: auto !important;
       max-height: none !important;
@@ -688,37 +1206,71 @@ body:has(.wp-detail-container) {
     }
 
     // Stepper - shrink on mobile
-    .wp-stepper { flex-wrap: wrap !important; gap: 4px !important; }
-    .wp-step-node { width: 70px !important; }
-    .wp-step-label { font-size: 10px !important; }
+    .wp-stepper {
+      flex-wrap: wrap !important;
+      gap: 4px !important;
+    }
+
+    .wp-step-node {
+      width: 70px !important;
+    }
+
+    .wp-step-label {
+      font-size: 10px !important;
+    }
 
     // Field grid
-    .wp-field-grid { grid-template-columns: 1fr !important; }
-    .wp-field-row { grid-template-columns: 45% 1fr !important; }
+    .wp-field-grid {
+      grid-template-columns: 1fr !important;
+    }
+
+    .wp-field-row {
+      grid-template-columns: 45% 1fr !important;
+    }
 
     // QR card
-    .wp-qr-row { flex-direction: column !important; align-items: flex-start !important; }
-    .wp-qr-box { width: 110px !important; height: 110px !important; }
+    .wp-qr-row {
+      flex-direction: column !important;
+      align-items: flex-start !important;
+    }
+
+    .wp-qr-box {
+      width: 110px !important;
+      height: 110px !important;
+    }
   }
 }
 
 @media (max-width: 576px) {
+
   // Work Permit List page - filter bar
   .wp-page {
     padding: 4px 8px 8px !important;
 
     // Header info
-    h2 { font-size: 18px !important; }
+    h2 {
+      font-size: 18px !important;
+    }
 
     // Form cards on new permit page
-    > form > div {
+    >form>div {
       padding: 14px 14px !important;
       border-radius: 8px !important;
     }
   }
 
   // Sidebar on mobile
-  .sidebar { display: none !important; }
-  .with-sidebar { margin-left: 0 !important; }
+  .sidebar {
+    display: none !important;
+  }
+
+  .with-sidebar {
+    margin-left: 0 !important;
+  }
 }
 
+.wp-action-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}

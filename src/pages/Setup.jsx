@@ -13,12 +13,12 @@ const FIELD_TYPES = [
   { value: 'text',     label: 'Text',     icon: 'fa-font' },
   { value: 'number',   label: 'Number',   icon: 'fa-hashtag' },
   { value: 'textarea', label: 'Textarea', icon: 'fa-align-left' },
-  { value: 'select',   label: 'Select',   icon: 'fa-list' },
+  { value: 'select',   label: 'Dropdown', icon: 'fa-list' },
   { value: 'checkbox', label: 'Checkbox', icon: 'fa-check-square-o' },
   { value: 'date',     label: 'Date',     icon: 'fa-calendar' },
   { value: 'email',    label: 'Email',    icon: 'fa-envelope-o' },
 ];
-const EMPTY_FIELD = { name: '', col_name: '', type: 'text', is_required: false, placeholder: '', options: '' };
+const EMPTY_FIELD = { name: '', col_name: '', type: 'text', is_required: false, placeholder: '', options: [], is_multi_select: false };
 const DISALLOWED_APPROVAL_ROLES = new Set(['resident', 'member']);
 const normalizeRole = value => String(value || '').trim().toLowerCase();
 
@@ -183,14 +183,6 @@ function FieldTypePicker({ value, onChange }) {
           )}
         </span>
         <span style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0, marginLeft: 4 }}>
-          {value && (
-            <i
-              className="fa fa-times"
-              style={{ fontSize: 10, color: '#9CA3AF', padding: 2 }}
-              onMouseDown={e => { e.stopPropagation(); onChange(''); }}
-              title="Clear"
-            />
-          )}
           <i className={`fa fa-chevron-${open ? 'up' : 'down'}`} style={{ fontSize: 9, color: '#6B7280' }} />
         </span>
       </div>
@@ -1160,6 +1152,61 @@ function PdfTemplateTab() {
   );
 }
 
+function OptionsManager({ options = [], onChange }) {
+  const [newOpt, setNewOpt] = useState('');
+  return (
+    <div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 8 }}>
+        {options.map((opt, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 8px', background: '#fff', border: '1px solid #CBD5E1', borderRadius: 4 }}>
+            <span style={{ fontSize: 12.5, color: '#0F172A' }}>{opt}</span>
+            <div style={{ display: 'flex', gap: 4 }}>
+               <button type="button" className="btn btn-sm p-0" style={{ width: 22, height: 22, color: '#64748B' }} onClick={() => {
+                 if (i > 0) {
+                   const val = [...options];
+                   [val[i-1], val[i]] = [val[i], val[i-1]];
+                   onChange(val);
+                 }
+               }}><i className="fa fa-arrow-up" style={{ fontSize: 10 }} /></button>
+               <button type="button" className="btn btn-sm p-0" style={{ width: 22, height: 22, color: '#64748B' }} onClick={() => {
+                 if (i < options.length - 1) {
+                   const val = [...options];
+                   [val[i+1], val[i]] = [val[i], val[i+1]];
+                   onChange(val);
+                 }
+               }}><i className="fa fa-arrow-down" style={{ fontSize: 10 }} /></button>
+               <button type="button" className="btn btn-sm p-0" style={{ width: 22, height: 22, color: '#DC2626' }} onClick={() => {
+                 const val = [...options];
+                 val.splice(i, 1);
+                 onChange(val);
+               }}><i className="fa fa-times" style={{ fontSize: 10 }} /></button>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div style={{ display: 'flex', gap: 6 }}>
+        <input 
+          type="text" 
+          className="form-control form-control-sm" 
+          style={{ height: 28, borderRadius: 4, fontSize: 12 }} 
+          value={newOpt} 
+          onChange={e => setNewOpt(e.target.value)} 
+          onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); if (newOpt.trim()) { onChange([...options, newOpt.trim()]); setNewOpt(''); } } }}
+          placeholder="Add an option..." 
+        />
+        <button 
+          type="button" 
+          className="btn btn-sm btn-outline-primary" 
+          style={{ height: 28, padding: '0 10px', fontSize: 11, borderRadius: 4, whiteSpace: 'nowrap' }} 
+          onClick={() => { if (newOpt.trim()) { onChange([...options, newOpt.trim()]); setNewOpt(''); } }}
+        >
+          Add
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function Setup() {
   const { siteId } = useParams();
   const [tab, setTab] = useState('types');
@@ -1182,6 +1229,7 @@ export default function Setup() {
   const [hoveredField, setHoveredField]   = useState(null);
   const [dialog, setDialog]              = useState(null);
   const [typeSearch, setTypeSearch]       = useState('');
+  const editFormRef                       = useRef(null);
 
   const showDialog = (title, message, onConfirm, opts = {}) =>
     setDialog({ title, message, onConfirm, confirmLabel: opts.confirmLabel || 'Confirm', confirmVariant: opts.confirmVariant || 'danger' });
@@ -1305,23 +1353,43 @@ export default function Setup() {
   const startEditField = (f) => {
     setShowAddField(false);
     const fieldData = typeof f.data === 'string' ? JSON.parse(f.data) : (f.data || {});
+    let parsedOptions = [];
+    try {
+      parsedOptions = typeof f.option === 'string' ? JSON.parse(f.option) : (f.option || []);
+    } catch(e) {}
+    if (!Array.isArray(parsedOptions)) parsedOptions = [];
+
     setEditingField(f.id);
-    setEditValues({ name: f.name, type: f.type || 'text', placeholder: fieldData.placeholder || '', is_required: !!fieldData.is_required });
+    setEditValues({
+      name: f.name,
+      type: f.type || 'text',
+      placeholder: fieldData.placeholder || '',
+      is_required: !!fieldData.is_required,
+      is_multi_select: !!fieldData.is_multi_select,
+      options: parsedOptions
+    });
+    setTimeout(() => {
+      editFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
   };
 
   const handleSaveEdit = async (f) => {
     setSavingEdit(true);
     try {
       const fieldData = typeof f.data === 'string' ? JSON.parse(f.data) : (f.data || {});
+      const updatedDataObj = { ...fieldData, placeholder: editValues.placeholder, is_required: editValues.is_required, is_multi_select: editValues.is_multi_select };
+      const optionsJson = editValues.type === 'select' ? JSON.stringify(editValues.options) : null;
+      
       await formService.updateField({
         id:       f.id,
         name:     editValues.name,
         col_name: f.col_name,
         type:     editValues.type,
-        data:     JSON.stringify({ ...fieldData, placeholder: editValues.placeholder, is_required: editValues.is_required }),
+        data:     JSON.stringify(updatedDataObj),
+        option:   optionsJson,
       });
       setFields(prev => prev.map(field => field.id === f.id
-        ? { ...field, name: editValues.name, type: editValues.type, data: JSON.stringify({ ...fieldData, placeholder: editValues.placeholder, is_required: editValues.is_required }) }
+        ? { ...field, name: editValues.name, type: editValues.type, data: JSON.stringify(updatedDataObj), option: optionsJson }
         : field
       ));
       setEditingField(null);
@@ -1366,9 +1434,9 @@ export default function Setup() {
         form_type: 'WORK_PERMIT',
         form_tag: selectedType,
         is_enable: true,
-        data: JSON.stringify({ tag: 'work_permit', is_required: newField.is_required, placeholder: newField.placeholder }),
+        data: JSON.stringify({ tag: 'work_permit', is_required: newField.is_required, placeholder: newField.placeholder, is_multi_select: newField.is_multi_select }),
         option: newField.type === 'select' && newField.options
-          ? JSON.stringify(newField.options.split(',').map(o => o.trim()).filter(Boolean))
+          ? JSON.stringify(newField.options)
           : null,
       };
       const res = await formService.addField(data);
@@ -1552,10 +1620,11 @@ export default function Setup() {
                   <div className="d-flex align-items-center justify-content-between border-bottom pb-2.5 mb-3 flex-shrink-0">
                     <div>
                       <h5 className="fw-bold text-dark mb-0" style={{ fontSize: 15, letterSpacing: '-0.01em', color: '#0F172A' }}>
-                        <i className="fa fa-list-alt me-2" style={{ color: '#17A2B8' }} />{getTypeLabel(selectedType)} — Fields
+                        <i className={editingField ? "fa fa-pencil me-2" : "fa fa-list-alt me-2"} style={{ color: '#17A2B8' }} />
+                        {editingField ? 'Edit Field' : `${getTypeLabel(selectedType)} — Fields`}
                       </h5>
                     </div>
-                    {!showAddField && (
+                    {(!showAddField && !editingField) && (
                       <button
                         className="btn btn-sm"
                         style={{
@@ -1573,7 +1642,13 @@ export default function Setup() {
                           gap: 5,
                           cursor: 'pointer',
                         }}
-                        onClick={() => { setEditingField(null); setShowAddField(true); }}
+                        onClick={() => {
+                          setEditingField(null);
+                          setShowAddField(true);
+                          setTimeout(() => {
+                            editFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                          }, 50);
+                        }}
                       >
                         <i className="fa fa-plus" style={{ fontSize: 11 }} />
                         Add Field
@@ -1582,11 +1657,18 @@ export default function Setup() {
                   </div>
 
                   <div style={{ flex: 1, overflowY: 'auto', minHeight: 0, paddingRight: 4 }}>
-                  {showAddField && (
-                    <form onSubmit={handleAddField} className="rounded-3 p-3 mb-3" style={{ background: '#F8FAFC', border: '1px solid #E2E8F0' }}>
+                  {(showAddField || editingField) && (
+                    <form ref={editFormRef} onSubmit={e => {
+                      e.preventDefault();
+                      if (editingField) {
+                        handleSaveEdit(fields.find(f => f.id === editingField));
+                      } else {
+                        handleAddField(e);
+                      }
+                    }} className="rounded-3 p-3 mb-3" style={{ background: '#F8FAFC', border: '1px solid #E2E8F0' }}>
                       <div className="d-flex align-items-center justify-content-between mb-2">
                         <span className="fw-bold text-dark" style={{ fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.03em', color: '#475569' }}>
-                          Add New Field
+                          {editingField ? 'Edit Field' : 'Add New Field'}
                         </span>
                       </div>
 
@@ -1599,8 +1681,11 @@ export default function Setup() {
                             type="text"
                             className="form-control"
                             style={{ height: 32, borderRadius: 5, border: '1px solid #CBD5E1', fontSize: 13, color: '#0F172A' }}
-                            value={newField.name}
-                            onChange={e => setNewField(prev => ({ ...prev, name: e.target.value, col_name: toColName(e.target.value) }))}
+                            value={editingField ? editValues.name : newField.name}
+                            onChange={e => {
+                              if (editingField) setEditValues(p => ({ ...p, name: e.target.value }));
+                              else setNewField(p => ({ ...p, name: e.target.value, col_name: toColName(e.target.value) }));
+                            }}
                             placeholder="e.g. Working Height"
                             required
                             autoFocus
@@ -1612,61 +1697,93 @@ export default function Setup() {
                             Type <span className="text-danger">*</span>
                           </label>
                           <div>
-                            <FieldTypePicker value={newField.type} onChange={v => setNewField(prev => ({ ...prev, type: v }))} />
+                            <FieldTypePicker 
+                              value={editingField ? editValues.type : newField.type} 
+                              onChange={v => {
+                                if (editingField) setEditValues(p => ({ ...p, type: v }));
+                                else setNewField(p => ({ ...p, type: v }));
+                              }} 
+                            />
                           </div>
                         </div>
 
-                        {newField.type !== 'checkbox' && (
-                          <div className={newField.type === 'select' ? "col-12 col-md-6" : "col-12"}>
+                        {(editingField ? editValues.type : newField.type) === 'select' && (
+                          <div className="col-12 col-md-6">
+                            <label className="form-label fw-semibold mb-1" style={{ fontSize: 11.5, color: '#475569' }}>
+                              Selection Type
+                            </label>
+                            <div style={{ display: 'flex', background: '#E2E8F0', padding: 3, borderRadius: 6, width: 'fit-content' }}>
+                              {(() => {
+                                const isMulti = editingField ? editValues.is_multi_select : newField.is_multi_select;
+                                const setMulti = val => {
+                                  if (editingField) setEditValues(p => ({ ...p, is_multi_select: val }));
+                                  else setNewField(p => ({ ...p, is_multi_select: val }));
+                                };
+                                return (
+                                  <>
+                                    <div onClick={() => setMulti(false)} style={{ padding: '4px 12px', fontSize: 12, fontWeight: 600, color: !isMulti ? '#0F172A' : '#64748B', background: !isMulti ? '#fff' : 'transparent', borderRadius: 4, cursor: 'pointer', boxShadow: !isMulti ? '0 1px 2px rgba(0,0,0,0.05)' : 'none' }}>Single Select</div>
+                                    <div onClick={() => setMulti(true)} style={{ padding: '4px 12px', fontSize: 12, fontWeight: 600, color: isMulti ? '#0F172A' : '#64748B', background: isMulti ? '#fff' : 'transparent', borderRadius: 4, cursor: 'pointer', boxShadow: isMulti ? '0 1px 2px rgba(0,0,0,0.05)' : 'none' }}>Multi Select</div>
+                                  </>
+                                );
+                              })()}
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="col-12 col-md-6 d-flex align-items-end">
+                          <label className="d-flex align-items-center gap-2 px-3 py-1 border rounded" style={{ cursor: 'pointer', borderColor: '#CBD5E1', height: 32, background: '#fff', margin: 0, width: 'max-content' }}>
+                            <input 
+                              type="checkbox" 
+                              className="form-check-input mt-0" 
+                              style={{ cursor: 'pointer', width: 14, height: 14 }} 
+                              checked={editingField ? editValues.is_required : newField.is_required} 
+                              onChange={(e) => {
+                                if (editingField) setEditValues(p => ({ ...p, is_required: e.target.checked }));
+                                else setNewField(p => ({ ...p, is_required: e.target.checked }));
+                              }} 
+                            />
+                            <span style={{ fontSize: 12, fontWeight: 600, color: '#0F172A' }}>Required Field</span>
+                          </label>
+                        </div>
+
+                        {(editingField ? editValues.type : newField.type) !== 'checkbox' && (
+                          <div className="col-12">
                             <label className="form-label fw-semibold mb-1" style={{ fontSize: 11.5, color: '#475569' }}>Placeholder</label>
                             <input
                               type="text"
                               className="form-control"
                               style={{ height: 32, borderRadius: 5, border: '1px solid #CBD5E1', fontSize: 12.5, color: '#0F172A' }}
-                              value={newField.placeholder}
-                              onChange={e => setNewField(prev => ({ ...prev, placeholder: e.target.value }))}
+                              value={editingField ? editValues.placeholder : newField.placeholder}
+                              onChange={e => {
+                                if (editingField) setEditValues(p => ({ ...p, placeholder: e.target.value }));
+                                else setNewField(p => ({ ...p, placeholder: e.target.value }));
+                              }}
                               placeholder="Optional placeholder"
                             />
                           </div>
                         )}
 
-                        {newField.type === 'select' && (
-                          <div className="col-12 col-md-6">
-                            <label className="form-label fw-semibold mb-1" style={{ fontSize: 11.5, color: '#475569' }}>
-                              Options <span className="text-muted fw-normal">(comma-separated)</span>
-                            </label>
-                            <input
-                              type="text"
-                              className="form-control"
-                              style={{ height: 32, borderRadius: 5, border: '1px solid #CBD5E1', fontSize: 12.5, color: '#0F172A' }}
-                              value={newField.options}
-                              onChange={e => setNewField(prev => ({ ...prev, options: e.target.value }))}
-                              placeholder="Option A, Option B"
+                        {(editingField ? editValues.type : newField.type) === 'select' && (
+                          <div className="col-12">
+                            <label className="form-label fw-semibold mb-1" style={{ fontSize: 11.5, color: '#475569' }}>Options <span className="text-danger">*</span></label>
+                            <OptionsManager 
+                              options={editingField ? editValues.options : newField.options} 
+                              onChange={opts => {
+                                if (editingField) setEditValues(p => ({ ...p, options: opts }));
+                                else setNewField(p => ({ ...p, options: opts }));
+                              }} 
                             />
                           </div>
                         )}
                       </div>
 
-                      <div className="d-flex align-items-center justify-content-between pt-3 mt-1 border-top flex-wrap gap-2">
-                        <div className="d-flex align-items-center gap-3">
-                          <label className="d-flex align-items-center gap-2 mb-0" style={{ cursor: 'pointer', fontSize: 12, color: '#334155', fontWeight: 600 }}>
-                            <input 
-                              type="checkbox" 
-                              className="form-check-input mt-0" 
-                              style={{ accentColor: '#0066CC', cursor: 'pointer', width: 16, height: 16 }} 
-                              checked={newField.is_required} 
-                              onChange={(e) => setNewField(prev => ({ ...prev, is_required: e.target.checked }))} 
-                            />
-                            Required Field
-                          </label>
-                        </div>
-
+                      <div className="d-flex align-items-center justify-content-end pt-3 mt-1 border-top flex-wrap gap-2">
                         <div className="d-flex align-items-center gap-2">
                           <button
                             type="button"
                             className="btn btn-sm btn-outline-secondary"
                             style={{ height: 30, padding: '0 12px', fontSize: 12, borderRadius: 5 }}
-                            onClick={() => setShowAddField(false)}
+                            onClick={() => { setShowAddField(false); setEditingField(null); }}
                           >
                             Cancel
                           </button>
@@ -1683,9 +1800,9 @@ export default function Setup() {
                               color: '#FFFFFF',
                               border: 'none',
                             }}
-                            disabled={saving}
+                            disabled={editingField ? savingEdit : saving}
                           >
-                            {saving ? <><i className="fa fa-circle-o-notch fa-spin me-1" />Saving...</> : 'Save Field'}
+                            {(editingField ? savingEdit : saving) ? <><i className="fa fa-circle-o-notch fa-spin me-1" />Saving...</> : (editingField ? 'Save Changes' : 'Save Field')}
                           </button>
                         </div>
                       </div>
@@ -1698,7 +1815,8 @@ export default function Setup() {
                       <div style={{ fontSize: 13.5, fontWeight: 600, color: '#334155', marginBottom: 2 }}>No fields configured</div>
                       <div style={{ fontSize: 12, color: '#64748B' }}>Add fields to collect specific information for this permit type.</div>
                     </div>
-                  ) : (<>
+                  ) : (
+                    <div style={{ transition: 'opacity 0.2s' }}>
                     {/* ── Desktop table (hidden on mobile via CSS) ── */}
                     <div className="fields-table-wrap table-responsive hide-scrollbar" style={{ border: '1px solid #D1D5DB', borderRadius: 8, overflowX: 'auto' }}>
                       <table style={{ width: '100%', minWidth: 640, borderCollapse: 'collapse', tableLayout: 'fixed' }}>
@@ -1725,53 +1843,12 @@ export default function Setup() {
                             const isEditing = editingField === f.id;
                             const isHovered = hoveredField === f.id;
 
-                            if (isEditing) {
-                              return (
-                                <tr key={f.id} style={{ background: '#F3F4F6', borderBottom: '1px solid #D1D5DB', borderLeft: '3px solid #0066CC' }}>
-                                  <td style={{ padding: '12px 16px', color: '#94A3B8', fontSize: 13, fontWeight: 500, verticalAlign: 'middle' }}>{i + 1}</td>
-                                  <td style={{ padding: '12px 16px', verticalAlign: 'middle' }}>
-                                    <input
-                                      type="text"
-                                      className="form-control"
-                                      style={{ height: 30, borderRadius: 4, border: '1.5px solid #0066CC', fontSize: 13, fontWeight: 600, color: '#0F172A', padding: '0 8px', minWidth: 150 }}
-                                      value={editValues.name}
-                                      onChange={e => setEditValues(p => ({ ...p, name: e.target.value }))}
-                                      autoFocus
-                                      placeholder="Field Name"
-                                    />
-                                  </td>
-                                  <td style={{ padding: '12px 16px', verticalAlign: 'middle' }}>
-                                    <FieldTypePicker value={editValues.type} onChange={v => setEditValues(p => ({ ...p, type: v }))} />
-                                  </td>
-                                  <td
-                                    style={{ padding: '12px 16px', textAlign: 'center', cursor: 'pointer', verticalAlign: 'middle' }}
-                                    onClick={() => setEditValues(p => ({ ...p, is_required: !p.is_required }))}
-                                    title="Click to toggle required"
-                                  >
-                                    {editValues.is_required ? (
-                                      <i className="fa fa-check-circle" style={{ fontSize: 18, color: '#10B981' }} />
-                                    ) : (
-                                      <i className="fa fa-circle-thin" style={{ fontSize: 18, color: '#94A3B8' }} />
-                                    )}
-                                  </td>
-                                  <td style={{ padding: '12px 16px', textAlign: 'right', verticalAlign: 'middle' }}>
-                                    <div className="d-flex align-items-center justify-content-end gap-2">
-                                      <button type="button" className="btn btn-sm btn-outline-secondary" style={{ height: 28, padding: '0 10px', fontSize: 12, borderRadius: 4 }} onClick={() => setEditingField(null)}>Cancel</button>
-                                      <button type="button" className="btn btn-sm" style={{ height: 28, padding: '0 12px', fontSize: 12, fontWeight: 600, borderRadius: 4, background: '#0066CC', color: '#FFFFFF', border: 'none' }} onClick={() => handleSaveEdit(f)} disabled={savingEdit}>
-                                        {savingEdit ? <i className="fa fa-circle-o-notch fa-spin" /> : 'Save'}
-                                      </button>
-                                    </div>
-                                  </td>
-                                </tr>
-                              );
-                            }
-
                             return (
                               <tr
                                 key={f.id}
-                                style={{ borderBottom: i < fields.length - 1 ? '1px solid #F1F5F9' : 'none', transition: 'background 0.12s ease' }}
-                                onMouseEnter={e => { setHoveredField(f.id); e.currentTarget.style.background = '#F8FAFC'; }}
-                                onMouseLeave={e => { setHoveredField(null); e.currentTarget.style.background = 'transparent'; }}
+                                style={{ borderBottom: i < fields.length - 1 ? '1px solid #F1F5F9' : 'none', transition: 'background 0.12s ease', backgroundColor: 'transparent' }}
+                                onMouseEnter={e => { setHoveredField(f.id); e.currentTarget.style.backgroundColor = '#F8FAFC'; }}
+                                onMouseLeave={e => { setHoveredField(null); e.currentTarget.style.backgroundColor = 'transparent'; }}
                               >
                                 <td style={{ padding: '12px 16px', color: '#94A3B8', fontSize: 13, fontWeight: 500, verticalAlign: 'middle' }}>{i + 1}</td>
                                 <td style={{ padding: '12px 16px', fontWeight: 600, fontSize: 13.5, color: '#0F172A', cursor: isGlobal ? undefined : 'pointer', verticalAlign: 'middle' }} onClick={isGlobal ? undefined : () => startEditField(f)} title={isGlobal ? undefined : 'Click to edit'}>
@@ -1819,51 +1896,12 @@ export default function Setup() {
                         const typeInfo  = FIELD_TYPES.find(t => t.value === f.type);
                         return (
                           <div key={f.id} style={{
-                            border: isEditing ? '1.5px solid #0066CC' : '1px solid #E2E8F0',
-                            borderLeft: isEditing ? '3px solid #0066CC' : '3px solid transparent',
+                            border: '1px solid #E2E8F0',
                             borderRadius: 8,
-                            background: isEditing ? '#F0F6FF' : '#fff',
+                            background: '#fff',
                             overflow: 'hidden',
                           }}>
-                            {isEditing ? (
-                              /* ── Editing state ── */
-                              <div style={{ padding: '12px 14px' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
-                                  <i className="fa fa-pencil" style={{ fontSize: 10, color: '#0066CC' }} />
-                                  <span style={{ fontSize: 10.5, fontWeight: 700, color: '#0066CC', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Editing Field #{i + 1}</span>
-                                </div>
-                                <div style={{ marginBottom: 8 }}>
-                                  <label style={{ fontSize: 11, fontWeight: 600, color: '#475569', display: 'block', marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Field Name</label>
-                                  <input
-                                    type="text"
-                                    className="form-control form-control-sm"
-                                    style={{ width: '100%', borderRadius: 4, border: '1.5px solid #0066CC', fontSize: 13, fontWeight: 600, color: '#0F172A' }}
-                                    value={editValues.name}
-                                    onChange={e => setEditValues(p => ({ ...p, name: e.target.value }))}
-                                    autoFocus
-                                    placeholder="Field Name"
-                                  />
-                                </div>
-                                <div style={{ marginBottom: 8 }}>
-                                  <label style={{ fontSize: 11, fontWeight: 600, color: '#475569', display: 'block', marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Type</label>
-                                  <FieldTypePicker value={editValues.type} onChange={v => setEditValues(p => ({ ...p, type: v }))} />
-                                </div>
-                                <div
-                                  style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 10, cursor: 'pointer', userSelect: 'none' }}
-                                  onClick={() => setEditValues(p => ({ ...p, is_required: !p.is_required }))}
-                                >
-                                  <i className={`fa ${editValues.is_required ? 'fa-check-circle' : 'fa-circle-thin'}`} style={{ fontSize: 16, color: editValues.is_required ? '#10B981' : '#CBD5E1' }} />
-                                  <span style={{ fontSize: 12.5, fontWeight: 600, color: '#374151' }}>Required</span>
-                                </div>
-                                <div style={{ display: 'flex', gap: 6, borderTop: '1px solid #E2E8F0', paddingTop: 10 }}>
-                                  <button type="button" className="btn btn-sm" style={{ flex: 1, height: 32, fontSize: 12, fontWeight: 600, borderRadius: 4, background: '#0066CC', color: '#fff', border: 'none' }} onClick={() => handleSaveEdit(f)} disabled={savingEdit}>
-                                    {savingEdit ? <i className="fa fa-circle-o-notch fa-spin" /> : <><i className="fa fa-check me-1" />Save</>}
-                                  </button>
-                                  <button type="button" className="btn btn-sm btn-outline-secondary" style={{ height: 32, padding: '0 12px', fontSize: 12, borderRadius: 4 }} onClick={() => setEditingField(null)}>Cancel</button>
-                                </div>
-                              </div>
-                            ) : (
-                              /* ── View state ── */
+                              {/* ── View state ── */}
                               <div style={{ display: 'flex', alignItems: 'center', padding: '10px 14px', gap: 10 }}>
                                 {/* Row number */}
                                 <span style={{ fontSize: 11, fontWeight: 600, color: '#CBD5E1', flexShrink: 0, width: 18, textAlign: 'center' }}>{i + 1}</span>
@@ -1913,12 +1951,12 @@ export default function Setup() {
                                   </div>
                                 )}
                               </div>
-                            )}
                           </div>
                         );
                       })}
                     </div>
-                  </>)}
+                    </div>
+                  )}
                   </div>
                 </>
               )}

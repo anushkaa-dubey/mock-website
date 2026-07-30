@@ -41,6 +41,8 @@ export default function Navbar({ onMenuClick }) {
   const dropRef = useRef(null);
   const location = useLocation();
   const isSetup = location.pathname.includes('/setup');
+  const sequenceMatch = location.pathname.match(/\/work-permit\/([^/]+)$/);
+  const wpSequence = sequenceMatch ? sequenceMatch[1] : null;
 
   useEffect(() => {
     try {
@@ -79,30 +81,38 @@ export default function Navbar({ onMenuClick }) {
   );
 
   return (
-    <nav className="top-navbar">
+    <nav className="top-navbar" style={{ padding: '0 12px' }}>
       {/* Mobile hamburger */}
-      <button className="btn btn-none d-lg-none me-2 p-1" onClick={onMenuClick} aria-label="Toggle menu">
+      <button type="button" className="btn btn-none d-lg-none me-2 p-1" onClick={onMenuClick} aria-label="Toggle menu" style={{ flexShrink: 0 }}>
         <i className="fa fa-bars" style={{ fontSize: 18, color: '#555' }} />
       </button>
 
       {/* Site switcher dropdown */}
       <div ref={dropRef} style={{ position: 'relative' }}>
         <button
-          className="btn btn-none d-flex align-items-center gap-2 pe-2"
+          className="btn btn-none d-flex align-items-center gap-2 pe-1"
           onClick={() => { setSearch(''); setDropOpen(o => !o); }}
           style={{ maxWidth: 260 }}
         >
           <img
             src={withBasePath(site?.sd?.logo) || FALLBACK_LOGO}
-            height="28"
+            height="26"
             alt="site logo"
             style={{ flexShrink: 0, objectFit: 'contain' }}
             onError={e => handleImageFallback(e, FALLBACK_LOGO)}
           />
-          <span className="text-truncate fw-semibold" style={{ fontSize: 14, maxWidth: 180 }}>
-            {site?.name || 'Select Site'}
-          </span>
-          <i className="fa fa-caret-down ms-1" style={{ fontSize: 11, color: '#888', flexShrink: 0 }} />
+          <div className="d-flex align-items-center d-sm-none">
+            <span className="fw-semibold text-start lh-sm" style={{ fontSize: 10.5, color: '#64748B', whiteSpace: 'normal', width: 34 }}>
+              Select Site
+            </span>
+            <i className="fa fa-caret-down ms-1" style={{ fontSize: 10, color: '#64748B', flexShrink: 0 }} />
+          </div>
+          <div className="d-none d-sm-flex align-items-center">
+            <span className="text-truncate fw-semibold" style={{ fontSize: 14, maxWidth: 180 }}>
+              {site?.name || 'Select Site'}
+            </span>
+            <i className="fa fa-caret-down ms-1" style={{ fontSize: 11, color: '#888', flexShrink: 0 }} />
+          </div>
         </button>
 
         {dropOpen && (
@@ -166,21 +176,32 @@ export default function Navbar({ onMenuClick }) {
       </div>
 
       {/* Service title */}
-      <span className="text-primary-dark fw-bold" style={{ fontSize: 15 }}>
-        Work Permit {isSetup && <span style={{ fontWeight: 400, color: '#6B7280' }}>/ Setup</span>}
-      </span>
+      <div className="d-flex flex-column lh-sm ms-2" style={{ flexShrink: 0 }}>
+        <span className="fw-bold" style={{ fontSize: 12, color: '#0B4A54' }}>
+          Work Permit /
+        </span>
+        <span className="fw-bold" style={{ fontSize: 12, color: '#00B8A9' }}>
+          {isSetup ? <span style={{ color: '#6B7280', fontWeight: 600 }}>Setup</span> : wpSequence || ''}
+        </span>
+      </div>
 
       {/* Right side */}
-      <div className="ms-auto d-flex align-items-center gap-3">
+      <div className="ms-auto d-flex align-items-center">
         <div className="dropdown">
-          <button className="btn btn-none dropdown-toggle d-flex align-items-center gap-2" data-bs-toggle="dropdown">
-            <img
-              src={withBasePath(loggedInUser?.image_src) || USER_FALLBACK_IMAGE}
-              width={30} height={30} alt="User"
-              style={{ borderRadius: '50%', objectFit: 'cover' }}
-              onError={e => handleImageFallback(e, USER_FALLBACK_IMAGE)}
-            />
-            <span style={{ fontSize: 13 }} className="d-none d-md-inline">{loggedInUser?.name}</span>
+          <button className="btn btn-none dropdown-toggle d-flex align-items-center gap-1" data-bs-toggle="dropdown">
+            {loggedInUser?.image_src ? (
+               <img src={withBasePath(loggedInUser.image_src)} width={28} height={28} style={{ borderRadius: '50%', objectFit: 'cover' }} onError={e => handleImageFallback(e, USER_FALLBACK_IMAGE)} alt="User" />
+            ) : (
+               <div className="d-flex align-items-center justify-content-center" style={{ width: 28, height: 28, borderRadius: '50%', background: '#E0E7FF', color: '#3730A3', fontWeight: 600, fontSize: 11 }}>
+                 {loggedInUser?.name ? loggedInUser.name.split(' ').map(n => n[0]).slice(0,2).join('').toUpperCase() : 'DI'}
+               </div>
+            )}
+            <div className="d-flex align-items-center ms-1 d-sm-none">
+              <span className="fw-semibold text-start lh-sm" style={{ fontSize: 10.5, color: '#64748B', whiteSpace: 'normal', width: 34 }}>
+                {loggedInUser?.name ? loggedInUser.name.split(' ').join(' ') : 'Dev Intern'}
+              </span>
+            </div>
+            <span style={{ fontSize: 13 }} className="d-none d-sm-inline ms-1 fw-semibold text-secondary">{loggedInUser?.name || 'Dev Intern'}</span>
           </button>
           <ul className="dropdown-menu dropdown-menu-end" style={{ minWidth: 240 }}>
             <li className="px-3 py-2" style={{ background: '#17a2b8', color: '#fff' }}>

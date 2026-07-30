@@ -8,7 +8,7 @@ export default function SiteLayout() {
 
   return (
     <div className="page-wrapper">
-      <Navbar onMenuClick={() => setMobileSidebarOpen(true)} />
+      <Navbar onMenuClick={() => setMobileSidebarOpen(prev => !prev)} />
       <div className="content-wrapper">
         <Sidebar
           mobileOpen={mobileSidebarOpen}
