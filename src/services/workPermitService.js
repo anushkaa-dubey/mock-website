@@ -3,11 +3,11 @@
 // components import and call it exactly the same way, but every function
 // resolves fixture data instead of hitting the PPM/ISM APIs. Do NOT copy this
 // file back — the real repo has the real version.
-
-import { mockUser } from '@/fixtures';
 import {
+  mockUser,
   mockStatuses,
   mockApprovalFlowConfig,
+  mockForms,
   createMockWorkPermit,
   mockMaterialGatePasses,
   mockItemSearchResults,
@@ -18,6 +18,7 @@ import {
   mockEmployees,
   mockApprovalFlowsRaw,
 } from '@/fixtures';
+import { buildPdfTemplate } from '@/utils/pdfTemplateBuilder';
 
 let allPermits = [
   createMockWorkPermit(),
@@ -70,7 +71,17 @@ let allPermits = [
 ];
 
 let currentPermit = allPermits[0];
-let gatePasses    = mockMaterialGatePasses.slice();
+let gatePasses = mockMaterialGatePasses.slice();
+let mockTemplates = [
+  {
+    id: 1,
+    name: 'Standard Work Permit Template',
+    body: buildPdfTemplate(),
+    active: 1,
+  },
+];
+
+
 
 function resolve(data, status = 'success', delay = 250) {
   return new Promise((res) => setTimeout(() => res({ data: { status, data } }), delay));
@@ -95,7 +106,7 @@ let sequenceCounter = 4;
 // asset, vendor, attended-by, approval flow) into the display fields WorkPermitDetail
 // actually reads — front-end only, no backend involved.
 function resolveFormDisplayFields(data) {
-  const asset  = mockAssets.find(a => a.uuid === data.asset_id);
+  const asset = mockAssets.find(a => a.uuid === data.asset_id);
   const vendor = mockVendors.find(v => v.uuid === data.vendor_uuid);
   const employee = mockEmployees.find(e => String(e.user_id) === String(data.attended_by));
   const flow = mockApprovalFlowsRaw.find(f => f.n.uuid === data.approval_flow_uuid);
@@ -155,7 +166,7 @@ const workPermitService = {
   getAll: (params = {}) => {
     let result = [...allPermits];
     if (params.status) result = result.filter(p => p.status === params.status);
-    if (params.type)   result = result.filter(p => p.type === params.type);
+    if (params.type) result = result.filter(p => p.type === params.type);
     if (params.search) {
       const q = params.search.toLowerCase();
       result = result.filter(p =>
@@ -311,12 +322,49 @@ const workPermitService = {
   getApprovalUsers: () => resolve([]),
 
   /* ─── PDF Templates ─────────────────────────────────── */
-  getTemplates: () => resolve([]),
-  createTemplate: () => resolve(null),
-  updateTemplate: () => resolve(null),
-  deleteTemplate: () => resolve(null),
-  renderTemplate: () => resolve(null),
-  setTemplateActive: () => resolve(null),
+
+  getTemplates: () => resolve(mockTemplates),
+  createTemplate: (data) => {
+    const nextId = mockTemplates.length > 0 ? Math.max(...mockTemplates.map(t => Number(t.id) || 0)) + 1 : 1;
+    const newTemplate = {
+      id: nextId,
+      name: data?.name || `Template ${nextId}`,
+      body: data?.body || '',
+      active: mockTemplates.length === 0 ? 1 : 0,
+    };
+    mockTemplates = [...mockTemplates, newTemplate];
+    return resolve(newTemplate);
+  },
+  updateTemplate: (arg1, arg2) => {
+    const payload = typeof arg1 === 'object' && arg1 !== null ? arg1 : { id: arg1, ...(arg2 || {}) };
+    const id = payload.id;
+    const index = mockTemplates.findIndex(t => String(t.id) === String(id));
+
+    if (index !== -1) {
+      mockTemplates[index] = {
+        ...mockTemplates[index],
+        ...payload,
+      };
+      return resolve(mockTemplates[index]);
+    }
+
+    return resolve(null);
+  },
+  deleteTemplate: (id) => {
+    mockTemplates = mockTemplates.filter(t => String(t.id) !== String(id));
+    return resolve(true);
+  },
+  renderTemplate: (id) => {
+    const template = mockTemplates.find(t => String(t.id) === String(id));
+    return resolve(template ? template.body : '');
+  },
+  setTemplateActive: (id) => {
+    mockTemplates = mockTemplates.map(t => ({
+      ...t,
+      active: String(t.id) === String(id) ? 1 : 0,
+    }));
+    return resolve(true);
+  },
 
   /* ─── PDF Generate / Share ──────────────────────────── */
   generatePdf: () => {

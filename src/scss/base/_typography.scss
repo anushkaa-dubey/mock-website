@@ -1,0 +1,32 @@
+// ─── Base Typography ─────────────────────────────────────────
+body {
+  font-family: $wp-font;
+  color: $wp-text-body;
+  background: #ffffff;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: $wp-font;
+  color: $wp-navy;
+  margin-top: 0;
+}
+
+.text-primary-dark {
+  color: $wp-navy !important;
+}
+
+.text-brand {
+  color: $wp-primary !important;
+}
+
+.para-sm {
+  font-size: 14px;
+  font-weight: 300;
+  white-space: nowrap;
+}
+
+td {
+  font-size: 12px;
+}

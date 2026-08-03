@@ -29,7 +29,7 @@ function loadCkEditor() {
   return ckEditorLoader;
 }
 
-const CkEditor4 = forwardRef(function CkEditor4({ value, onChange, disabled = false }, ref) {
+const CkEditor4 = forwardRef(function CkEditor4({ value, onChange, disabled = false, autoGrow = true, minHeight = 650 }, ref) {
   const textareaRef = useRef(null);
   const editorRef = useRef(null);
   const onChangeRef = useRef(onChange);
@@ -45,7 +45,33 @@ const CkEditor4 = forwardRef(function CkEditor4({ value, onChange, disabled = fa
       if (editor && editor.status === 'ready') return editor.getData();
       return textareaRef.current?.value ?? value ?? '';
     },
-  }), [value]);
+    insertHtml: (html) => {
+      const editor = editorRef.current;
+      if (editor && editor.status === 'ready') {
+        if (editor.mode === 'wysiwyg') {
+          editor.insertHtml(html);
+        } else if (editor.mode === 'source') {
+          const textarea = editor.container?.findOne('textarea.cke_source');
+          if (textarea && textarea.$) {
+            const el = textarea.$;
+            const start = el.selectionStart || 0;
+            const end = el.selectionEnd || 0;
+            const val = el.value;
+            el.value = val.substring(0, start) + html + val.substring(end);
+            el.selectionStart = el.selectionEnd = start + html.length;
+            el.focus();
+            onChangeRef.current?.(el.value);
+            // Trigger auto-resize on insertion in source mode
+            el.style.height = 'auto';
+            el.style.height = Math.max(minHeight, el.scrollHeight + 30) + 'px';
+          }
+        }
+      }
+    },
+    focus: () => {
+      editorRef.current?.focus();
+    },
+  }), [value, minHeight]);
 
   useEffect(() => {
     let cancelled = false;
@@ -54,7 +80,7 @@ const CkEditor4 = forwardRef(function CkEditor4({ value, onChange, disabled = fa
       .then((CKEDITOR) => {
         if (cancelled || !textareaRef.current) return;
 
-        const editor = CKEDITOR.replace(textareaRef.current, {
+        const config = {
           allowedContent: true,
           language: 'en',
           entities: false,
@@ -63,15 +89,84 @@ const CkEditor4 = forwardRef(function CkEditor4({ value, onChange, disabled = fa
           forcePasteAsPlainText: true,
           pasteFilter: 'plain-text',
           enterMode: CKEDITOR.ENTER_BR,
-          height: 420,
           removeButtons: 'Cut,Copy,Paste,PasteFromWord,Save,NewPage,ExportPdf,Preview,Print,Templates',
-        });
+        };
+
+        if (autoGrow) {
+          config.extraPlugins = 'autogrow';
+          config.autoGrow_minHeight = minHeight;
+          config.autoGrow_maxHeight = 0; // 0 = unlimited height
+          config.autoGrow_bottomSpace = 30;
+          config.autoGrow_onStartup = true;
+          config.resize_enabled = true;
+        }
+
+        const editor = CKEDITOR.replace(textareaRef.current, config);
         editorRef.current = editor;
 
+        const injectIframeStyles = () => {
+          try {
+            const doc = editor.document?.$;
+            if (doc && !doc.getElementById('ckeditor-natural-scroll-style')) {
+              const style = doc.createElement('style');
+              style.id = 'ckeditor-natural-scroll-style';
+              style.innerHTML = `
+                body {
+                  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+                  font-size: 14px !important;
+                  line-height: 1.65 !important;
+                  color: #1e293b !important;
+                  padding: 20px 24px !important;
+                  margin: 0 !important;
+                  background: #ffffff !important;
+                }
+                table {
+                  max-width: 100% !important;
+                }
+              `;
+              doc.head.appendChild(style);
+            }
+          } catch (e) {
+            // Safely ignore iframe access restrictions
+          }
+        };
+
+        const resizeSourceTextarea = () => {
+          if (editor.mode === 'source') {
+            const textarea = editor.container?.findOne('textarea.cke_source');
+            if (textarea && textarea.$) {
+              const el = textarea.$;
+              el.style.minHeight = minHeight + 'px';
+            }
+          }
+        };
+
         editor.on('instanceReady', () => {
-          editor.setData(value || '');
+          editor.setData(value || '', () => {
+            try {
+              if (autoGrow && editor.execCommand) {
+                editor.execCommand('autogrow');
+              }
+            } catch (err) {
+              // ignore
+            }
+          });
           editor.setReadOnly(disabled);
+          injectIframeStyles();
         });
+
+        editor.on('mode', () => {
+          if (editor.mode === 'wysiwyg') {
+            setTimeout(injectIframeStyles, 60);
+          } else if (editor.mode === 'source') {
+            setTimeout(resizeSourceTextarea, 60);
+            const textarea = editor.container?.findOne('textarea.cke_source');
+            if (textarea && textarea.$) {
+              textarea.$.addEventListener('input', resizeSourceTextarea);
+            }
+          }
+        });
+
         editor.on('change', () => {
           onChangeRef.current?.(editor.getData());
         });

@@ -7,6 +7,7 @@ import SearchableSelect from '@/components/common/SearchableSelect';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
 import SidebarList from '@/components/common/SidebarList';
 import CkEditor4 from '@/components/common/CkEditor4';
+import '@/scss/pdf-template.scss';
 
 
 const FIELD_TYPES = [
@@ -977,6 +978,45 @@ function ApprovalFlowTab() {
   );
 }
 
+const TEMPLATE_VARIABLES = [
+  {
+    category: 'Permit Details',
+    items: [
+      { label: 'Sequence No', tag: "{{ $wp['Sequence No'] }}" },
+      { label: 'Permit Type', tag: "{{ $wp['Permit Type'] }}" },
+      { label: 'Status', tag: "{{ $wp['Status'] }}" },
+      { label: 'Priority', tag: "{{ $wp['Priority'] }}" },
+      { label: 'Scheduled Date', tag: "{{ $wp['Scheduled Date'] }}" },
+      { label: 'Due Date', tag: "{{ $wp['Due Date'] }}" },
+      { label: 'Location', tag: "{{ $wp['Location'] }}" },
+      { label: 'Asset / Equipment', tag: "{{ $wp['Asset'] }}" },
+      { label: 'Description', tag: "{{ $wp['Description'] }}" },
+    ]
+  },
+  {
+    category: 'Vendor & Requester',
+    items: [
+      { label: 'Vendor Name', tag: "{{ $wp['Vendor'] }}" },
+      { label: 'Requester Name', tag: "{{ $wp['Requester'] }}" },
+      { label: 'Company / Facility', tag: "{{ $company }}" },
+    ]
+  },
+  {
+    category: 'Blade Loops & Tables',
+    items: [
+      { label: 'Approval Levels Loop', tag: "@foreach($approval_levels as $lvl)\n  <tr><td>{{ $lvl['role'] }}</td><td>{{ $lvl['status'] }}</td><td>{{ $lvl['updated_at'] }}</td></tr>\n@endforeach" },
+      { label: 'Dynamic Fields Loop', tag: "@foreach($dynamic_fields as $field)\n  <div style=\"margin-bottom: 6px;\"><strong>{{ $field['label'] }}:</strong> {{ $field['value'] }}</div>\n@endforeach" },
+    ]
+  },
+  {
+    category: 'Print & Layout Helpers',
+    items: [
+      { label: 'Page Break', tag: '<div style="page-break-after: always; height: 1px;"></div>' },
+      { label: 'Signature Block', tag: '<div style="display: flex; justify-content: space-between; margin-top: 40px;"><div>____________________<br/><small>Requester Signature</small></div><div>____________________<br/><small>Safety Officer Signature</small></div></div>' },
+    ]
+  }
+];
+
 function PdfTemplateTab() {
   const templateEditorRef = useRef(null);
   const [templates, setTemplates] = useState([]);
@@ -987,6 +1027,9 @@ function PdfTemplateTab() {
   const [activating, setActivating] = useState(null);
   const [deleting, setDeleting]   = useState(null);
   const [dialog, setDialog]       = useState(null);
+  const [previewModal, setPreviewModal] = useState({ show: false, title: '', html: '' });
+  const [copiedVar, setCopiedVar] = useState(null);
+  const [varSearch, setVarSearch] = useState('');
 
   const showDialog = (title, message, onConfirm, opts = {}) =>
     setDialog({ title, message, onConfirm, confirmLabel: opts.confirmLabel || 'Confirm', confirmVariant: opts.confirmVariant || 'danger' });
@@ -1073,24 +1116,40 @@ function PdfTemplateTab() {
     );
   };
 
-  const handlePreview = async (t) => {
+  const handlePreviewModal = async (templateId, templateName) => {
     try {
-      const res = await workPermitService.renderTemplate(t.id);
+      const res = await workPermitService.renderTemplate(templateId);
       const html = ensureSuccess(res, 'Failed to render preview.') || '';
-      const win = window.open('', '_blank');
-      win.document.write(html);
-      win.document.close();
+      setPreviewModal({ show: true, title: templateName || 'Template Preview', html });
     } catch (error) {
       showDialog('Error', error.message || 'Failed to render preview.', () => setDialog(null), { confirmLabel: 'OK', confirmVariant: 'secondary' });
     }
   };
 
+  const handleInsertVariable = (tag) => {
+    if (templateEditorRef.current?.insertHtml) {
+      templateEditorRef.current.insertHtml(tag);
+    }
+    navigator.clipboard?.writeText?.(tag).catch(() => {});
+    setCopiedVar(tag);
+    setTimeout(() => setCopiedVar(null), 1800);
+  };
+
+  const filteredVariableCategories = TEMPLATE_VARIABLES.map(cat => {
+    if (!varSearch.trim()) return cat;
+    const q = varSearch.toLowerCase();
+    const items = cat.items.filter(item =>
+      item.label.toLowerCase().includes(q) || item.tag.toLowerCase().includes(q)
+    );
+    return { ...cat, items };
+  }).filter(cat => cat.items.length > 0);
+
   if (loading) {
-    return <div className="text-center py-5 text-muted"><i className="fa fa-circle-o-notch fa-spin me-2" />Loading...</div>;
+    return <div className="text-center py-5 text-muted"><i className="fa fa-circle-o-notch fa-spin me-2" />Loading templates...</div>;
   }
 
   return (
-    <div className="container-rounded-white" style={{ padding: 16 }}>
+    <div className="pdf-template-wrapper">
       <ConfirmDialog
         show={!!dialog}
         title={dialog?.title}
@@ -1100,89 +1159,292 @@ function PdfTemplateTab() {
         onConfirm={dialog?.onConfirm}
         onCancel={() => setDialog(null)}
       />
-      <div className="d-flex align-items-center justify-content-between border-bottom-primary pb-2 mb-3">
-        <h6 className="fw-bold text-primary-dark mb-0">
-          <i className="fa fa-file-pdf-o me-2" />WP PDF Templates
-        </h6>
-        {editing ? (
-          <div className="d-flex gap-2">
-            <button type="button" className="btn btn-primary-dark btn-sm" onClick={handleSave} disabled={saving}>
-              {saving ? <><i className="fa fa-circle-o-notch fa-spin me-1" />Saving...</> : 'Save'}
-            </button>
-            <button type="button" className="btn btn-outline-secondary btn-sm" onClick={cancelEdit} disabled={saving}>
-              Cancel
-            </button>
-          </div>
-        ) : (
-          <button className="btn btn-primary-dark btn-sm" onClick={startNew}>
-            <i className="fa fa-plus me-1" />Add Template
-          </button>
-        )}
-      </div>
 
-      {editing ? (
-        <div className="bg-light rounded p-3 mb-3">
-          <div className="mb-2">
-            <label className="form-label fw-semibold small">Template Name</label>
-            <input
-              type="text"
-              className="form-control form-control-sm"
-              value={form.name}
-              onChange={e => setForm(prev => ({ ...prev, name: e.target.value }))}
-            />
-          </div>
-          <div className="mb-2">
-            <label className="form-label fw-semibold small">
-              Template Body (HTML, Blade-style — use <code>{'{{ $wp[\'Sequence No\'] }}'}</code>, <code>{'{{ $asset[\'Name\'] }}'}</code>, <code>{'{{ $company }}'}</code>, etc.)
-            </label>
-            <div className="alert alert-warning py-2 px-3 small mb-2">
-              Use <strong>Source</strong> mode when editing Blade directives, variables, or CSS. Visual mode is intended for layout and text changes.
+      {/* In-App PDF Preview Modal */}
+      {previewModal.show && (
+        <div className="pdf-modal-backdrop" onClick={() => setPreviewModal({ show: false, title: '', html: '' })}>
+          <div className="pdf-modal-container" onClick={e => e.stopPropagation()}>
+            <div className="pdf-modal-header">
+              <h5>
+                <i className="fa fa-file-pdf-o" />
+                <span>{previewModal.title} (Rendered Preview)</span>
+              </h5>
+              <div className="pdf-modal-actions">
+                <button
+                  type="button"
+                  className="btn btn-sm btn-outline-secondary"
+                  onClick={() => {
+                    const win = window.open('', '_blank');
+                    if (win) {
+                      win.document.write(previewModal.html);
+                      win.document.close();
+                    }
+                  }}
+                  title="Open in new window"
+                >
+                  <i className="fa fa-external-link me-1" />Open in Tab
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-sm btn-outline-secondary"
+                  onClick={() => setPreviewModal({ show: false, title: '', html: '' })}
+                >
+                  <i className="fa fa-times" />
+                </button>
+              </div>
             </div>
-            <CkEditor4
-              ref={templateEditorRef}
-              value={form.body}
-              onChange={body => setForm(prev => ({ ...prev, body }))}
-              disabled={saving}
-            />
+            <div className="pdf-modal-body">
+              <div
+                className="pdf-paper"
+                dangerouslySetInnerHTML={{ __html: previewModal.html }}
+              />
+            </div>
+            <div className="pdf-modal-footer">
+              <button
+                type="button"
+                className="btn btn-sm btn-outline-secondary"
+                onClick={() => setPreviewModal({ show: false, title: '', html: '' })}
+              >
+                Close Preview
+              </button>
+            </div>
           </div>
         </div>
-      ) : templates.length === 0 ? (
-        <p className="text-muted mb-0">No PDF templates yet. Add one to enable Work Permit PDF generation.</p>
-      ) : (
-        <table className="table table-sm mb-0">
-          <thead>
-            <tr>
-              <th className="text-muted fw-semibold">Name</th>
-              <th className="text-muted fw-semibold text-center">Active</th>
-              <th style={{ width: 160 }}></th>
-            </tr>
-          </thead>
-          <tbody>
-            {templates.map(t => (
-              <tr key={t.id}>
-                <td className="fw-semibold small">{t.name}</td>
-                <td className="text-center">
-                  {t.active ? (
-                    <span className="badge bg-success">Active</span>
-                  ) : (
-                    <button className="btn btn-sm btn-outline-secondary" style={{ fontSize: 11 }} onClick={() => handleActivate(t)} disabled={activating === t.id}>
-                      {activating === t.id ? <i className="fa fa-circle-o-notch fa-spin" /> : 'Set Active'}
+      )}
+
+      {editing ? (
+        /* ─── Simplified Two-Column Document Editor Layout ─── */
+        <div className="pdf-editor-layout">
+          {/* Left Column: Compact Sticky Variables Palette (230px) */}
+          <aside className="pdf-variables-sidebar">
+            <div className="pdf-sidebar-card">
+              <div className="pdf-sidebar-header">
+                <div className="pdf-var-title-row">
+                  <span className="title">
+                    <i className="fa fa-tags" />Variables & Tags
+                  </span>
+                </div>
+                <div className="pdf-var-search-wrap">
+                  <i className="fa fa-search pdf-var-search-icon" />
+                  <input
+                    type="text"
+                    className="form-control form-control-sm pdf-var-search-input"
+                    placeholder="Search tags..."
+                    value={varSearch}
+                    onChange={e => setVarSearch(e.target.value)}
+                  />
+                  {varSearch && (
+                    <button className="btn btn-sm btn-link p-0 text-muted pdf-var-search-clear" onClick={() => setVarSearch('')}>
+                      <i className="fa fa-times" />
                     </button>
                   )}
-                </td>
-                <td>
-                  <div className="d-flex gap-1 justify-content-end">
-                    <button className="btn btn-sm btn-link p-1" onClick={() => handlePreview(t)} title="Preview"><i className="fa fa-eye" /></button>
-                    <button className="btn btn-sm btn-link p-1" onClick={() => startEdit(t)} title="Edit"><i className="fa fa-pencil" /></button>
-                    <button className="btn btn-sm btn-link text-danger p-1" onClick={() => handleDelete(t)} disabled={deleting === t.id} title="Delete">
-                      {deleting === t.id ? <i className="fa fa-circle-o-notch fa-spin" /> : <i className="fa fa-trash" />}
-                    </button>
+                </div>
+              </div>
+
+              <div className="pdf-sidebar-scroll">
+                {filteredVariableCategories.length === 0 ? (
+                  <div className="text-center py-3 text-muted small" style={{ fontSize: 11 }}>
+                    No tags match "{varSearch}"
                   </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                ) : (
+                  filteredVariableCategories.map(cat => (
+                    <div key={cat.category} className="pdf-var-group">
+                      <div className="pdf-var-group-title">
+                        <span>{cat.category}</span>
+                        <span className="count">{cat.items.length}</span>
+                      </div>
+                      <div className="pdf-var-group-items">
+                        {cat.items.map(item => (
+                          <button
+                            type="button"
+                            key={item.label}
+                            className={`pdf-var-item-btn ${copiedVar === item.tag ? 'copied' : ''}`}
+                            onClick={() => handleInsertVariable(item.tag)}
+                            title={`Click to insert: ${item.tag}`}
+                          >
+                            <div className="pdf-var-label-row">
+                              <span className="pdf-var-name">{item.label}</span>
+                              {copiedVar === item.tag ? (
+                                <span className="badge bg-success" style={{ fontSize: 8.5 }}><i className="fa fa-check me-1" />Added</span>
+                              ) : (
+                                <span className="pdf-insert-hint"><i className="fa fa-plus-circle" /></span>
+                              )}
+                            </div>
+                            <div className="pdf-var-code-snippet">{item.tag.length > 30 ? item.tag.substring(0, 30) + '...' : item.tag}</div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))
+                )}
+
+                <div className="pdf-sidebar-guide">
+                  <div className="guide-title"><i className="fa fa-lightbulb-o text-warning me-1" />Editor Tip</div>
+                  <div className="guide-text">
+                    Use <strong>Source</strong> in toolbar to edit Blade directives (<code>@foreach</code>, <code>@if</code>) and custom HTML tables.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </aside>
+
+          {/* Right Column: Large Primary Document Editor Canvas */}
+          <main className="pdf-editor-main-canvas">
+            {/* Single Clean Top Action Bar */}
+            <div className="pdf-canvas-top-bar">
+              <div className="pdf-name-field-wrap">
+                <label className="pdf-field-label">Template Name</label>
+                <input
+                  type="text"
+                  className="form-control form-control-sm"
+                  placeholder="e.g. Standard Work Permit Template"
+                  value={form.name}
+                  onChange={e => setForm(prev => ({ ...prev, name: e.target.value }))}
+                  autoFocus
+                />
+              </div>
+
+              <div className="pdf-canvas-actions">
+                {editing !== 'new' && (
+                  <button
+                    type="button"
+                    className="btn btn-outline-primary btn-sm"
+                    onClick={() => handlePreviewModal(editing, form.name)}
+                  >
+                    <i className="fa fa-eye me-1" />Preview Document
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary btn-sm"
+                  onClick={cancelEdit}
+                  disabled={saving}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-primary-dark btn-sm"
+                  onClick={handleSave}
+                  disabled={saving || !form.name.trim()}
+                >
+                  {saving ? <><i className="fa fa-circle-o-notch fa-spin me-1" />Saving...</> : <><i className="fa fa-check me-1" />Save Template</>}
+                </button>
+              </div>
+            </div>
+
+            {/* Direct Full-Width CKEditor Area */}
+            <div className="pdf-ckeditor-direct-wrapper">
+              <CkEditor4
+                ref={templateEditorRef}
+                value={form.body}
+                autoGrow={true}
+                minHeight={650}
+                onChange={body => setForm(prev => ({ ...prev, body }))}
+                disabled={saving}
+              />
+            </div>
+          </main>
+        </div>
+      ) : (
+        /* ─── Template List View ─── */
+        <>
+          <div className="pdf-template-header-card">
+            <div className="pdf-template-title-area">
+              <div className="pdf-icon-badge">
+                <i className="fa fa-file-pdf-o" />
+              </div>
+              <div>
+                <h6>Work Permit PDF Templates</h6>
+                <div className="pdf-template-sub">Configure and customize PDF export layouts using HTML and dynamic Blade-style data placeholders</div>
+              </div>
+            </div>
+            <button type="button" className="btn btn-primary-dark btn-sm" onClick={startNew}>
+              <i className="fa fa-plus me-1" />Add Template
+            </button>
+          </div>
+
+          {templates.length === 0 ? (
+            <div className="pdf-table-card text-center py-5 text-muted">
+              <i className="fa fa-file-text-o fa-3x mb-3 d-block text-muted" />
+              <h6>No PDF Templates Configured</h6>
+              <p className="small mb-3">Add a template to customize generated Work Permit printable PDFs.</p>
+              <button type="button" className="btn btn-primary-dark btn-sm" onClick={startNew}>
+                <i className="fa fa-plus me-1" />Create First Template
+              </button>
+            </div>
+          ) : (
+            <div className="pdf-table-card">
+              <div className="table-responsive">
+                <table className="pdf-template-table">
+                  <thead>
+                    <tr>
+                      <th>Template Name</th>
+                      <th className="text-center" style={{ width: 140 }}>Status</th>
+                      <th className="text-end" style={{ width: 160 }}>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {templates.map(t => (
+                      <tr key={t.id}>
+                        <td>
+                          <div className="fw-bold text-dark">{t.name}</div>
+                          <div className="small text-muted">ID: {t.id}</div>
+                        </td>
+                        <td className="text-center">
+                          {t.active ? (
+                            <span className="pdf-active-pill">
+                              <span className="dot" />Active
+                            </span>
+                          ) : (
+                            <button
+                              type="button"
+                              className="pdf-set-active-btn"
+                              onClick={() => handleActivate(t)}
+                              disabled={activating === t.id}
+                            >
+                              {activating === t.id ? <i className="fa fa-circle-o-notch fa-spin me-1" /> : null}
+                              Set Active
+                            </button>
+                          )}
+                        </td>
+                        <td>
+                          <div className="d-flex gap-1 justify-content-end">
+                            <button
+                              type="button"
+                              className="pdf-action-btn preview"
+                              onClick={() => handlePreviewModal(t.id, t.name)}
+                              title="Preview in Modal"
+                            >
+                              <i className="fa fa-eye" />
+                            </button>
+                            <button
+                              type="button"
+                              className="pdf-action-btn edit"
+                              onClick={() => startEdit(t)}
+                              title="Edit Template"
+                            >
+                              <i className="fa fa-pencil" />
+                            </button>
+                            <button
+                              type="button"
+                              className="pdf-action-btn delete"
+                              onClick={() => handleDelete(t)}
+                              disabled={deleting === t.id}
+                              title="Delete Template"
+                            >
+                              {deleting === t.id ? <i className="fa fa-circle-o-notch fa-spin" /> : <i className="fa fa-trash" />}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
@@ -1495,7 +1757,7 @@ export default function Setup() {
   };
 
   return (
-    <div className="setup-outer wp-page" style={{ padding: '4px 16px 16px' }}>
+    <div className={`setup-outer wp-page ${tab === 'pdf' ? 'setup-pdf-mode' : ''}`} style={{ padding: '4px 16px 16px' }}>
       <ConfirmDialog
         show={!!dialog}
         title={dialog?.title}
@@ -1580,7 +1842,7 @@ export default function Setup() {
         })}
       </div>
 
-      <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ flex: 1, minHeight: 0, overflow: tab === 'pdf' ? 'visible' : 'hidden', display: 'flex', flexDirection: 'column' }}>
       {tab === 'sequence' && (
         <div className="container-rounded-white">
           <SequenceTab />
