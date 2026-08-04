@@ -45,6 +45,15 @@ const CkEditor4 = forwardRef(function CkEditor4({ value, onChange, disabled = fa
       if (editor && editor.status === 'ready') return editor.getData();
       return textareaRef.current?.value ?? value ?? '';
     },
+    setData: (html) => {
+      const editor = editorRef.current;
+      if (editor && editor.status === 'ready') {
+        editor.setData(html);
+      } else if (textareaRef.current) {
+        textareaRef.current.value = html;
+        onChangeRef.current?.(html);
+      }
+    },
     insertHtml: (html) => {
       const editor = editorRef.current;
       if (editor && editor.status === 'ready') {

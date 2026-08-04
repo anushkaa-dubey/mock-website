@@ -7,6 +7,7 @@ import SearchableSelect from '@/components/common/SearchableSelect';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
 import SidebarList from '@/components/common/SidebarList';
 import CkEditor4 from '@/components/common/CkEditor4';
+import AiPromptBar from '@/components/AiPromptBar';
 import '@/scss/pdf-template.scss';
 
 
@@ -1332,6 +1333,12 @@ function PdfTemplateTab() {
                 </button>
               </div>
             </div>
+
+            {/* ── AI Prompt Bar ── */}
+            <AiPromptBar
+              editorRef={templateEditorRef}
+              disabled={saving}
+            />
 
             {/* Direct Full-Width CKEditor Area */}
             <div className="pdf-ckeditor-direct-wrapper">
