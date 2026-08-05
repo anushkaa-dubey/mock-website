@@ -103,7 +103,7 @@ function SetupGuard({ children }) {
 
 export default function App() {
   return (
-    <HashRouter>
+    <HashRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <AppProvider>
         <Routes>
           <Route path="/" element={<RootRedirect />} />

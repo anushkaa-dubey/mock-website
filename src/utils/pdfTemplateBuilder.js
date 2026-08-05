@@ -149,8 +149,7 @@ export function buildPdfTemplate(wp = createMockWorkPermit(), forms = mockForms)
       background: #f1f5f9;
       padding: 8px 12px;
       margin: 20px 0 10px 0;
-      border-left: 4px solid #0066cc;
-      border-radius: 0 4px 4px 0;
+      border-radius: 4px;
     }
     .wp-grid-table {
       width: 100%;

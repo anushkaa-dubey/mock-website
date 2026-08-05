@@ -1,89 +1,27 @@
 /**
  * aiTemplateService.js
  *
- * The ONLY module in the application that knows about Gemini (or any LLM).
+ * The module in the application that interfaces with LLM services (Groq API).
  * Provides a single public function: generateTemplate({ prompt, currentTemplate })
  *
- * Provider-switch contract:
- *   - If you need to move from Gemini → OpenAI → Claude, change ONLY this file.
- *   - The UI (AiPromptBar) and orchestrator (PdfTemplateTab) never import the SDK.
- *
- * Fallback strategy:
- *   - If VITE_GEMINI_API_KEY is absent, a realistic mocked HTML response is returned
- *     so the complete UI flow continues to work during frontend development.
- *
- * Model:
- *   - Resolved from VITE_GEMINI_MODEL (default: gemini-2.0-flash).
- *   - Uses the official @google/genai SDK — no manual fetch() or endpoint construction.
+ * Provider: Groq OpenAI-compatible API
+ * Models: openai/gpt-oss-120b -> moonshotai/kimi-k2-instruct-0905 -> llama-3.3-70b-versatile
  */
 
-import { GoogleGenAI } from '@google/genai';
-
-const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-const MODEL_NAME = "gemini-2.5-flash";;
+const API_KEY = import.meta.env.VITE_GROQ_API_KEY || import.meta.env.VITE_GEMINI_API_KEY;
 const IS_DEV = import.meta.env.DEV === true;
 
-// ─── Dev-only logger ─────────────────────────────────────────────────────────
+const GROQ_MODELS = [
+  'openai/gpt-oss-120b',
+  'moonshotai/kimi-k2-instruct-0905',
+  'llama-3.3-70b-versatile',
+];
 
 const log = {
   info: (...a) => IS_DEV && console.log('[aiTemplateService]', ...a),
   warn: (...a) => IS_DEV && console.warn('[aiTemplateService]', ...a),
   error: (...a) => IS_DEV && console.error('[aiTemplateService]', ...a),
 };
-
-// ─── SDK client (created once) ───────────────────────────────────────────────
-
-let _client = null;
-
-function getClient() {
-  if (!_client) _client = new GoogleGenAI({ apiKey: API_KEY });
-  return _client;
-}
-
-// ─── Error message helpers ────────────────────────────────────────────────────
-
-/**
- * Inspect an SDK error and return a clean user-facing message.
- * The SDK throws plain Error objects whose `.message` may contain the HTTP status.
- *
- * @param {unknown} err
- * @returns {string}
- */
-function parseSDKError(err) {
-  const msg = err?.message ?? String(err);
-
-  // 429 RESOURCE_EXHAUSTED
-  if (msg.includes('429') || msg.toLowerCase().includes('resource_exhausted') || msg.toLowerCase().includes('quota')) {
-    // Try to pull a retry delay hint from the message
-    const secondsMatch = msg.match(/(\d+)\s*s(?:econds?)?/i);
-    if (secondsMatch) {
-      const s = parseInt(secondsMatch[1], 10);
-      if (!isNaN(s) && s > 0) {
-        return `Gemini API rate limit exceeded. Please try again in ${s} second${s !== 1 ? 's' : ''} or use another API key.`;
-      }
-    }
-    return 'Gemini API rate limit exceeded. Please try again later or use another API key.';
-  }
-
-  // 404 model not found
-  if (msg.includes('404') || msg.toLowerCase().includes('not found')) {
-    return `Model "${MODEL_NAME}" was not found or is unavailable for your API key. Check VITE_GEMINI_MODEL in your env file.`;
-  }
-
-  // 401 / 403
-  if (msg.includes('401') || msg.includes('403') || msg.toLowerCase().includes('unauthorized') || msg.toLowerCase().includes('permission')) {
-    return 'Gemini API key is invalid or lacks permission. Please check VITE_GEMINI_API_KEY.';
-  }
-
-  // Generic fallback — include the original message but strip raw JSON if present
-  try {
-    const json = JSON.parse(msg);
-    const inner = json?.error?.message;
-    if (inner) return `Gemini error (${MODEL_NAME}): ${inner}`;
-  } catch { /* not JSON */ }
-
-  return `Gemini error (${MODEL_NAME}): ${msg}`;
-}
 
 // ─── System instruction ───────────────────────────────────────────────────────
 const SYSTEM_INSTRUCTION = `You are an expert HTML template designer specialised in creating professional, 
@@ -187,54 +125,75 @@ const MOCK_RESPONSE_HTML = `
 // ─── Public API ───────────────────────────────────────────────────────────────
 
 /**
- * Generate or modify a PDF template using the Gemini SDK (or mock fallback).
- *
- * Uses client.models.generateContent() from @google/genai.
- * No model discovery, no waterfall, no manual fetch().
- *
- * On failure this function always throws — it never returns a fallback string,
- * so the caller's existing CKEditor content is never silently replaced.
+ * Generate or modify a PDF template using Groq API (or mock fallback).
  *
  * @param {{ prompt: string, currentTemplate: string }} options
  * @returns {Promise<string>} The generated / modified HTML.
- * @throws {Error} On quota exhaustion, model errors, or empty responses.
  */
 export async function generateTemplate({ prompt, currentTemplate }) {
   // ── Mock path (no API key configured) ─────────────────────────────────────
   if (!API_KEY) {
-    log.warn('No API key — returning mock HTML.');
-    return new Promise(resolve => setTimeout(() => resolve(MOCK_RESPONSE_HTML), 1200));
+    log.warn('No Groq API key configured — returning mock HTML.');
+    return new Promise(resolve => setTimeout(() => resolve(MOCK_RESPONSE_HTML), 800));
   }
 
   // ── Build user message ─────────────────────────────────────────────────────
-  const userContent = currentTemplate
-    ? `Current template HTML:\n\`\`\`html\n${currentTemplate}\n\`\`\`\n\nUser instruction: ${prompt}`
+  const TEMPLATE_CHAR_LIMIT = 6000;
+  let templateSnippet = currentTemplate || '';
+  if (templateSnippet.length > TEMPLATE_CHAR_LIMIT) {
+    templateSnippet =
+      templateSnippet.slice(0, TEMPLATE_CHAR_LIMIT) +
+      `\n<!-- ... template truncated at ${TEMPLATE_CHAR_LIMIT} chars to avoid filter — full template will be reconstructed -->`;
+  }
+
+  const userContent = templateSnippet
+    ? `Current template HTML:\n\`\`\`html\n${templateSnippet}\n\`\`\`\n\nUser instruction: ${prompt}`
     : `User instruction: ${prompt}`;
 
-  log.info(`generateContent → model: ${MODEL_NAME}`);
+  let lastError = null;
 
-  try {
-    const response = await getClient().models.generateContent({
-      model: MODEL_NAME,
-      config: {
-        systemInstruction: SYSTEM_INSTRUCTION,
-        temperature: 0.4,
-        topP: 0.95,
-        maxOutputTokens: 2048,
-      },
-      contents: userContent,
-    });
+  for (const model of GROQ_MODELS) {
+    log.info(`Trying Groq model: ${model}, template chars: ${templateSnippet.length}`);
+    try {
+      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            { role: 'system', content: SYSTEM_INSTRUCTION },
+            { role: 'user', content: userContent },
+          ],
+          temperature: 0.4,
+          max_tokens: 4096,
+        }),
+      });
 
-    const text = response.text;
-    if (!text) throw new Error('Gemini returned an empty response. Please try again.');
+      const data = await response.json();
 
-    log.info('generateContent succeeded.');
-    return stripCodeFences(text.trim());
+      if (!response.ok) {
+        const errorMsg = data?.error?.message || `HTTP ${response.status} ${response.statusText}`;
+        throw new Error(`Groq API error (${model}): ${errorMsg}`);
+      }
 
-  } catch (err) {
-    log.error('generateContent failed:', err?.message ?? err);
-    throw new Error(parseSDKError(err));
+      const text = data.choices?.[0]?.message?.content;
+      if (!text) {
+        throw new Error(`Groq model ${model} returned an empty response.`);
+      }
+
+      return stripCodeFences(text.trim());
+    } catch (err) {
+      log.warn(`Model ${model} failed:`, err.message);
+      lastError = err;
+      continue;
+    }
   }
+
+  log.error('All Groq models failed.');
+  throw lastError || new Error('Failed to generate template with Groq API.');
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────

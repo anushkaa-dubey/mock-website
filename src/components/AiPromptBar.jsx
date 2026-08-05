@@ -18,12 +18,12 @@ import { generateTemplate } from '@/services/aiTemplateService';
  *   @param {boolean}         disabled    – disable while parent is saving
  */
 function AiPromptBar({ editorRef, disabled }) {
-  const [prompt, setPrompt]           = useState('');
-  const [loading, setLoading]         = useState(false);
-  const [error, setError]             = useState('');
-  const [successMsg, setSuccessMsg]   = useState('');
+  const [prompt, setPrompt] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
   const [importHover, setImportHover] = useState(false);
-  const [genHover, setGenHover]       = useState(false);
+  const [genHover, setGenHover] = useState(false);
   const inflight = useRef(false); // prevent duplicate requests
 
   const handleGenerate = async () => {
@@ -80,15 +80,18 @@ function AiPromptBar({ editorRef, disabled }) {
     alert('📎 Import PDF / Image — Coming Soon\n\nThis feature will allow you to upload an existing PDF or image and convert it into an editable HTML template.');
   };
 
+  const rawApiKey = import.meta.env.VITE_GEMINI_API_KEY;
+  const hasValidKey = Boolean(rawApiKey && typeof rawApiKey === 'string' && rawApiKey.trim().length > 10);
+
   return (
     <div className="ai-prompt-bar">
       {/* ── Header row ── */}
       <div className="ai-prompt-bar__header">
         <span className="ai-prompt-bar__title">
-          <span className="ai-prompt-bar__bolt">⚡</span>
+          {/* <span className="ai-prompt-bar__bolt">⚡</span> */}
           AI Prompt
         </span>
-        {!import.meta.env.VITE_GEMINI_API_KEY && (
+        {!hasValidKey && (
           <span className="ai-prompt-bar__demo-badge">
             Demo Mode — No API Key
           </span>
@@ -149,8 +152,8 @@ function AiPromptBar({ editorRef, disabled }) {
               opacity: loading || disabled || !prompt.trim() ? 0.65 : 1,
               background:
                 genHover && !loading && !disabled && prompt.trim()
-                ? 'linear-gradient(135deg, #0055BB, #0066CC)'
-                : 'linear-gradient(135deg, #0066CC, #17A2B8)',
+                  ? 'linear-gradient(135deg, #0055BB, #0066CC)'
+                  : 'linear-gradient(135deg, #0066CC, #17A2B8)',
             }}
           >
             {loading ? (
