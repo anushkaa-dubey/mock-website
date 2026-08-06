@@ -870,19 +870,8 @@ function ApprovalFlowTab() {
                     
                     if (addingLevel === selectedFlowData.uuid) {
                       return (
-                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16, transition: 'all 0.2s ease-in-out' }}>
-                          <div style={{
-                            width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
-                            background: editedLevel ? '#F3F4F6' : '#FFFFFF',
-                            border: editedLevel ? 'none' : '1px dashed #D1D5DB',
-                            color: editedLevel ? '#374151' : '#6B7280', 
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontSize: 16, fontWeight: 700,
-                            boxShadow: editedLevel ? '0 1px 2px 0 rgba(0, 0, 0, 0.05)' : 'none',
-                          }}>
-                            {displayNum}
-                          </div>
-                          <form onSubmit={(e) => handleAddLevel(selectedFlowData.uuid, e)} style={{ flex: 1, background: '#F3F4F6', padding: '16px', border: '1px solid #D1D5DB', borderRadius: 8, boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' }}>
+                        <div style={{ marginTop: 16 }}>
+                          <form onSubmit={(e) => handleAddLevel(selectedFlowData.uuid, e)} style={{ background: '#F9FAFB', padding: '16px', border: '1px solid #D1D5DB', borderRadius: 8, boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
                             <div className="row g-2 align-items-end">
                               <div className="col-md-4">
                                 <label className="form-label fw-semibold small mb-1">Level Name</label>
@@ -918,7 +907,7 @@ function ApprovalFlowTab() {
                                   Any user in the role may approve. A preferred approver changes notification routing only.
                                 </span>
                                 <div className="d-flex gap-2">
-                                  <button type="submit" className="btn btn-sm" style={{ background: '#0066CC', color: '#FFFFFF', borderRadius: 4, padding: '4px 12px', border: 'none', fontWeight: 500 }} disabled={savingLevel || !newLevel.role_id}>
+                                  <button type="submit" className="btn btn-sm btn-primary-dark" style={{ borderRadius: 4, padding: '4px 12px', fontWeight: 500 }} disabled={savingLevel || !newLevel.role_id}>
                                     {savingLevel ? <i className="fa fa-circle-o-notch fa-spin" /> : (editingLevel ? 'Save' : 'Add')}
                                   </button>
                                   <button type="button" className="btn btn-outline-secondary btn-sm" style={{ borderRadius: 4, padding: '4px 12px', fontWeight: 500 }}
@@ -934,38 +923,15 @@ function ApprovalFlowTab() {
                     }
                     
                     return (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 16, transition: 'all 0.2s ease-in-out' }}>
-                        <div style={{
-                          width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
-                          background: '#FFFFFF', border: '1px dashed #D1D5DB',
-                          color: '#6B7280', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: 16, fontWeight: 700,
-                        }}>
-                          {nextLevelNum}
-                        </div>
-                        <div 
-                          style={{
-                            flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                            padding: '12px 16px', borderRadius: 8,
-                            background: '#FFFFFF',
-                            border: '1px dashed #D1D5DB',
-                            cursor: 'pointer',
-                            transition: 'all 0.2s ease',
-                          }}
+                      <div className="mt-3">
+                        <button
+                          type="button"
+                          className="btn btn-outline-primary btn-sm"
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontWeight: 600, fontSize: 13, padding: '6px 14px', borderRadius: 6 }}
                           onClick={() => { setEditingLevel(null); setNewLevel({ name: '', user_id: '', role_id: '' }); setAddingLevel(selectedFlowData.uuid); }}
-                          onMouseOver={(e) => { e.currentTarget.style.backgroundColor = '#F3F4F6'; e.currentTarget.style.borderColor = '#6B7280'; }}
-                          onMouseOut={(e) => { e.currentTarget.style.backgroundColor = '#FFFFFF'; e.currentTarget.style.borderColor = '#D1D5DB'; }}
                         >
-                          <div>
-                            <div style={{ fontSize: 14, fontWeight: 600, color: '#374151', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              <i className="fa fa-plus" />
-                              Add Approval Level
-                            </div>
-                            <div style={{ fontSize: 12, color: '#6B7280', marginTop: 4, display: 'flex', alignItems: 'center' }}>
-                              Click to configure this step
-                            </div>
-                          </div>
-                        </div>
+                          <i className="fa fa-plus" /> Add New Approval
+                        </button>
                       </div>
                     );
                   })()}
@@ -1335,10 +1301,10 @@ function PdfTemplateTab() {
             </div>
 
             {/* ── AI Prompt Bar ── */}
-            <AiPromptBar
+            {/* <AiPromptBar
               editorRef={templateEditorRef}
               disabled={saving}
-            />
+            /> */}
 
             {/* Direct Full-Width CKEditor Area */}
             <div className="pdf-ckeditor-direct-wrapper">
@@ -1780,7 +1746,7 @@ export default function Setup() {
         .setup-tab-bar { display: flex; gap: 2px; margin-bottom: 16px; border-bottom: 2px solid #E5E7EB; padding-bottom: 0; overflow-x: auto; flex-shrink: 0; scrollbar-width: none; -ms-overflow-style: none; }
         .setup-tab-bar::-webkit-scrollbar { display: none; }
         .setup-two-col { display: flex; gap: 16px; flex: 1; min-height: 0; }
-        .setup-sidebar-col { flex-shrink: 0; width: 33%; display: flex; flex-direction: column; min-width: 0; }
+        .setup-sidebar-col { flex-shrink: 0; width: 250px; display: flex; flex-direction: column; min-width: 0; }
         .setup-content-col { flex: 1; min-width: 0; display: flex; flex-direction: column; }
         .setup-outer { height: 100%; display: flex; flex-direction: column; overflow: hidden; }
         /* Mobile permit selector hidden by default (shown via media query) */

@@ -101,7 +101,6 @@ export default function SidebarList({
                 borderRadius: 8,
                 cursor: isActivating ? 'wait' : 'pointer',
                 background: isSelected ? '#E8F6F8' : isHovered ? '#F9FAFB' : 'transparent',
-                borderLeft: isSelected ? '3.5px solid #17A2B8' : '3.5px solid transparent',
                 transition: 'all 0.12s ease',
               }}
               onMouseEnter={() => setHoveredId(item.id)}
